@@ -179,7 +179,7 @@ The least recently used (LRU) data (struct LruData) is 112 bytes in size and con
 | 52 | 5 x 4 = 20 | | Array of tail cache addresses
 | 72 | 4 | | Transaction cache address +
 [yellow-background]*Value to indicate an in-flight operation*
-| 76 | 4 | | i[yellow-background]*Operation* +
+| 76 | 4 | | [yellow-background]*Operation* +
 [yellow-background]*The in-flight operation*
 | 80 | 4 | | [yellow-background]*Operations list* +
 [yellow-background]*The in-flight operations list*
