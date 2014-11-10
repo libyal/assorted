@@ -195,7 +195,7 @@ The custom destinations file header is variable of size and consists of:
 [yellow-background]*Seen: 5*
 | ...  | 16 | | Class identifier +
 Contains a GUID +
-[yellow-background]*Seen: 00021401-0000-0000-00c0-000000000046 (Windows Shortcut (LNK))*
+[yellow-background]*Seen: 00021401-0000-0000-c000-000000000046 (Windows Shortcut (LNK))*
 4+| If header values type == 1
 | 16 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*Seen: 1, 2*
@@ -206,7 +206,7 @@ Contains a GUID +
 [yellow-background]*Seen: 2, 5, 9*
 | 24 | 16 | | Class identifier +
 Contains a GUID +
-[yellow-background]*Seen: 00021401-0000-0000-00c0-000000000046 (Windows Shortcut (LNK))*
+[yellow-background]*Seen: 00021401-0000-0000-c000-000000000046 (Windows Shortcut (LNK))*
 |===
 
 === Header values type
