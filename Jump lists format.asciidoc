@@ -187,7 +187,7 @@ The custom destinations file header is variable of size and consists of:
 [yellow-background]*Seen: 1, 2*
 | 8 | 4 | | [yellow-background]*Unknown (empty values)*
 | 12 | 4 | | Header values type
-4+| If header values type == 0
+4+| _If header values type == 0_
 | 16 | 2 | | [yellow-background]*String number of characters*
 | 18 | ...  | | [yellow-background]*String* +
 [yellow-background]*Contains an UTF-16 little-endian string without an end-of-string character*
@@ -196,12 +196,12 @@ The custom destinations file header is variable of size and consists of:
 | ...  | 16 | | Class identifier +
 Contains a GUID +
 [yellow-background]*Seen: 00021401-0000-0000-c000-000000000046 (Windows Shortcut (LNK))*
-4+| If header values type == 1
+4+| _If header values type == 1_
 | 16 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*Seen: 1, 2*
 | 20 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*Seen: 0xbabffbab*
-4+| If header values type == 2
+4+| _If header values type == 2_
 | 16 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*Seen: 2, 5, 9*
 | 24 | 16 | | Class identifier +
