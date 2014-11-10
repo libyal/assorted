@@ -72,7 +72,7 @@ destinations file uses the Object Linking and Embedding (OLE) Compound File
 The automatic destinations OLECF file contains the following streams:
 
 * DestList
-* Hexadecimal numbered streams in the form “^[1-9a-f][0-9a-f]*$”
+* Hexadecimal numbered streams in the form "^[1-9a-f][0-9a-f]*$"
 
 === DestList stream
 The DestList stream consists of:
