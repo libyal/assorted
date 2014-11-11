@@ -202,9 +202,6 @@ The custom destinations file header is variable of size and consists of:
 [yellow-background]*Seen: 2, 5, 9*
 |===
 
-[NOTE]
-Is the GUID part of the header values or the entry?
-
 === Header values type
 
 [cols="1,1,5",options="header"]
