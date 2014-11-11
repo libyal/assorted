@@ -174,7 +174,8 @@ directory and have the extension .customDestinations-ms.
 The DestList stream consists of:
 
 * File header
-* An array Windows Shortcut (LNK) files
+* An array Windows Shortcut (LNK) file entries
+* File footer
 
 === File header
 The custom destinations file header is variable of size and consists of:
@@ -186,28 +187,23 @@ The custom destinations file header is variable of size and consists of:
 | 4 | 4 | | [yellow-background]*Number of header values* +
 [yellow-background]*Seen: 1, 2*
 | 8 | 4 | | [yellow-background]*Unknown (empty values)*
-| 12 | 4 | | Header values type
+| 12 | 4 | | [yellow-background]*Unknown (Header values type?)*
 4+| _If header values type == 0_
 | 16 | 2 | | [yellow-background]*String number of characters*
 | 18 | ... | | [yellow-background]*String* +
 [yellow-background]*Contains an UTF-16 little-endian string without an end-of-string character*
 | ... | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*Seen: 5*
-| ... | 16 | | Class identifier +
-Contains a GUID +
-[yellow-background]*Seen: 00021401-0000-0000-c000-000000000046 (Windows Shortcut (LNK))*
 4+| _If header values type == 1_
 | 16 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*Seen: 1, 2*
-| 20 | 4 | | [yellow-background]*Unknown* +
-[yellow-background]*Seen: 0xbabffbab*
 4+| _If header values type == 2_
 | 16 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*Seen: 2, 5, 9*
-| 24 | 16 | | Class identifier +
-Contains a GUID +
-[yellow-background]*Seen: 00021401-0000-0000-c000-000000000046 (Windows Shortcut (LNK))*
 |===
+
+[NOTE]
+Is the GUID part of the header values or the entry?
 
 === Header values type
 
@@ -249,6 +245,31 @@ Empty
 ....
 
 [yellow-background]*TODO*
+
+=== Windows Shortcut (LNK) file entry
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 16 | | Class identifier +
+Contains a GUID +
+00021401-0000-0000-c000-000000000046 (Windows Shortcut (LNK))
+| 16 | ... | | Data stream +
+Contains a Windows Shortcut (LNK) file. For more information about the LNK format see `[LIBLNK09]`.
+|===
+
+[NOTE]
+The file size in the Windows Shortcut (LNK) file data stream is not reliable
+for indicating the size of the data stream (file).
+
+=== File footer
+The custom destinations file footer is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0xbabffbab | Signature
+|===
 
 == .library-ms
 ....
