@@ -184,32 +184,26 @@ The custom destinations file header is variable of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | 2 | [yellow-background]*Unknown*
-| 4 | 4 | | [yellow-background]*Number of header values* +
+| 4 | 4 | | [yellow-background]*Unknown (Number of header values?)* +
 [yellow-background]*Seen: 1, 2*
 | 8 | 4 | | [yellow-background]*Unknown (empty values)*
 | 12 | 4 | | [yellow-background]*Unknown (Header values type?)*
 4+| _If header values type == 0_
-| 16 | 2 | | [yellow-background]*String number of characters*
-| 18 | ... | | [yellow-background]*String* +
-[yellow-background]*Contains an UTF-16 little-endian string without an end-of-string character*
-| ... | 4 | | [yellow-background]*Unknown* +
-[yellow-background]*Seen: 5*
-4+| _If header values type == 1_
-| 16 | 4 | | [yellow-background]*Unknown* +
-[yellow-background]*Seen: 1, 2*
-4+| _If header values type == 2_
-| 16 | 4 | | [yellow-background]*Unknown* +
-[yellow-background]*Seen: 2, 5, 9*
+| 16 | 2 | | String number of characters
+| 18 | ... | | String +
+Contains an UTF-16 little-endian string without an end-of-string character
+4+| _Common_
+| ... | 4 | | Number of entries
 |===
 
-=== Header values type
+=== [yellow-background]*Header values types?*
 
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
-| 0x00000000 | | [yellow-background]*String and 32-bit value?*
-| 0x00000001 | | [yellow-background]*32-bit value?*
-| 0x00000002 | | [yellow-background]*32-bit value?*
+| 0x00000000 | | [yellow-background]*Unknown (String?)*
+| 0x00000001 | | [yellow-background]*Unknown*
+| 0x00000002 | | [yellow-background]*Unknown*
 |===
 
 ....
@@ -244,6 +238,8 @@ Empty
 [yellow-background]*TODO*
 
 === Windows Shortcut (LNK) file entry
+
+The Windows Shortcut (LNK) file entry is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
