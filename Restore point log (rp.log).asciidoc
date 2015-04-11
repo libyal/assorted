@@ -59,7 +59,8 @@ On Windows XP the rp.log can be found in:
 C:\System Volume Information\_restore{%GUID%}\RP[0-9]+\rp.log
 ....
 
-Where %GUID% is the [yellow-background]*TODO* and 'RP[0-9]+' the restore point specific subdirectory e.g. `RP1`.
+Where %GUID% is the machine GUID and 'RP[0-9]+' the restore point specific 
+subdirectory e.g. `RP1`.
 
 [cols="1,5",options="header"]
 |===
@@ -79,18 +80,62 @@ information within this document:
 == The rp.log file
 The rp.log file consists of:
 
-* file header
+* restore point information
 * [yellow-background]*Unknown data*
 * file footer
 
-=== File header
+=== Restore point information
+The restore point information (RESTOREPOINTINFO) is variable of size and 
+consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 16 | | [yellow-background]*Signature?* 
-| 16 | ... | | The reason the restore point was created +
-Contains an UTF-16 little-endian string with end-of-string character
+| 0 | 4 | | Event type |
+See section: <<restore_point_event_types,Event types>>
+| 4 | 4 | | Restore point typeRestore point type +
+See section: <<restore_point_types,Restore point types>>
+| 8 | 8 | | Sequence number
+| 16 | ... | | Description +
+Contains an UTF-16 little-endian string with end-of-string character +
+The string is stored in the primary language configured on the system.
+|===
+
+[yellow-background]*TODO: determine if the description always stored as UTF-16, 
+since WINAPI provides both RESTOREPOINTINFOA and RESTOREPOINTINFOW.*
+
+==== [[restore_point_event_types]]Event types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000064 | BEGIN_SYSTEM_CHANGE | Event to mark the start of a system change.
+| 0x00000065 | END_SYSTEM_CHANGE | Event to mark the end of a system change.
+| 0x00000066 | BEGIN_NESTED_SYSTEM_CHANGE | Event to mark the start of a nested system change. +
+A nested system change does not create a new restore point. +
+Must be ended with END_NESTED_SYSTEM_CHANGE, not END_SYSTEM_CHANGE.
+| 0x00000067 | END_NESTED_SYSTEM_CHANGE | Event to mark the end of a nested system change.
+|===
+
+==== [[restore_point_types]]Restore point types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000000 | APPLICATION_INSTALL | Installation of an application.
+| 0x00000001 | APPLICATION_UNINSTALL | Uninstall of an application.
+| | | 
+| 0x00000007 | | [yellow-background]*Unknown* +
+Seen in XP rp.log
+| | | 
+| 0x0000000a | DEVICE_DRIVER_INSTALL | Installation of a device driver.
+| | | 
+| 0x0000000c | MODIFY_SETTINGS | Features added or removed of an application.
+| 0x0000000d | CANCELLED_OPERATION | An application needs to delete the restore point it created. +
+For example, an application would use this flag when a user cancels an installation.
+| | | 
+| 0x00000010 | | [yellow-background]*Unknown* +
+Seen in Windows 8 RESTOREPOINTINFO
 |===
 
 === File footer
@@ -104,16 +149,16 @@ Contains a FILETIME +
 |===
 
 == Notes
-....
-00000000  66 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |f...............|
-00000010  53 00 6f 00 66 00 74 00  77 00 61 00 72 00 65 00  |S.o.f.t.w.a.r.e.|
-00000020  20 00 44 00 69 00 73 00  74 00 72 00 69 00 62 00  | .D.i.s.t.r.i.b.|
-00000030  75 00 74 00 69 00 6f 00  6e 00 20 00 53 00 65 00  |u.t.i.o.n. .S.e.|
-00000040  72 00 76 00 69 00 63 00  65 00 20 00 33 00 2e 00  |r.v.i.c.e. .3...|
-00000050  30 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |0...............|
-00000060  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-....
+Files Contained in Each RPnFolder
 
+Each RPn folder contains a Snapshot folder that contains the following:
+
+* A snapshot of the registry hives
+* A Repository folder that contains a snapshot of the WMI repository
+* A snapshot of the COM+ database
+* A snapshot of the IIS database
+
+=== rp.log
 ....
 00000000  66 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |f...............|
 00000010  49 00 6e 00 73 00 74 00  61 00 6c 00 6c 00 65 00  |I.n.s.t.a.l.l.e.|
@@ -152,6 +197,45 @@ Contains a FILETIME +
 00000200  a8 51 11 00 24 f0 ad 00  76 60 2d 7d 18 6c 3a 7d  |.Q..$...v`-}.l:}|
 ....
 
+....
+00000000  64 00 00 00 07 00 00 00  88 61 07 07 64 fa b2 00  |d........a..d...|
+
+00000010  43 00 6f 00 6e 00 74 00  72 00 6f 00 6c 00 65 00  |C.o.n.t.r.o.l.e.|
+00000020  70 00 75 00 6e 00 74 00  20 00 76 00 61 00 6e 00  |p.u.n.t. .v.a.n.|
+00000030  20 00 73 00 79 00 73 00  74 00 65 00 65 00 6d 00  | .s.y.s.t.e.e.m.|
+00000040  00 00                                             |....p...A..|8...|
+
+00000040        07 07 70 fd b2 00  41 00 91 7c 38 0b 09 00  |....p...A..|8...|
+00000050  5d 00 91 7c 00 00 00 00  00 d5 11 00 00 00 00 00  |]..|............|
+00000060  d8 fc b2 00 c4 2c 7e 7c  58 59 0d 00 38 e7 11 00  |.....,~|XY..8...|
+00000070  30 75 00 00 fe ff ff ff  f0 fc b2 00 85 32 56 42  |0u...........2VB|
+00000080  00 00 00 00 00 00 09 00  30 75 00 00 fc fc b2 00  |........0u......|
+00000090  00 00 00 00 b8 00 91 7c  30 9d 88 05 c8 fd b2 00  |.......|0.......|
+000000a0  41 00 91 7c 48 07 09 00  5d 00 91 7c 1c fd b2 00  |A..|H...]..|....|
+000000b0  00 00 00 00 b8 00 91 7c  68 88 29 07 e8 fd b2 00  |.......|h.).....|
+000000c0  41 00 91 7c e8 06 09 00  5d 00 91 7c 00 00 00 00  |A..|....]..|....|
+000000d0  00 d5 11 00 00 00 00 00  00 00 09 00 34 70 5c 77  |............4p\w|
+000000e0  80 48 0e 77 68 61 07 07  00 00 00 00 78 fd b2 00  |.H.wha......x...|
+000000f0  3e ad 01 00 19 00 00 00  0b 00 00 00 44 61 07 07  |>...........Da..|
+00000100  70 fe b2 00 20 e9 90 7c  20 00 00 00 ff ff ff ff  |p... ..| .......|
+00000110  5d 00 91 7c 6f c6 59 42  00 00 09 00 00 00 00 00  |]..|o.YB........|
+00000120  30 61 07 07 00 00 00 00  00 00 00 00 80 b1 e6 06  |0a..............|
+00000130  5c 08 00 00 2c 08 00 00  58 00 00 00 cc fd 00 00  |\...,...X.......|
+00000140  00 00 09 00 9c fb b2 00  36 14 4c 77 00 00 00 00  |........6.Lw....|
+00000150  10 fe b2 00 e8 77 5c 77  00 00 00 00 00 00 00 00  |.....w\w........|
+00000160  70 db c2 06 ac fd b2 00  2c a3 09 00 70 fe b2 00  |p.......,...p...|
+00000170  79 4d 5b 77 00 00 00 00  10 fe b2 00 70 db c2 06  |yM[w........p...|
+00000180  00 00 00 00 00 c0 fd 7f  48 fe b2 00 2a 26 7d 7c  |........H...*&}||
+00000190  04 fe b2 00 00 26 7d 7c  5c 08 00 00 00 00 00 00  |.....&}|\.......|
+000001a0  00 00 00 00 14 00 00 00  01 00 00 00 00 00 00 00  |................|
+000001b0  00 00 00 00 10 00 00 00  00 00 00 00 00 00 00 00  |................|
+000001c0  00 a0 fd 7f 00 c0 fd 7f  18 fe b2 00 02 01 00 00  |................|
+000001d0  f8 fd b2 00 fc fd b2 00  c8 fe b2 00 48 9b 80 7c  |............H..||
+000001e0  08 26 7d 7c ff ff ff ff  00 26 7d 7c 42 25 7d 7c  |.&}|.....&}|B%}||
+000001f0  5c 08 00 00 00 00 00 00  00 00 00 00 78 fe b2 00  |\...........x...|
+00000200  6b 0f 13 75 5c 08 00 00  00 00 00 00 00 00 00 00  |k..u\...........|
+....
+
 === fifo.log
 ....
 C:\System Volume Information\_restore%GUID%\fifo.log
@@ -164,9 +248,118 @@ Extended ASCII log file containing restore point deletion information.
 
 [yellow-background]*Date format seems MM/DD/YY*
 
+=== change.log
+Each RPn folder may contain files used to track changes for a restore point. 
+The first file is named change.log, the next file is named change.log.1, and so 
+on.
+
+....
+C:\System Volume Information\_restore%GUID%\RP[0-9]+\change.log.[0-9]
+....
+
+A change.log file consists of:
+
+* change log header
+* one or more change log entries
+
+==== Change log header
+The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeLogHeader_
+| 0 | 4 | | Record size
+| 4 | 4 | 0 | Record type
+4+|
+| 8 | 4 | 0xabcdef12 | Signature
+| 12 | 4 | 2 | Format version
+4+| _RECORD_HEADER of type RecordTypeVolumePath_
+| 16 | 4 | | Record size
+| 20 | 4 | 2 | Record type
+4+|
+| 16 | ... | | Volume path +
+[yellow-background]*Unknown string* with end-of-string character.
+|===
+
+===== Change log record types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0 | RecordTypeLogHeader | The record is the header for the change log.
+| 1 | RecordTypeLogEntry | The record is the header for a change log entry.
+| 2 | RecordTypeVolumePath | The data is the volume path for the change log entry.
+| 3 | RecordTypeFirstPath | The data is the file path for the change log entry.
+| 4 | RecordTypeSecondPath | The data is used when renaming change log entries; this path is where the renamed file is stored.
+| 5 | RecordTypeTempPath | The data is the name of the backup file used to restore the change log entry. The backup files are located in the RPn folder. The file name has the following format: Axxxxxxx.ext, where xxxxxxx is a seven-digit number and ext is the file name extension.
+| 6 | RecordTypeAclInline | The data is an ACL. The data format is a SECURITY_DESCRIPTOR structure. +
+This value cannot be larger than 8,192 bytes. To specify a value larger than 8,192 bytes, use the RecordTypeAclFile member.
+| 7 | RecordTypeAclFile | The data is the name of the ACL file used to store the ACL. The ACL files are located in the RPn folder. The file name has the following format: Sxxxxxxx.acl, where xxxxxxx is a seven-digit number.
+| 8 | RecordTypeDebugInfo | The data is debug information for the change log entry. The data format is a SR_LOG_DEBUG_INFO structure. For more information, see Remarks.
+| 9 | RecordTypeShortName | The data is the short name of the backup file.
+|===
+
+==== Change log entry
+The change log entry (CHANGE_LOG_ENTRY) is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeLogEntry_
+| 0 | 4 | | Record size
+| 4 | 4 | 1 | Record type
+4+|
+| 8 | 4 | 0xabcdef12 | Signature
+| 12 | 4 | | Entry type
+| 16 | 4 | | Entry flags
+| 20 | 4 | | File attributes +
+Set to 0xffffffff if not used.
+| 24 | 8 | | Sequence number
+| 32 | ... | | Name of the process that made the change +
+[yellow-background]*Unknown string with end-of-string character?*
+|===
+
+===== Change log entry types
+
+CHANGE_LOG_ENTRYTYPES_ACLCHANGE (0x2)
+CHANGE_LOG_ENTRYTYPES_ATTRCHANGE (0x4)
+CHANGE_LOG_ENTRYTYPES_DIRCREATE (0x80)
+CHANGE_LOG_ENTRYTYPES_DIRRENAME (0x100)
+CHANGE_LOG_ENTRYTYPES_DIRDELETE (0x200)
+CHANGE_LOG_ENTRYTYPES_FILECREATE (0x20)
+CHANGE_LOG_ENTRYTYPES_FILEDELETE (0x10)
+CHANGE_LOG_ENTRYTYPES_FILERENAME (0x40)
+CHANGE_LOG_ENTRYTYPES_INPRECREATE (0x100000)
+CHANGE_LOG_ENTRYTYPES_ISDIR (0x20000)
+CHANGE_LOG_ENTRYTYPES_ISNOTDIR (0x40000)
+CHANGE_LOG_ENTRYTYPES_MOUNTCREATE (0x400)
+CHANGE_LOG_ENTRYTYPES_MOUNTDELETE (0x800)
+CHANGE_LOG_ENTRYTYPES_NOOPTIMIZE (0x10000)
+CHANGE_LOG_ENTRYTYPES_OPENBYID (0x200000)
+CHANGE_LOG_ENTRYTYPES_SIMULATEDELETE (0x80000)
+CHANGE_LOG_ENTRYTYPES_STREAMCHANGE (0x1)
+CHANGE_LOG_ENTRYTYPES_STREAMCREATE (0x2000)
+CHANGE_LOG_ENTRYTYPES_STREAMOVERWRITE (0x8)
+CHANGE_LOG_ENTRYTYPES_VOLUMEERROR (0x1000)
+
+===== Change log entry flags
+
+CHANGE_LOG_ENTRYFLAGS_ACLINFO (0x4)
+CHANGE_LOG_ENTRYFLAGS_DEBUGINFO (0x8)
+CHANGE_LOG_ENTRYFLAGS_SECONDPATH (0x2)
+CHANGE_LOG_ENTRYFLAGS_SHORTNAME (0x10)
+CHANGE_LOG_ENTRYFLAGS_TEMPPATH (0x1)
+
 === Corresponding Registry keys
 ....
 HKEY_LOCAL_MACHINE\Software\Microsoft\WindowsNT\CurrentVersion\SystemRestore
+....
+
+=== Machine GUID
+On Windows XP SP2 the machine GUID can be found in:
+....
+%SytemRoot%\System32\Restore\MachineGUID.txt
 ....
 
 :numbered!:
@@ -180,6 +373,18 @@ HKEY_LOCAL_MACHINE\Software\Microsoft\WindowsNT\CurrentVersion\SystemRestore
 | Title: | Restore Point Forensics
 | Author(s): | Steve Bunting
 | URL: | http://www.stevebunting.org/udpd4n6/forensics/restorepoints.htm
+|===
+
+`[MSDN]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | MSDN
+| URL: | https://msdn.microsoft.com/en-us/library/windows/desktop/bb395209(v=vs.85).aspx +
+https://msdn.microsoft.com/en-us/library/windows/desktop/aa378903(v=vs.85).aspx +
+https://msdn.microsoft.com/en-us/library/windows/desktop/aa378947(v=vs.85).aspx +
+https://msdn.microsoft.com/en-us/library/windows/desktop/bb395208(v=vs.85).aspx +
+https://msdn.microsoft.com/en-us/library/windows/desktop/bb395207(v=vs.85).aspx
 |===
 
 [appendix]
