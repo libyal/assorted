@@ -54,13 +54,23 @@ toc::[]
 The Windows Restore Point log (rp.log) format was used by the System Restore 
 subsystem in Windows ME and XP.
 
-On Windows XP the rp.log can be found in:
+
+On Windows XP a Restore Points can be found in:
 ....
-C:\System Volume Information\_restore{%GUID%}\RP[0-9]+\rp.log
+C:\System Volume Information\_restore{%GUID%}\
 ....
 
-Where %GUID% is the machine GUID and 'RP[0-9]+' the restore point specific 
-subdirectory e.g. `RP1`.
+Where %GUID% is the machine GUID, for which the Restore Point was created.
+
+This directory contains:
+
+* fifo.log; Restore Point deletion information
+* Restore Point data sub directories, named `RP[1-9][0-9]*`, e.g. `RP1`
+
+A Restore Point data sub directory contains:
+
+* change.log or change.log.[1-9]; 
+* rp.log; Restore Point information log file
 
 [cols="1,5",options="header"]
 |===
@@ -77,15 +87,25 @@ information within this document:
 * [yellow-background]*TODO: Windows ME*
 * Windows XP
 
+=== The fifo.log file
+The fifo.log file contains Restore Point deletion information.
+
+Extended ASCII strings:
+....
+11/14/12-13:54:45 : Fifoed RP1 on drive C:\
+....
+
+[yellow-background]*Date format seems MM/DD/YY*
+
 == The rp.log file
 The rp.log file consists of:
 
-* restore point information
+* Restore Point information
 * [yellow-background]*Unknown data*
 * file footer
 
 === Restore point information
-The restore point information (RESTOREPOINTINFO) is variable of size and 
+The Restore Point information (RESTOREPOINTINFO) is variable of size and 
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -112,7 +132,7 @@ since WINAPI provides both RESTOREPOINTINFOA and RESTOREPOINTINFOW.*
 | 0x00000064 | BEGIN_SYSTEM_CHANGE | Event to mark the start of a system change.
 | 0x00000065 | END_SYSTEM_CHANGE | Event to mark the end of a system change.
 | 0x00000066 | BEGIN_NESTED_SYSTEM_CHANGE | Event to mark the start of a nested system change. +
-A nested system change does not create a new restore point. +
+A nested system change does not create a new Restore Point. +
 Must be ended with END_NESTED_SYSTEM_CHANGE, not END_SYSTEM_CHANGE.
 | 0x00000067 | END_NESTED_SYSTEM_CHANGE | Event to mark the end of a nested system change.
 |===
@@ -131,7 +151,7 @@ Seen in XP rp.log
 | 0x0000000a | DEVICE_DRIVER_INSTALL | Installation of a device driver.
 | | | 
 | 0x0000000c | MODIFY_SETTINGS | Features added or removed of an application.
-| 0x0000000d | CANCELLED_OPERATION | An application needs to delete the restore point it created. +
+| 0x0000000d | CANCELLED_OPERATION | An application needs to delete the Restore Point it created. +
 For example, an application would use this flag when a user cancels an installation.
 | | | 
 | 0x00000010 | | [yellow-background]*Unknown* +
@@ -236,25 +256,13 @@ Each RPn folder contains a Snapshot folder that contains the following:
 00000200  6b 0f 13 75 5c 08 00 00  00 00 00 00 00 00 00 00  |k..u\...........|
 ....
 
-=== fifo.log
-....
-C:\System Volume Information\_restore%GUID%\fifo.log
-....
-
-Extended ASCII log file containing restore point deletion information.
-....
-11/14/12-13:54:45 : Fifoed RP1 on drive C:\
-....
-
-[yellow-background]*Date format seems MM/DD/YY*
-
 === change.log
-Each RPn folder may contain files used to track changes for a restore point. 
+Each RPn folder may contain files used to track changes for a Restore Point. 
 The first file is named change.log, the next file is named change.log.1, and so 
 on.
 
 ....
-C:\System Volume Information\_restore%GUID%\RP[0-9]+\change.log.[0-9]
+C:\System Volume Information\_restore%GUID%\RP[1-9][0-9]*\change.log.[1-9][0-9]*
 ....
 
 A change.log file consists of:
