@@ -1,4 +1,4 @@
-= The Windows Restore Point log (rp.log) format
+= The Windows Restore Point formats
 
 :toc:
 :toc-placement: manual
@@ -8,9 +8,9 @@
 :numbered!:
 [abstract]
 == Summary
-The Windows Restore Point log (rp.log) format was used by the System Restore 
-subsystem prior to Windows Vista. This specification is based on available 
-documentation and was enhanced by reverse engineering of the file format. 
+The Windows Restore Point format were used by the System Restore subsystem
+prior to Windows Vista. This specification is based on available documentation
+and was enhanced by reverse engineering of the file format. 
 
 This document is intended as a working document for the Windows Restore Point 
 log format specification. Which should allow existing Open Source forensic 
@@ -21,9 +21,9 @@ tooling to be able to process this file type.
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the Windows Restore Point log (rp.log) format
+| Abstract: | This document contains information about the Windows Restore Point formats
 | Classification: | Public
-| Keywords: | Restore Point log, rp.log
+| Keywords: | Restore Point, change.log, fifo.log, rp.log
 |===
 
 [preface]
@@ -51,8 +51,8 @@ toc::[]
 
 :numbered:
 == Overview
-The Windows Restore Point log (rp.log) format was used by the System Restore 
-subsystem in Windows ME and XP.
+The Windows Restore Points formats were used by the System Restore subsystem
+in Windows XP, and presumably Windows ME.
 
 
 On Windows XP a Restore Points can be found in:
@@ -64,13 +64,25 @@ Where %GUID% is the machine GUID, for which the Restore Point was created.
 
 This directory contains:
 
-* fifo.log; Restore Point deletion information
-* Restore Point data sub directories, named `RP[1-9][0-9]*`, e.g. `RP1`
+* `drivetable.txt`; UTF-16 little-endian text file without byte-order-mark
+* `fifo.log`; Restore Point deletion information
+* `RP[1-9][0-9]*` (e.g. `RP1`); a Restore Point sub directory
 
-A Restore Point data sub directory contains:
+Each Restore Point sub directory contains:
 
-* change.log or change.log.[1-9]; 
-* rp.log; Restore Point information log file
+* `change.log` or `change.log.[1-9]`; 
+* `drivetable.txt`; UTF-16 little-endian text file without byte-order-mark
+* `RestorePointSize`;
+* `rp.log`; Restore Point information log file
+* `snapshot`; the Restore Point Snapshot sub directory
+
+The Restore Point snapshot sub directory contains:
+
+* `ComDb.Dat`; a copy of the COM+ database
+* `domain.txt`; UTF-16 little-endian text file without byte-order-mark
+* a copy of the IIS database
+* `_REGISTRY_[0-9A-Z_]*`; a copy of the Windows Registry hive files
+* `Repository`; sub directory that contains a copy of the WMI repository
 
 [cols="1,5",options="header"]
 |===
@@ -96,6 +108,109 @@ Extended ASCII strings:
 ....
 
 [yellow-background]*Date format seems MM/DD/YY*
+
+== The change.log file
+A change.log file consists of:
+
+* change log header
+* one or more change log entries
+
+==== Change log header
+The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeLogHeader_
+| 0 | 4 | | Record size
+| 4 | 4 | 0 | Record type
+4+|
+| 8 | 4 | 0xabcdef12 | Signature
+| 12 | 4 | 2 | Format version
+4+| _RECORD_HEADER of type RecordTypeVolumePath_
+| 16 | 4 | | Record size
+| 20 | 4 | 2 | Record type
+4+|
+| 16 | ... | | Volume path +
+[yellow-background]*Unknown string* with end-of-string character.
+|===
+
+===== Change log record types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0 | RecordTypeLogHeader | The record is the header for the change log.
+| 1 | RecordTypeLogEntry | The record is the header for a change log entry.
+| 2 | RecordTypeVolumePath | The data is the volume path for the change log entry.
+| 3 | RecordTypeFirstPath | The data is the file path for the change log entry.
+| 4 | RecordTypeSecondPath | The data is used when renaming change log entries; this path is where the renamed file is stored.
+| 5 | RecordTypeTempPath | The data is the name of the backup file used to restore the change log entry. The backup files are located in the RPn folder. The file name has the following format: Axxxxxxx.ext, where xxxxxxx is a seven-digit number and ext is the file name extension.
+| 6 | RecordTypeAclInline | The data is an ACL. The data format is a SECURITY_DESCRIPTOR structure. +
+This value cannot be larger than 8,192 bytes. To specify a value larger than 8,192 bytes, use the RecordTypeAclFile member.
+| 7 | RecordTypeAclFile | The data is the name of the ACL file used to store the ACL. The ACL files are located in the RPn folder. The file name has the following format: Sxxxxxxx.acl, where xxxxxxx is a seven-digit number.
+| 8 | RecordTypeDebugInfo | The data is debug information for the change log entry. The data format is a SR_LOG_DEBUG_INFO structure. For more information, see Remarks.
+| 9 | RecordTypeShortName | The data is the short name of the backup file.
+|===
+
+==== Change log entry
+The change log entry (CHANGE_LOG_ENTRY) is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeLogEntry_
+| 0 | 4 | | Record size
+| 4 | 4 | 1 | Record type
+4+|
+| 8 | 4 | 0xabcdef12 | Signature
+| 12 | 4 | | Entry type
+| 16 | 4 | | Entry flags
+| 20 | 4 | | File attributes +
+Set to 0xffffffff if not used.
+| 24 | 8 | | Sequence number
+| 32 | ... | | Name of the process that made the change +
+[yellow-background]*Unknown string with end-of-string character?*
+|===
+
+===== Change log entry types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000001 | CHANGE_LOG_ENTRYTYPES_STREAMCHANGE | 
+| 0x00000002 | CHANGE_LOG_ENTRYTYPES_ACLCHANGE | 
+| 0x00000004 | CHANGE_LOG_ENTRYTYPES_ATTRCHANGE | 
+| 0x00000008 | CHANGE_LOG_ENTRYTYPES_STREAMOVERWRITE | 
+| 0x00000010 | CHANGE_LOG_ENTRYTYPES_FILEDELETE | 
+| 0x00000020 | CHANGE_LOG_ENTRYTYPES_FILECREATE | 
+| 0x00000040 | CHANGE_LOG_ENTRYTYPES_FILERENAME | 
+| 0x00000080 | CHANGE_LOG_ENTRYTYPES_DIRCREATE | 
+| 0x00000100 | CHANGE_LOG_ENTRYTYPES_DIRRENAME | 
+| 0x00000200 | CHANGE_LOG_ENTRYTYPES_DIRDELETE | 
+| 0x00000400 | CHANGE_LOG_ENTRYTYPES_MOUNTCREATE | 
+| 0x00000800 | CHANGE_LOG_ENTRYTYPES_MOUNTDELETE | 
+| 0x00001000 | CHANGE_LOG_ENTRYTYPES_VOLUMEERROR | 
+| 0x00002000 | CHANGE_LOG_ENTRYTYPES_STREAMCREATE | 
+| 0x00010000 | CHANGE_LOG_ENTRYTYPES_NOOPTIMIZE | 
+| 0x00020000 | CHANGE_LOG_ENTRYTYPES_ISDIR | 
+| 0x00040000 | CHANGE_LOG_ENTRYTYPES_ISNOTDIR | 
+| 0x00080000 | CHANGE_LOG_ENTRYTYPES_SIMULATEDELETE | 
+| 0x00100000 | CHANGE_LOG_ENTRYTYPES_INPRECREATE | 
+| 0x00200000 | CHANGE_LOG_ENTRYTYPES_OPENBYID | 
+|===
+
+===== Change log entry flags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000001 | CHANGE_LOG_ENTRYFLAGS_TEMPPATH | 
+| 0x00000002 | CHANGE_LOG_ENTRYFLAGS_SECONDPATH | 
+| 0x00000004 | CHANGE_LOG_ENTRYFLAGS_ACLINFO | 
+| 0x00000008 | CHANGE_LOG_ENTRYFLAGS_DEBUGINFO | 
+| 0x00000010 | CHANGE_LOG_ENTRYFLAGS_SHORTNAME | 
+|===
 
 == The rp.log file
 The rp.log file consists of:
@@ -123,7 +238,6 @@ The string is stored in the primary language configured on the system.
 
 [yellow-background]*TODO: determine if the description always stored as UTF-16, 
 since WINAPI provides both RESTOREPOINTINFOA and RESTOREPOINTINFOW.*
-
 ==== [[restore_point_event_types]]Event types
 
 [cols="1,1,5",options="header"]
@@ -171,12 +285,6 @@ Contains a FILETIME +
 == Notes
 Files Contained in Each RPnFolder
 
-Each RPn folder contains a Snapshot folder that contains the following:
-
-* A snapshot of the registry hives
-* A Repository folder that contains a snapshot of the WMI repository
-* A snapshot of the COM+ database
-* A snapshot of the IIS database
 
 === rp.log
 ....
@@ -255,109 +363,6 @@ Each RPn folder contains a Snapshot folder that contains the following:
 000001f0  5c 08 00 00 00 00 00 00  00 00 00 00 78 fe b2 00  |\...........x...|
 00000200  6b 0f 13 75 5c 08 00 00  00 00 00 00 00 00 00 00  |k..u\...........|
 ....
-
-=== change.log
-Each RPn folder may contain files used to track changes for a Restore Point. 
-The first file is named change.log, the next file is named change.log.1, and so 
-on.
-
-....
-C:\System Volume Information\_restore%GUID%\RP[1-9][0-9]*\change.log.[1-9][0-9]*
-....
-
-A change.log file consists of:
-
-* change log header
-* one or more change log entries
-
-==== Change log header
-The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-4+| _RECORD_HEADER of type RecordTypeLogHeader_
-| 0 | 4 | | Record size
-| 4 | 4 | 0 | Record type
-4+|
-| 8 | 4 | 0xabcdef12 | Signature
-| 12 | 4 | 2 | Format version
-4+| _RECORD_HEADER of type RecordTypeVolumePath_
-| 16 | 4 | | Record size
-| 20 | 4 | 2 | Record type
-4+|
-| 16 | ... | | Volume path +
-[yellow-background]*Unknown string* with end-of-string character.
-|===
-
-===== Change log record types
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0 | RecordTypeLogHeader | The record is the header for the change log.
-| 1 | RecordTypeLogEntry | The record is the header for a change log entry.
-| 2 | RecordTypeVolumePath | The data is the volume path for the change log entry.
-| 3 | RecordTypeFirstPath | The data is the file path for the change log entry.
-| 4 | RecordTypeSecondPath | The data is used when renaming change log entries; this path is where the renamed file is stored.
-| 5 | RecordTypeTempPath | The data is the name of the backup file used to restore the change log entry. The backup files are located in the RPn folder. The file name has the following format: Axxxxxxx.ext, where xxxxxxx is a seven-digit number and ext is the file name extension.
-| 6 | RecordTypeAclInline | The data is an ACL. The data format is a SECURITY_DESCRIPTOR structure. +
-This value cannot be larger than 8,192 bytes. To specify a value larger than 8,192 bytes, use the RecordTypeAclFile member.
-| 7 | RecordTypeAclFile | The data is the name of the ACL file used to store the ACL. The ACL files are located in the RPn folder. The file name has the following format: Sxxxxxxx.acl, where xxxxxxx is a seven-digit number.
-| 8 | RecordTypeDebugInfo | The data is debug information for the change log entry. The data format is a SR_LOG_DEBUG_INFO structure. For more information, see Remarks.
-| 9 | RecordTypeShortName | The data is the short name of the backup file.
-|===
-
-==== Change log entry
-The change log entry (CHANGE_LOG_ENTRY) is variable of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-4+| _RECORD_HEADER of type RecordTypeLogEntry_
-| 0 | 4 | | Record size
-| 4 | 4 | 1 | Record type
-4+|
-| 8 | 4 | 0xabcdef12 | Signature
-| 12 | 4 | | Entry type
-| 16 | 4 | | Entry flags
-| 20 | 4 | | File attributes +
-Set to 0xffffffff if not used.
-| 24 | 8 | | Sequence number
-| 32 | ... | | Name of the process that made the change +
-[yellow-background]*Unknown string with end-of-string character?*
-|===
-
-===== Change log entry types
-
-CHANGE_LOG_ENTRYTYPES_ACLCHANGE (0x2)
-CHANGE_LOG_ENTRYTYPES_ATTRCHANGE (0x4)
-CHANGE_LOG_ENTRYTYPES_DIRCREATE (0x80)
-CHANGE_LOG_ENTRYTYPES_DIRRENAME (0x100)
-CHANGE_LOG_ENTRYTYPES_DIRDELETE (0x200)
-CHANGE_LOG_ENTRYTYPES_FILECREATE (0x20)
-CHANGE_LOG_ENTRYTYPES_FILEDELETE (0x10)
-CHANGE_LOG_ENTRYTYPES_FILERENAME (0x40)
-CHANGE_LOG_ENTRYTYPES_INPRECREATE (0x100000)
-CHANGE_LOG_ENTRYTYPES_ISDIR (0x20000)
-CHANGE_LOG_ENTRYTYPES_ISNOTDIR (0x40000)
-CHANGE_LOG_ENTRYTYPES_MOUNTCREATE (0x400)
-CHANGE_LOG_ENTRYTYPES_MOUNTDELETE (0x800)
-CHANGE_LOG_ENTRYTYPES_NOOPTIMIZE (0x10000)
-CHANGE_LOG_ENTRYTYPES_OPENBYID (0x200000)
-CHANGE_LOG_ENTRYTYPES_SIMULATEDELETE (0x80000)
-CHANGE_LOG_ENTRYTYPES_STREAMCHANGE (0x1)
-CHANGE_LOG_ENTRYTYPES_STREAMCREATE (0x2000)
-CHANGE_LOG_ENTRYTYPES_STREAMOVERWRITE (0x8)
-CHANGE_LOG_ENTRYTYPES_VOLUMEERROR (0x1000)
-
-===== Change log entry flags
-
-CHANGE_LOG_ENTRYFLAGS_ACLINFO (0x4)
-CHANGE_LOG_ENTRYFLAGS_DEBUGINFO (0x8)
-CHANGE_LOG_ENTRYFLAGS_SECONDPATH (0x2)
-CHANGE_LOG_ENTRYFLAGS_SHORTNAME (0x10)
-CHANGE_LOG_ENTRYFLAGS_TEMPPATH (0x1)
 
 === Corresponding Registry keys
 ....
