@@ -163,7 +163,7 @@ Seen in Windows 8 RESTOREPOINTINFO
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | Restore point creation time +
+| 0 | 8 | | Restore point creation time +
 Contains a FILETIME +
 [yellow-background]*Could this be the rp.log last write time instead?*
 |===
