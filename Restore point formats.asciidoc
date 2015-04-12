@@ -238,6 +238,7 @@ The string is stored in the primary language configured on the system.
 
 [yellow-background]*TODO: determine if the description always stored as UTF-16, 
 since WINAPI provides both RESTOREPOINTINFOA and RESTOREPOINTINFOW.*
+
 ==== [[restore_point_event_types]]Event types
 
 [cols="1,1,5",options="header"]
