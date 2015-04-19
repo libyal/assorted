@@ -655,19 +655,23 @@ def Main():
   Returns:
     A boolean containing True if successful or False if not.
   """
-  args_parser = argparse.ArgumentParser(description=(
+  argument_parser = argparse.ArgumentParser(description=(
       u'Extracts information from Chrome Cache files.'))
 
-  args_parser.add_argument(
-      u'source', nargs=u'?', action=u'store', metavar=u'PATH',
-      default=None, help=u'path of the Chrome Cache index file.')
+  argument_parser.add_argument(
+      u'-d', u'--debug', dest=u'debug', action=u'store_true', default=False,
+      help=u'enable debug output.')
 
-  options = args_parser.parse_args()
+  argument_parser.add_argument(
+      u'source', nargs=u'?', action=u'store', metavar=u'PATH',
+      default=None, help=u'path of the Chrome Cache file(s).')
+
+  options = argument_parser.parse_args()
 
   if not options.source:
     print(u'Source file missing.')
     print(u'')
-    args_parser.print_help()
+    argument_parser.print_help()
     print(u'')
     return False
 
@@ -680,7 +684,7 @@ def Main():
       logging.error(u'Missing index file: {0:s}'.format(index_file_path))
       return False
 
-    index_file = IndexFile(debug=False)
+    index_file = IndexFile(debug=options.debug)
     index_file.Open(index_file_path)
 
     data_block_files = {}
@@ -696,8 +700,7 @@ def Main():
           have_all_data_block_files = False
 
         else:
-          data_block_file = DataBlockFile(debug=True)
-          # data_block_file = DataBlockFile(debug=False)
+          data_block_file = DataBlockFile(debug=options.debug)
           data_block_file.Open(data_block_file_path)
 
           data_block_files[cache_address.filename] = data_block_file
@@ -751,13 +754,13 @@ def Main():
     signature = construct.ULInt32('signature').parse(signature_data)
 
     if signature == IndexFile.SIGNATURE:
-      index_file = IndexFile(debug=True)
+      index_file = IndexFile(debug=options.debug)
       index_file.Read(file_object)
       index_file.OpenFileObject(file_object)
       index_file.Close()
 
     elif signature == DataBlockFile.SIGNATURE:
-      data_block_file = DataBlockFile(debug=True)
+      data_block_file = DataBlockFile(debug=options.debug)
       data_block_file.OpenFileObject(file_object)
       data_block_file.Close()
 

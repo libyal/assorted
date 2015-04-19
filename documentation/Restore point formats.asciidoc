@@ -47,6 +47,7 @@ toc::[]
 |===
 | Version | Author | Date | Comments
 | 0.0.1 | J.B. Metz | April 2015 | Initial version.
+| 0.0.2 | J.B. Metz | April 2015 | Additional findings for the change.log format.
 |===
 
 :numbered:
@@ -113,7 +114,7 @@ Extended ASCII strings:
 A change.log file consists of:
 
 * change log header
-* one or more change log entries
+* change log entries
 
 ==== Change log header
 The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
@@ -122,7 +123,8 @@ The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
 |===
 | Offset | Size | Value | Description
 4+| _RECORD_HEADER of type RecordTypeLogHeader_
-| 0 | 4 | | Record size
+| 0 | 4 | | Record size +
+Includes the size of the volume path record.
 | 4 | 4 | 0 | Record type
 4+|
 | 8 | 4 | 0xabcdef12 | Signature
@@ -132,7 +134,9 @@ The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
 | 20 | 4 | 2 | Record type
 4+|
 | 16 | ... | | Volume path +
-[yellow-background]*Unknown string* with end-of-string character.
+UTF-16 little-endian string with end-of-string character.
+4+|
+| ... | 4 | | Copy of record size
 |===
 
 ===== Change log record types
@@ -145,11 +149,17 @@ The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
 | 2 | RecordTypeVolumePath | The data is the volume path for the change log entry.
 | 3 | RecordTypeFirstPath | The data is the file path for the change log entry.
 | 4 | RecordTypeSecondPath | The data is used when renaming change log entries; this path is where the renamed file is stored.
-| 5 | RecordTypeTempPath | The data is the name of the backup file used to restore the change log entry. The backup files are located in the RPn folder. The file name has the following format: Axxxxxxx.ext, where xxxxxxx is a seven-digit number and ext is the file name extension.
-| 6 | RecordTypeAclInline | The data is an ACL. The data format is a SECURITY_DESCRIPTOR structure. +
-This value cannot be larger than 8,192 bytes. To specify a value larger than 8,192 bytes, use the RecordTypeAclFile member.
-| 7 | RecordTypeAclFile | The data is the name of the ACL file used to store the ACL. The ACL files are located in the RPn folder. The file name has the following format: Sxxxxxxx.acl, where xxxxxxx is a seven-digit number.
-| 8 | RecordTypeDebugInfo | The data is debug information for the change log entry. The data format is a SR_LOG_DEBUG_INFO structure. For more information, see Remarks.
+| 5 | RecordTypeTempPath | The data is the name of the backup file used to restore the change log entry. +
+The backup files are located in the RPn folder. +
+The file name has the following format: Axxxxxxx.ext, where xxxxxxx is a seven-digit number and ext is the file name extension.
+| 6 | RecordTypeAclInline | The data is an ACL. +
+The data format is a SECURITY_DESCRIPTOR structure. +
+This value cannot be larger than 8192 bytes. To specify a value larger than 8192 bytes, use the RecordTypeAclFile member.
+| 7 | RecordTypeAclFile | The data is the name of the ACL file used to store the ACL. +
+The ACL files are located in the RPn folder. +
+The file name has the following format: Sxxxxxxx.acl, where xxxxxxx is a seven-digit number.
+| 8 | RecordTypeDebugInfo | The data is debug information for the change log entry. +
+The data format is a SR_LOG_DEBUG_INFO structure. For more information, see Remarks.
 | 9 | RecordTypeShortName | The data is the short name of the backup file.
 |===
 
@@ -169,8 +179,19 @@ The change log entry (CHANGE_LOG_ENTRY) is variable of size and consists of:
 | 20 | 4 | | File attributes +
 Set to 0xffffffff if not used.
 | 24 | 8 | | Sequence number
-| 32 | ... | | Name of the process that made the change +
-[yellow-background]*Unknown string with end-of-string character?*
+| 32 | 32 | | [yellow-background]*Unknown (empty values)*
+4+| _Process name_
+| 64 | 4 | | [yellow-background]*Unknown (size of process name data)* +
+[yellow-background]*The value does not include the 4 bytes of the size itself*
+| 68 | 4 | | [yellow-background]*Unknown (string data type?)* +
+[yellow-background]*Seen: 0x00000003 (Unicode?)*
+| 73 | ... | | Name of the process that made the change +
+UTF-16 little-endian string with end-of-string character.
+4+| _If < record size - 4_
+| ... | ... | | [yellow-background]*Unknown (sub records?)* +
+[yellow-background]*Contains a list? of records?*
+4+|
+| ... | 4 | | Copy of record size
 |===
 
 ===== Change log entry types
