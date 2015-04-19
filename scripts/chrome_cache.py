@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Script to print the Chrome Cache information."""
+"""Script to parse Chrome Cache files."""
 
 import argparse
 import datetime
@@ -16,6 +16,11 @@ import hexdump
 # pylint: disable=superfluous-parens
 
 def SuperFastHash(key):
+  """Function to calculate the super fast hash.
+
+  Args:
+    key: the key for which to calculate the hash.
+  """
   if not key:
     return 0
 
@@ -378,10 +383,10 @@ class IndexFile(object):
     self._ReadIndexTable()
 
   def OpenFileObject(self, file_object):
-    """Opens the index file.
+    """Opens the index file-like object.
 
     Args:
-      file_object: the file object.
+      file_object: the file-like object.
     """
     self._file_object = file_object
     self._file_object_opened_in_object = False
@@ -651,11 +656,11 @@ def Main():
     A boolean containing True if successful or False if not.
   """
   args_parser = argparse.ArgumentParser(description=(
-      'Extract the Chrome Cache information.'))
+      u'Extracts information from Chrome Cache files.'))
 
   args_parser.add_argument(
-      'source', nargs='?', action='store', metavar='index',
-      default=None, help='path of the Chrome Cache index file.')
+      u'source', nargs=u'?', action=u'store', metavar=u'PATH',
+      default=None, help=u'path of the Chrome Cache index file.')
 
   options = args_parser.parse_args()
 
