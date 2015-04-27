@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Script to parse Chrome Cache files."""
 
+from __future__ import print_function
 import argparse
 import datetime
 import construct
@@ -13,7 +14,6 @@ import hexdump
 
 
 # pylint: disable=logging-format-interpolation
-# pylint: disable=superfluous-parens
 
 def SuperFastHash(key):
   """Function to calculate the super fast hash.

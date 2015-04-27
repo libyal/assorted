@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Script to parse Windows Restore Point change.log files."""
 
+from __future__ import print_function
 import argparse
 import construct
 import logging
@@ -12,7 +13,6 @@ import hexdump
 
 
 # pylint: disable=logging-format-interpolation
-# pylint: disable=superfluous-parens
 
 class RestorePointChangeLogFile(object):
   """Class that contains a Windows Restore Point change.log file."""
@@ -188,6 +188,8 @@ class RestorePointChangeLogFile(object):
 
       print(u'File attribute flags\t\t\t\t\t\t\t: 0x{0:08x}'.format(
           file_attribute_flags))
+      # TODO: print flags.
+
       print(u'Sequence number\t\t\t\t\t\t\t\t: {0:d}'.format(sequence_number))
       print(u'Process name data size\t\t\t\t\t\t\t: 0x{0:08x}'.format(
           change_log_entry.get('process_name_data_size')))
