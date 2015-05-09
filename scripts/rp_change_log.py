@@ -14,48 +14,66 @@ import hexdump
 
 # pylint: disable=logging-format-interpolation
 
+class ChangeLogEntry(object):
+  """Class that contains a Windows Restore Point change log entry."""
+
+  def __init__(self):
+    """Initializes the change log entry object."""
+    super(ChangeLogEntry, self).__init__()
+    self.entry_type = 0
+    self.entry_flags = 0
+    self.file_attribute_flags = 0
+    self.process_name = u''
+    self.sequence_number = 0
+
+
 class RestorePointChangeLogFile(object):
   """Class that contains a Windows Restore Point change.log file."""
 
   SIGNATURE = 0xabcdef12
 
   _CHANGE_LOG_ENTRY = construct.Struct(
-      'restore_point_change_log_entry',
-      construct.ULInt32('record_size'),
-      construct.ULInt32('record_type'),
-      construct.ULInt32('signature'),
-      construct.ULInt32('entry_type'),
-      construct.ULInt32('entry_flags'),
-      construct.ULInt32('file_attribute_flags'),
-      construct.ULInt64('sequence_number'),
+      u'restore_point_change_log_entry',
+      construct.ULInt32(u'record_size'),
+      construct.ULInt32(u'record_type'),
+      construct.ULInt32(u'signature'),
+      construct.ULInt32(u'entry_type'),
+      construct.ULInt32(u'entry_flags'),
+      construct.ULInt32(u'file_attribute_flags'),
+      construct.ULInt64(u'sequence_number'),
       construct.Padding(32),
-      construct.ULInt32('process_name_data_size'),
-      construct.ULInt32('unknown1'),
+      construct.ULInt32(u'process_name_data_size'),
+      construct.ULInt32(u'unknown1'),
       construct.RepeatUntil(
-          lambda obj, ctx: obj == '\x00\x00',
-          construct.Field('process_name', 2)))
+          lambda obj, ctx: obj == b'\x00\x00',
+          construct.Field(u'process_name', 2)),
+      construct.Anchor(u'sub_record_data'))
 
   _FILE_HEADER = construct.Struct(
-      'restore_point_change_log_file_header',
-      construct.ULInt32('record_size'),
-      construct.ULInt32('record_type'),
-      construct.ULInt32('signature'),
-      construct.ULInt32('format_version'))
+      u'restore_point_change_log_file_header',
+      construct.ULInt32(u'record_size'),
+      construct.ULInt32(u'record_type'),
+      construct.ULInt32(u'signature'),
+      construct.ULInt32(u'format_version'))
 
   _RECORD_HEADER = construct.Struct(
-      'restore_point_change_log_record_header',
-      construct.ULInt32('record_size'),
-      construct.ULInt32('record_type'))
+      u'restore_point_change_log_record_header',
+      construct.ULInt32(u'record_size'),
+      construct.ULInt32(u'record_type'))
+
+  _UTF16_STREAM = construct.RepeatUntil(
+      lambda obj, ctx: obj == b'\x00\x00',
+      construct.Field(u'stream', 2))
 
   _VOLUME_PATH = construct.Struct(
-      'restore_point_change_log_volume_path',
-      construct.ULInt32('record_size'),
-      construct.ULInt32('record_type'),
+      u'restore_point_change_log_volume_path',
+      construct.ULInt32(u'record_size'),
+      construct.ULInt32(u'record_type'),
       construct.RepeatUntil(
-          lambda obj, ctx: obj == '\x00\x00',
-          construct.Field('volume_path', 2)))
+          lambda obj, ctx: obj == b'\x00\x00',
+          construct.Field(u'volume_path', 2)))
 
-  _LOG_ENTRY_FLAGS = {
+  LOG_ENTRY_FLAGS = {
       0x00000001: u'CHANGE_LOG_ENTRYFLAGS_TEMPPATH',
       0x00000002: u'CHANGE_LOG_ENTRYFLAGS_SECONDPATH',
       0x00000004: u'CHANGE_LOG_ENTRYFLAGS_ACLINFO',
@@ -63,7 +81,7 @@ class RestorePointChangeLogFile(object):
       0x00000010: u'CHANGE_LOG_ENTRYFLAGS_SHORTNAME',
   }
 
-  _LOG_ENTRY_TYPES = {
+  LOG_ENTRY_TYPES = {
       0x00000001: u'CHANGE_LOG_ENTRYTYPES_STREAMCHANGE',
       0x00000002: u'CHANGE_LOG_ENTRYTYPES_ACLCHANGE',
       0x00000004: u'CHANGE_LOG_ENTRYTYPES_ATTRCHANGE',
@@ -112,6 +130,7 @@ class RestorePointChangeLogFile(object):
     self._file_object_opened_in_object = False
     self._file_size = 0
 
+    self.entries = []
     self.volume_path = None
 
   def _ReadChangeLogEntries(self):
@@ -121,10 +140,14 @@ class RestorePointChangeLogFile(object):
       IOError: if the change log entries cannot be read.
     """
     while self._file_object.tell() < self._file_size:
-      self._ReadChangeLogEntry()
+      change_log_entry = self._ReadChangeLogEntry()
+      self.entries.append(change_log_entry)
 
   def _ReadChangeLogEntry(self):
-    """Reads the record.
+    """Reads a change log entry.
+
+    Returns:
+      A change log entry (instance of ChangeLogEntry).
 
     Raises:
       IOError: if the change log entry cannot be read.
@@ -132,34 +155,40 @@ class RestorePointChangeLogFile(object):
     file_offset = self._file_object.tell()
 
     try:
-      change_log_entry = self._CHANGE_LOG_ENTRY.parse_stream(self._file_object)
+      change_log_entry_struct = self._CHANGE_LOG_ENTRY.parse_stream(
+          self._file_object)
     except construct.FieldError as exception:
       raise IOError(
           u'Unable to parse change log entry with error: {0:s}'.format(
               exception))
 
-    record_size = change_log_entry.get('record_size')
+    record_size = change_log_entry_struct.get(u'record_size')
 
-    record_type = change_log_entry.get('record_type')
+    record_type = change_log_entry_struct.get(u'record_type')
     if record_type != 1:
       raise IOError(u'Unsupported record type: {0:d}'.format(record_type))
 
-    signature = change_log_entry.get('signature')
+    signature = change_log_entry_struct.get(u'signature')
     if signature != self.SIGNATURE:
       raise IOError(u'Unsupported change.log file signature')
 
-    entry_type = change_log_entry.get('entry_type')
-    entry_flags = change_log_entry.get('entry_flags')
-    file_attribute_flags = change_log_entry.get('file_attribute_flags')
-    sequence_number = change_log_entry.get('sequence_number')
+    change_log_entry = ChangeLogEntry()
+    change_log_entry.entry_type = change_log_entry_struct.get(u'entry_type')
+    change_log_entry.entry_flags = change_log_entry_struct.get(u'entry_flags')
+    change_log_entry.file_attribute_flags = change_log_entry_struct.get(
+        u'file_attribute_flags')
+    change_log_entry.sequence_number = change_log_entry_struct.get(
+        u'sequence_number')
 
     try:
       # The struct includes the end-of-string character that we need
       # to strip off.
-      process_name = change_log_entry.get('process_name')
+      process_name = change_log_entry_struct.get(u'process_name')
       process_name = b''.join(process_name).decode(u'utf16')[:-1]
     except UnicodeDecodeError as exception:
       process_name = u''
+
+    change_log_entry.process_name = process_name
 
     self._file_object.seek(file_offset, os.SEEK_SET)
 
@@ -174,32 +203,52 @@ class RestorePointChangeLogFile(object):
       print(u'Record type\t\t\t\t\t\t\t\t: {0:d} ({1:s})'.format(
           record_type, self._RECORD_TYPES.get(record_type, u'Unknown')))
       print(u'Signature\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(signature))
-      print(u'Entry type\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_type))
-      for flag, description in self._LOG_ENTRY_TYPES.iteritems():
-        if entry_type & flag:
+      print(u'Entry type\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          change_log_entry.entry_type))
+      for flag, description in self.LOG_ENTRY_TYPES.items():
+        if change_log_entry.entry_type & flag:
           print(u'\t{0:s}'.format(description))
       print(u'')
 
-      print(u'Entry flags\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_flags))
-      for flag, description in self._LOG_ENTRY_FLAGS.iteritems():
-        if entry_flags & flag:
+      print(u'Entry flags\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          change_log_entry.entry_flags))
+      for flag, description in self.LOG_ENTRY_FLAGS.items():
+        if change_log_entry.entry_flags & flag:
           print(u'\t{0:s}'.format(description))
       print(u'')
 
       print(u'File attribute flags\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          file_attribute_flags))
+          change_log_entry.file_attribute_flags))
       # TODO: print flags.
 
-      print(u'Sequence number\t\t\t\t\t\t\t\t: {0:d}'.format(sequence_number))
+      print(u'Sequence number\t\t\t\t\t\t\t\t: {0:d}'.format(
+          change_log_entry.sequence_number))
       print(u'Process name data size\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          change_log_entry.get('process_name_data_size')))
+          change_log_entry_struct.get(u'process_name_data_size')))
       print(u'Unknown1\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          change_log_entry.get('unknown1')))
-      print(u'Process name\t\t\t\t\t\t\t\t: {0:s}'.format(process_name))
+          change_log_entry_struct.get(u'unknown1')))
+      print(u'Process name\t\t\t\t\t\t\t\t: {0:s}'.format(
+          change_log_entry.process_name))
 
-    # TODO: read sub records.
+    sub_record_data_offset = (
+        change_log_entry_struct.sub_record_data - file_offset)
+    sub_record_data_size = record_size - 4
+    if self._debug:
+      print(u'Sub record data offset\t\t\t\t\t\t\t: {0:d}'.format(
+          sub_record_data_offset))
+      print(u'Sub record data size\t\t\t\t\t\t\t: {0:d}'.format(
+          sub_record_data_size - sub_record_data_offset))
+      if sub_record_data_offset < sub_record_data_size:
+        print(u'')
 
-    copy_of_record_size = construct.ULInt32('record_size').parse(
+    while sub_record_data_offset < sub_record_data_size:
+      read_size = self._ReadRecord(
+          change_log_entry_record_data, sub_record_data_offset)
+      if read_size == 0:
+        break
+      sub_record_data_offset += read_size
+
+    copy_of_record_size = construct.ULInt32(u'record_size').parse(
         change_log_entry_record_data[-4:])
     if record_size != copy_of_record_size:
       raise IOError(u'Record size mismatch ({0:d} != {1:d})'.format(
@@ -209,6 +258,8 @@ class RestorePointChangeLogFile(object):
       print(u'Copy of record size\t\t\t\t\t\t\t: {0:d}'.format(
           copy_of_record_size))
       print(u'')
+
+    return change_log_entry
 
   def _ReadFileHeader(self):
     """Reads the file header.
@@ -222,22 +273,22 @@ class RestorePointChangeLogFile(object):
     self._file_object.seek(0, os.SEEK_SET)
 
     try:
-      file_header = self._FILE_HEADER.parse_stream(self._file_object)
+      file_header_struct = self._FILE_HEADER.parse_stream(self._file_object)
     except construct.FieldError as exception:
       raise IOError(u'Unable to parse file header with error: {0:s}'.format(
           exception))
 
-    signature = file_header.get('signature')
+    signature = file_header_struct.get(u'signature')
     if signature != self.SIGNATURE:
       raise IOError(u'Unsupported change.log file signature')
 
-    record_size = file_header.get('record_size')
+    record_size = file_header_struct.get(u'record_size')
 
-    record_type = file_header.get('record_type')
+    record_type = file_header_struct.get(u'record_type')
     if record_type != 0:
       raise IOError(u'Unsupported record type: {0:d}'.format(record_type))
 
-    format_version = file_header.get('format_version')
+    format_version = file_header_struct.get(u'format_version')
     if format_version != 2:
       raise IOError(u'Unsupported change.log format version: {0:d}'.format(
           format_version))
@@ -259,7 +310,7 @@ class RestorePointChangeLogFile(object):
 
     self._ReadVolumePath(file_header_data[16:-4])
 
-    copy_of_record_size = construct.ULInt32('record_size').parse(
+    copy_of_record_size = construct.ULInt32(u'record_size').parse(
         file_header_data[-4:])
     if record_size != copy_of_record_size:
       raise IOError(u'Record size mismatch ({0:d} != {1:d})'.format(
@@ -269,6 +320,72 @@ class RestorePointChangeLogFile(object):
       print(u'Copy of record size\t\t\t\t\t\t\t: {0:d}'.format(
           copy_of_record_size))
       print(u'')
+
+  def _ReadRecord(self, record_data, record_data_offset):
+    """Reads a record.
+
+    Args:
+      record_data: the record data.
+      record_data_offset: the record data offset.
+
+    Returns:
+      The record size.
+
+    Raises:
+      IOError: if the record cannot be read.
+    """
+    try:
+      record_header_struct = self._RECORD_HEADER.parse(
+          record_data[record_data_offset:])
+    except construct.FieldError as exception:
+      raise IOError(
+          u'Unable to parse record header with error: {0:s}'.format(
+              exception))
+
+    record_size = record_header_struct.get(u'record_size')
+    record_type = record_header_struct.get(u'record_type')
+
+    if self._debug:
+      print(u'Record data:')
+      print(hexdump.Hexdump(
+          record_data[record_data_offset:record_data_offset + record_size]))
+
+    if self._debug:
+      print(u'Record size\t\t\t\t\t\t\t\t: {0:d}'.format(record_size))
+      print(u'Record type\t\t\t\t\t\t\t\t: {0:d} ({1:s})'.format(
+          record_type, self._RECORD_TYPES.get(record_type, u'Unknown')))
+
+    record_data_offset += self._RECORD_HEADER.sizeof()
+
+    if record_type in [4, 5, 9]:
+      try:
+        utf16_stream = self._UTF16_STREAM.parse(
+            record_data[record_data_offset:])
+      except construct.FieldError as exception:
+        raise IOError(u'Unable to parse UTF-16 stream with error: {0:s}'.format(
+            exception))
+
+      try:
+        # The UTF-16 stream includes the end-of-string character that we need
+        # to strip off.
+        value_string = b''.join(utf16_stream).decode(u'utf16')[:-1]
+      except UnicodeDecodeError as exception:
+        value_string = u''
+
+    # TODO: add support for other record types.
+    # TODO: store record values in runtime objects.
+
+    if self._debug:
+      if record_type == 4:
+        print(u'Secondary path\t\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+      elif record_type == 5:
+        print(u'Backup filename\t\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+      elif record_type == 9:
+        print(u'Short filename\t\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
+      print(u'')
+
+    return record_size
 
   def _ReadVolumePath(self, volume_path_record_data):
     """Reads the volume path.
@@ -280,14 +397,14 @@ class RestorePointChangeLogFile(object):
       IOError: if the volume path cannot be read.
     """
     try:
-      volume_path = self._VOLUME_PATH.parse(volume_path_record_data)
+      volume_path_struct = self._VOLUME_PATH.parse(volume_path_record_data)
     except construct.FieldError as exception:
       raise IOError(u'Unable to parse volume path with error: {0:s}'.format(
           exception))
 
-    record_size = volume_path.get('record_size')
+    record_size = volume_path_struct.get(u'record_size')
 
-    record_type = volume_path.get('record_type')
+    record_type = volume_path_struct.get(u'record_type')
     if record_type != 2:
       raise IOError(u'Unsupported record type: {0:d}'.format(record_type))
 
@@ -298,7 +415,7 @@ class RestorePointChangeLogFile(object):
     try:
       # The struct includes the end-of-string character that we need
       # to strip off.
-      self.volume_path = volume_path.get('volume_path')
+      self.volume_path = volume_path_struct.get(u'volume_path')
       self.volume_path = b''.join(self.volume_path).decode(u'utf16')[:-1]
     except UnicodeDecodeError as exception:
       self.volume_path = u''
@@ -365,6 +482,27 @@ def Main():
 
   print(u'Windows Restore Point change.log information:')
   print(u'Volume path:\t{0:s}'.format(change_log_file.volume_path))
+  print(u'')
+
+  for change_log_entry in change_log_file.entries:
+    flags = []
+    for flag, description in change_log_file.LOG_ENTRY_TYPES.items():
+      if change_log_entry.entry_type & flag:
+        flags.append(description)
+
+    print(u'Entry type:\t\t{0:s}'.format(u', '.join(flags)))
+
+    flags = []
+    for flag, description in change_log_file.LOG_ENTRY_FLAGS.items():
+      if change_log_entry.entry_flags & flag:
+        flags.append(description)
+
+    print(u'Entry flags:\t\t{0:s}'.format(u', '.join(flags)))
+
+    print(u'Sequence number:\t{0:d}'.format(change_log_entry.sequence_number))
+    print(u'Process name:\t\t{0:s}'.format(change_log_entry.process_name))
+
+    print(u'')
 
   change_log_file.Close()
 

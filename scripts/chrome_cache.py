@@ -177,31 +177,31 @@ class IndexFile(object):
   SIGNATURE = 0xc103cac3
 
   _FILE_HEADER = construct.Struct(
-      'chrome_cache_index_file_header',
-      construct.ULInt32('signature'),
-      construct.ULInt16('minor_version'),
-      construct.ULInt16('major_version'),
-      construct.ULInt32('number_of_entries'),
-      construct.ULInt32('stored_data_size'),
-      construct.ULInt32('last_created_file_number'),
-      construct.ULInt32('unknown1'),
-      construct.ULInt32('unknown2'),
-      construct.ULInt32('table_size'),
-      construct.ULInt32('unknown3'),
-      construct.ULInt32('unknown4'),
-      construct.ULInt64('creation_time'),
+      u'chrome_cache_index_file_header',
+      construct.ULInt32(u'signature'),
+      construct.ULInt16(u'minor_version'),
+      construct.ULInt16(u'major_version'),
+      construct.ULInt32(u'number_of_entries'),
+      construct.ULInt32(u'stored_data_size'),
+      construct.ULInt32(u'last_created_file_number'),
+      construct.ULInt32(u'unknown1'),
+      construct.ULInt32(u'unknown2'),
+      construct.ULInt32(u'table_size'),
+      construct.ULInt32(u'unknown3'),
+      construct.ULInt32(u'unknown4'),
+      construct.ULInt64(u'creation_time'),
       construct.Padding(208))
 
   _LRU_DATA = construct.Struct(
-      'chrome_cache_index_file_lru_data',
+      u'chrome_cache_index_file_lru_data',
       construct.Padding(8),
-      construct.ULInt32('filled_flag'),
-      construct.Array(5, construct.ULInt32('sizes')),
-      construct.Array(5, construct.ULInt32('head_addresses')),
-      construct.Array(5, construct.ULInt32('tail_addresses')),
-      construct.ULInt32('transaction_address'),
-      construct.ULInt32('operation'),
-      construct.ULInt32('operation_list'),
+      construct.ULInt32(u'filled_flag'),
+      construct.Array(5, construct.ULInt32(u'sizes')),
+      construct.Array(5, construct.ULInt32(u'head_addresses')),
+      construct.Array(5, construct.ULInt32(u'tail_addresses')),
+      construct.ULInt32(u'transaction_address'),
+      construct.ULInt32(u'operation'),
+      construct.ULInt32(u'operation_list'),
       construct.Padding(28))
 
   def __init__(self, debug=False):
@@ -242,20 +242,20 @@ class IndexFile(object):
       raise IOError(u'Unable to parse file header with error: {0:s}'.format(
           exception))
 
-    signature = file_header.get('signature')
+    signature = file_header.get(u'signature')
 
     if signature != self.SIGNATURE:
       raise IOError(u'Unsupported index file signature')
 
     self.version = u'{0:d}.{1:d}'.format(
-        file_header.get('major_version'),
-        file_header.get('minor_version'))
+        file_header.get(u'major_version'),
+        file_header.get(u'minor_version'))
 
     if self.version not in [u'2.0', u'2.1']:
       raise IOError(u'Unsupported index file version: {0:s}'.format(
           self.version))
 
-    self.creation_time = file_header.get('creation_time')
+    self.creation_time = file_header.get(u'creation_time')
 
     if self._debug:
       print(u'Signature\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(signature))
@@ -263,31 +263,32 @@ class IndexFile(object):
       print(u'Version\t\t\t\t\t\t\t\t\t: {0:s}'.format(self.version))
 
       print(u'Number of entries\t\t\t\t\t\t\t: {0:d}'.format(
-          file_header.get('number_of_entries')))
+          file_header.get(u'number_of_entries')))
 
       print(u'Stored data size\t\t\t\t\t\t\t: {0:d}'.format(
-          file_header.get('stored_data_size')))
+          file_header.get(u'stored_data_size')))
 
       print(u'Last created file number\t\t\t\t\t\t: f_{0:06x}'.format(
-          file_header.get('last_created_file_number')))
+          file_header.get(u'last_created_file_number')))
 
       print(u'Unknown1\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          file_header.get('unknown1')))
+          file_header.get(u'unknown1')))
 
       print(u'Unknown2\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          file_header.get('unknown2')))
+          file_header.get(u'unknown2')))
 
       print(u'Table size\t\t\t\t\t\t\t\t: {0:d}'.format(
-          file_header.get('table_size')))
+          file_header.get(u'table_size')))
 
       print(u'Unknown3\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          file_header.get('unknown3')))
+          file_header.get(u'unknown3')))
 
       print(u'Unknown4\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          file_header.get('unknown4')))
+          file_header.get(u'unknown4')))
 
-      date_string = (datetime.datetime(1601, 1, 1) +
-                     datetime.timedelta(microseconds=self.creation_time))
+      date_string = (
+          datetime.datetime(1601, 1, 1) +
+          datetime.timedelta(microseconds=self.creation_time))
 
       print(u'Creation time\t\t\t\t\t\t\t\t: {0!s} (0x{1:08x})'.format(
           date_string, self.creation_time))
@@ -310,34 +311,34 @@ class IndexFile(object):
 
     if self._debug:
       print(u'Filled flag\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          index_file_lru.get('filled_flag')))
+          index_file_lru.get(u'filled_flag')))
 
-      for value in index_file_lru.get('sizes'):
+      for value in index_file_lru.get(u'sizes'):
         print(u'Size\t\t\t\t\t\t\t\t\t: {0:d}'.format(value))
 
       cache_address_index = 0
-      for value in index_file_lru.get('head_addresses'):
+      for value in index_file_lru.get(u'head_addresses'):
         cache_address = CacheAddress(value)
         print(u'Head address: {0:d}\t\t\t\t\t\t\t\t: {1:s}'.format(
             cache_address_index, cache_address.GetDebugString()))
         cache_address_index += 1
 
       cache_address_index = 0
-      for value in index_file_lru.get('tail_addresses'):
+      for value in index_file_lru.get(u'tail_addresses'):
         cache_address = CacheAddress(value)
         print(u'Tail address: {0:d}\t\t\t\t\t\t\t\t: {1:s}'.format(
             cache_address_index, cache_address.GetDebugString()))
         cache_address_index += 1
 
-      cache_address = CacheAddress(index_file_lru.get('transaction_address'))
+      cache_address = CacheAddress(index_file_lru.get(u'transaction_address'))
       print(u'Transaction address\t\t\t\t\t\t\t: {0:s}'.format(
           cache_address.GetDebugString()))
 
       print(u'Operation\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          index_file_lru.get('operation')))
+          index_file_lru.get(u'operation')))
 
       print(u'Operation list\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          index_file_lru.get('operation_list')))
+          index_file_lru.get(u'operation_list')))
 
       print(u'')
 
@@ -347,7 +348,7 @@ class IndexFile(object):
     cache_address_data = self._file_object.read(4)
 
     while len(cache_address_data) == 4:
-      value = construct.ULInt32('cache_address').parse(cache_address_data)
+      value = construct.ULInt32(u'cache_address').parse(cache_address_data)
 
       if value:
         cache_address = CacheAddress(value)
@@ -402,38 +403,38 @@ class DataBlockFile(object):
 
   # TODO: update emtpy, hints, updating and user.
   _FILE_HEADER = construct.Struct(
-      'chrome_cache_data_file_header',
-      construct.ULInt32('signature'),
-      construct.ULInt16('minor_version'),
-      construct.ULInt16('major_version'),
-      construct.ULInt16('file_number'),
-      construct.ULInt16('next_file_number'),
-      construct.ULInt32('block_size'),
-      construct.ULInt32('number_of_entries'),
-      construct.ULInt32('maximum_number_of_entries'),
-      construct.Array(4, construct.ULInt32('emtpy')),
-      construct.Array(4, construct.ULInt32('hints')),
-      construct.ULInt32('updating'),
-      construct.Array(5, construct.ULInt32('user')),
-      construct.Array(2028, construct.ULInt32('allocation_bitmap')))
+      u'chrome_cache_data_file_header',
+      construct.ULInt32(u'signature'),
+      construct.ULInt16(u'minor_version'),
+      construct.ULInt16(u'major_version'),
+      construct.ULInt16(u'file_number'),
+      construct.ULInt16(u'next_file_number'),
+      construct.ULInt32(u'block_size'),
+      construct.ULInt32(u'number_of_entries'),
+      construct.ULInt32(u'maximum_number_of_entries'),
+      construct.Array(4, construct.ULInt32(u'emtpy')),
+      construct.Array(4, construct.ULInt32(u'hints')),
+      construct.ULInt32(u'updating'),
+      construct.Array(5, construct.ULInt32(u'user')),
+      construct.Array(2028, construct.ULInt32(u'allocation_bitmap')))
 
   _CACHE_ENTRY = construct.Struct(
-      'chrome_cache_entry',
-      construct.ULInt32('hash'),
-      construct.ULInt32('next_address'),
-      construct.ULInt32('rankings_node_address'),
-      construct.ULInt32('reuse_count'),
-      construct.ULInt32('refetch_count'),
-      construct.ULInt32('state'),
-      construct.ULInt64('creation_time'),
-      construct.ULInt32('key_size'),
-      construct.ULInt32('long_key_address'),
-      construct.Array(4, construct.ULInt32('data_stream_sizes')),
-      construct.Array(4, construct.ULInt32('data_stream_addresses')),
-      construct.ULInt32('flags'),
+      u'chrome_cache_entry',
+      construct.ULInt32(u'hash'),
+      construct.ULInt32(u'next_address'),
+      construct.ULInt32(u'rankings_node_address'),
+      construct.ULInt32(u'reuse_count'),
+      construct.ULInt32(u'refetch_count'),
+      construct.ULInt32(u'state'),
+      construct.ULInt64(u'creation_time'),
+      construct.ULInt32(u'key_size'),
+      construct.ULInt32(u'long_key_address'),
+      construct.Array(4, construct.ULInt32(u'data_stream_sizes')),
+      construct.Array(4, construct.ULInt32(u'data_stream_addresses')),
+      construct.ULInt32(u'flags'),
       construct.Padding(16),
-      construct.ULInt32('self_hash'),
-      construct.Array(160, construct.UBInt8('key')))
+      construct.ULInt32(u'self_hash'),
+      construct.Array(160, construct.UBInt8(u'key')))
 
   def __init__(self, debug=False):
     """Initializes the data block file object.
@@ -474,24 +475,24 @@ class DataBlockFile(object):
       raise IOError(u'Unable to parse file header with error: {0:s}'.format(
           exception))
 
-    signature = file_header.get('signature')
+    signature = file_header.get(u'signature')
 
     if signature != self.SIGNATURE:
       raise IOError(u'Unsupported data block file signature')
 
     self.version = u'{0:d}.{1:d}'.format(
-        file_header.get('major_version'),
-        file_header.get('minor_version'))
+        file_header.get(u'major_version'),
+        file_header.get(u'minor_version'))
 
     if self.version not in [u'2.0', u'2.1']:
       raise IOError(u'Unsupported data block file version: {0:s}'.format(
           self.version))
 
     self.version = u'{0:d}.{1:d}'.format(
-        file_header.get('major_version'), file_header.get('minor_version'))
+        file_header.get(u'major_version'), file_header.get(u'minor_version'))
 
-    self.block_size = file_header.get('block_size')
-    self.number_of_entries = file_header.get('number_of_entries')
+    self.block_size = file_header.get(u'block_size')
+    self.number_of_entries = file_header.get(u'number_of_entries')
 
     if self._debug:
       print(u'Signature\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(signature))
@@ -499,10 +500,10 @@ class DataBlockFile(object):
       print(u'Version\t\t\t\t\t\t\t\t\t: {0:s}'.format(self.version))
 
       print(u'File number\t\t\t\t\t\t\t\t: {0:d}'.format(
-          file_header.get('file_number')))
+          file_header.get(u'file_number')))
 
       print(u'Next file number\t\t\t\t\t\t\t: {0:d}'.format(
-          file_header.get('next_file_number')))
+          file_header.get(u'next_file_number')))
 
       print(u'Block size\t\t\t\t\t\t\t\t: {0:d}'.format(self.block_size))
 
@@ -510,7 +511,7 @@ class DataBlockFile(object):
           self.number_of_entries))
 
       print(u'Maximum number of entries\t\t\t\t\t\t: {0:d}'.format(
-          file_header.get('maximum_number_of_entries')))
+          file_header.get(u'maximum_number_of_entries')))
 
       # TODO: print emtpy, hints, updating and user.
 
@@ -518,7 +519,7 @@ class DataBlockFile(object):
       block_range_start = 0
       block_range_end = 0
       in_block_range = False
-      for value_32bit in file_header.get('allocation_bitmap'):
+      for value_32bit in file_header.get(u'allocation_bitmap'):
         for unused_bit in range(0, 32):
           if value_32bit & 0x00000001:
             if not in_block_range:
@@ -562,15 +563,15 @@ class DataBlockFile(object):
 
     cache_entry = CacheEntry()
 
-    cache_entry.hash = cache_entry_struct.get('hash')
+    cache_entry.hash = cache_entry_struct.get(u'hash')
 
-    cache_entry.next = CacheAddress(cache_entry_struct.get('next_address'))
+    cache_entry.next = CacheAddress(cache_entry_struct.get(u'next_address'))
     cache_entry.rankings_node = CacheAddress(cache_entry_struct.get(
-        'rankings_node_address'))
+        u'rankings_node_address'))
 
-    cache_entry.creation_time = cache_entry_struct.get('creation_time')
+    cache_entry.creation_time = cache_entry_struct.get(u'creation_time')
 
-    byte_array = cache_entry_struct.get('key')
+    byte_array = cache_entry_struct.get(u'key')
     string = u''.join(map(chr, byte_array))
     cache_entry.key, _, _ = string.partition(u'\x00')
 
@@ -584,13 +585,13 @@ class DataBlockFile(object):
           cache_entry.rankings_node.GetDebugString()))
 
       print(u'Reuse count\t\t\t\t\t\t\t\t: {0:d}'.format(
-          cache_entry_struct.get('reuse_count')))
+          cache_entry_struct.get(u'reuse_count')))
 
       print(u'Refetch count\t\t\t\t\t\t\t\t: {0:d}'.format(
-          cache_entry_struct.get('refetch_count')))
+          cache_entry_struct.get(u'refetch_count')))
 
       print(u'State\t\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          cache_entry_struct.get('state')))
+          cache_entry_struct.get(u'state')))
 
       date_string = (datetime.datetime(1601, 1, 1) +
                      datetime.timedelta(microseconds=cache_entry.creation_time))
@@ -598,21 +599,21 @@ class DataBlockFile(object):
       print(u'Creation time\t\t\t\t\t\t\t\t: {0!s} (0x{1:08x})'.format(
           date_string, cache_entry.creation_time))
 
-      for value in cache_entry_struct.get('data_stream_sizes'):
+      for value in cache_entry_struct.get(u'data_stream_sizes'):
         print(u'Data stream size\t\t\t\t\t\t\t: {0:d}'.format(value))
 
       cache_address_index = 0
-      for value in cache_entry_struct.get('data_stream_addresses'):
+      for value in cache_entry_struct.get(u'data_stream_addresses'):
         cache_address = CacheAddress(value)
         print(u'Data stream address: {0:d}\t\t\t\t\t\t\t: {1:s}'.format(
             cache_address_index, cache_address.GetDebugString()))
         cache_address_index += 1
 
       print(u'Flags\t\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          cache_entry_struct.get('flags')))
+          cache_entry_struct.get(u'flags')))
 
       print(u'Self hash\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          cache_entry_struct.get('self_hash')))
+          cache_entry_struct.get(u'self_hash')))
 
       print(u'Key\t\t\t\t\t\t\t\t\t: {0:s}'.format(cache_entry.key))
 
@@ -751,7 +752,7 @@ def Main():
     file_object = open(options.source, 'rb')
 
     signature_data = file_object.read(4)
-    signature = construct.ULInt32('signature').parse(signature_data)
+    signature = construct.ULInt32(u'signature').parse(signature_data)
 
     if signature == IndexFile.SIGNATURE:
       index_file = IndexFile(debug=options.debug)

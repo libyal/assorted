@@ -116,7 +116,7 @@ A change.log file consists of:
 * change log header
 * change log entries
 
-==== Change log header
+=== Change log header
 The change log header (CHANGE_LOG_HEADER) is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -139,31 +139,24 @@ UTF-16 little-endian string with end-of-string character.
 | ... | 4 | | Copy of record size
 |===
 
-===== Change log record types
+==== Change log record types
 
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
-| 0 | RecordTypeLogHeader | The record is the header for the change log.
-| 1 | RecordTypeLogEntry | The record is the header for a change log entry.
-| 2 | RecordTypeVolumePath | The data is the volume path for the change log entry.
-| 3 | RecordTypeFirstPath | The data is the file path for the change log entry.
-| 4 | RecordTypeSecondPath | The data is used when renaming change log entries; this path is where the renamed file is stored.
-| 5 | RecordTypeTempPath | The data is the name of the backup file used to restore the change log entry. +
-The backup files are located in the RPn folder. +
-The file name has the following format: Axxxxxxx.ext, where xxxxxxx is a seven-digit number and ext is the file name extension.
-| 6 | RecordTypeAclInline | The data is an ACL. +
-The data format is a SECURITY_DESCRIPTOR structure. +
-This value cannot be larger than 8192 bytes. To specify a value larger than 8192 bytes, use the RecordTypeAclFile member.
-| 7 | RecordTypeAclFile | The data is the name of the ACL file used to store the ACL. +
-The ACL files are located in the RPn folder. +
-The file name has the following format: Sxxxxxxx.acl, where xxxxxxx is a seven-digit number.
-| 8 | RecordTypeDebugInfo | The data is debug information for the change log entry. +
-The data format is a SR_LOG_DEBUG_INFO structure. For more information, see Remarks.
-| 9 | RecordTypeShortName | The data is the short name of the backup file.
+| 0 | RecordTypeLogHeader | The record contains the header for the change log.
+| 1 | RecordTypeLogEntry | The record contains the header for a change log entry.
+| 2 | RecordTypeVolumePath | The data contains the volume path for the change log entry.
+| 3 | RecordTypeFirstPath | The data contains the file path for the change log entry.
+| 4 | RecordTypeSecondPath | The data contains the file path of the renamed file for the change log entry.
+| 5 | RecordTypeTempPath | The data contains the name of the backup file used to restore the change log entry.
+| 6 | RecordTypeAclInline | The data contains an access control list (ACL).
+| 7 | RecordTypeAclFile | The data contains the name of the ACL file used to store the ACL.
+| 8 | RecordTypeDebugInfo | The data contains debug information for the change log entry.
+| 9 | RecordTypeShortName | The data contains the short name of the backup file.
 |===
 
-==== Change log entry
+=== Change log entry
 The change log entry (CHANGE_LOG_ENTRY) is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -194,7 +187,7 @@ UTF-16 little-endian string with end-of-string character.
 | ... | 4 | | Copy of record size
 |===
 
-===== Change log entry types
+==== Change log entry types
 
 [cols="1,1,5",options="header"]
 |===
@@ -221,7 +214,7 @@ UTF-16 little-endian string with end-of-string character.
 | 0x00200000 | CHANGE_LOG_ENTRYTYPES_OPENBYID | 
 |===
 
-===== Change log entry flags
+==== Change log entry flags
 
 [cols="1,1,5",options="header"]
 |===
@@ -231,6 +224,120 @@ UTF-16 little-endian string with end-of-string character.
 | 0x00000004 | CHANGE_LOG_ENTRYFLAGS_ACLINFO | 
 | 0x00000008 | CHANGE_LOG_ENTRYFLAGS_DEBUGINFO | 
 | 0x00000010 | CHANGE_LOG_ENTRYFLAGS_SHORTNAME | 
+|===
+
+=== First path record data
+The first path record data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeFirstPath_
+| 0 | 4 | | Record size
+| 4 | 4 | 3 | Record type
+4+|
+| 8 | ... | | The first path string +
+UTF-16 little-endian string with end-of-string character.
+|===
+
+*TODO: need sample.*
+
+=== Second path record data
+The second path record data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeSecondPath_
+| 0 | 4 | | Record size
+| 4 | 4 | 4 | Record type
+4+|
+| 8 | ... | | The secondary path string +
+UTF-16 little-endian string with end-of-string character.
+|===
+
+=== Backup file record data
+The backup file record data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeTempPath_
+| 0 | 4 | | Record size
+| 4 | 4 | 5 | Record type
+4+|
+| 8 | ... | | The backup filename string +
+UTF-16 little-endian string with end-of-string character.
+|===
+
+The backup files are located in the RP# folder. The filename has the following 
+format: A#######.ext, where ####### is a seven-digit number and ext is the file 
+name extension.
+
+=== Inline ACL record data
+The inline ACL record data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeAclInline_
+| 0 | 4 | | Record size
+| 4 | 4 | 6 | Record type
+4+|
+| 8 | ... | | [yellow-background]*Unknown (SECURITY_DESCRIPTOR?)*
+|===
+
+[NOTE]
+According to `[MSDN]` this value cannot be larger than 8192 bytes. It states 
+that to specify a value larger than 8192 bytes a RecordTypeAclFile record must 
+be used.
+
+=== File ACL record data
+The file ACL record data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeAclFile_
+| 0 | 4 | | Record size
+| 4 | 4 | 7 | Record type
+4+|
+| 8 | ... | | [yellow-background]*Unknown (SECURITY_DESCRIPTOR?)*
+|===
+
+*TODO: need sample.*
+
+[NOTE]
+The ACL files are located in the RP# folder. The filename has the following 
+format: S#######.acl, where ####### is a seven-digit number.
+
+=== Debug information record data
+The debug information record data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeDebugInfo_
+| 0 | 4 | | Record size
+| 4 | 4 | 8 | Record type
+4+|
+| 8 | ... | | [yellow-background]*Unknown (SR_LOG_DEBUG_INFO?)*
+|===
+
+*TODO: need sample.*
+
+=== Short filename record data
+The short filename record data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+4+| _RECORD_HEADER of type RecordTypeShortName_
+| 0 | 4 | | Record size
+| 4 | 4 | 9 | Record type
+4+|
+| 8 | ... | | The short filename string +
+UTF-16 little-endian string with end-of-string character.
 |===
 
 == The rp.log file
@@ -305,8 +412,7 @@ Contains a FILETIME +
 |===
 
 == Notes
-Files Contained in Each RPnFolder
-
+Files Contained in Each RP#Folder
 
 === rp.log
 ....
