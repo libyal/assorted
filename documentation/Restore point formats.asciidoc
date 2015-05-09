@@ -325,6 +325,16 @@ The debug information record data is variable of size and consists of:
 
 *TODO: need sample.*
 
+....
+typedef struct _SR_LOG_DEBUG_INFO {
+    RECORD_HEADER Header;         // log entry header
+    HANDLE ThreadId;              // thread identifier
+    HANDLE ProcessId;             // process identifier
+    ULARGER_INTEGER TimeStamp;    // event time stamp
+    CHAR ProcesName[13];          // process name
+} SR_LOG_DEBUG_INFO, *PSR_LOG_DEBUG_INFO;
+....
+
 === Short filename record data
 The short filename record data is variable of size and consists of:
 
