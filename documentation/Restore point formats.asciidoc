@@ -48,6 +48,7 @@ toc::[]
 | Version | Author | Date | Comments
 | 0.0.1 | J.B. Metz | April 2015 | Initial version.
 | 0.0.2 | J.B. Metz | April 2015 | Additional findings for the change.log format.
+| 0.0.3 | J.B. Metz | May 2015 | Additional findings for the change.log format.
 |===
 
 :numbered:
@@ -271,7 +272,7 @@ UTF-16 little-endian string with end-of-string character.
 |===
 
 The backup files are located in the RP# folder. The filename has the following 
-format: A#######.ext, where ####### is a seven-digit number and ext is the file 
+format: `A#######.ext`, where `#######` is a seven-digit number and ext is the file 
 name extension.
 
 === Inline ACL record data
@@ -308,7 +309,7 @@ The file ACL record data is variable of size and consists of:
 *TODO: need sample.*
 
 The ACL files are located in the RP# folder. The filename has the following 
-format: S#######.acl, where ####### is a seven-digit number.
+format: `S#######.acl`, where `#######` is a seven-digit number.
 
 === Debug information record data
 The debug information record data is variable of size and consists of:
