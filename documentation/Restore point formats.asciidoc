@@ -307,7 +307,6 @@ The file ACL record data is variable of size and consists of:
 
 *TODO: need sample.*
 
-[NOTE]
 The ACL files are located in the RP# folder. The filename has the following 
 format: S#######.acl, where ####### is a seven-digit number.
 
