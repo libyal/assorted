@@ -5,10 +5,11 @@
 from __future__ import print_function
 import argparse
 import datetime
-import construct
 import logging
 import os
 import sys
+
+import construct
 
 import hexdump
 

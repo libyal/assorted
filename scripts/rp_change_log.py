@@ -4,10 +4,11 @@
 
 from __future__ import print_function
 import argparse
-import construct
 import logging
 import os
 import sys
+
+import construct
 
 import hexdump
 
