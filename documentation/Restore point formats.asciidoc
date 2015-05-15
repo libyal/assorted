@@ -84,7 +84,7 @@ The Restore Point snapshot sub directory contains:
 * `domain.txt`; UTF-16 little-endian text file without byte-order-mark
 * a copy of the IIS database
 * `_REGISTRY_[0-9A-Z_]*`; a copy of the Windows Registry hive files
-* `Repository`; sub directory that contains a copy of the WMI repository
+* `Repository`; sub directory that contains a copy of the WMI repository (also referred to as the Common Information Model (CIM) repository)
 
 [cols="1,5",options="header"]
 |===
