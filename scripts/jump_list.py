@@ -253,13 +253,18 @@ class CustomDestinationsFile(object):
     Raises:
       IOError: if the LNK file cannot be read.
     """
+    file_offset = self._file_object.tell()
+    if self._debug:
+      print(u'LNK file at offset: 0x{0:08x}'.format(file_offset))
+
     lnk_file = pylnk.file()
 
     try:
       lnk_file.open_file_object(file_object)
     except IOError as exception:
-      raise IOError(u'Unable to parse LNK file with error: {1:s}'.format(
-          exception))
+      raise IOError((
+          u'Unable to parse LNK file at offset: 0x{0:08x} '
+          u'with error: {1:s}').format(file_offset, exception))
 
     shell_item_list = pyfwsi.item_list()
     shell_item_list.copy_from_byte_stream(
@@ -271,6 +276,9 @@ class CustomDestinationsFile(object):
         print(u'Shell item: 0x{0:02x}'.format(shell_item.class_type))
 
     lnk_file.close()
+
+    if self._debug:
+      print(u'')
 
   def _ReadLNKFiles(self):
     """Reads the LNK files.

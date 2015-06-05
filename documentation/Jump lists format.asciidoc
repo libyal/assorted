@@ -264,6 +264,18 @@ Contains a Windows Shortcut (LNK) file. For more information about the LNK forma
 The file size in the Windows Shortcut (LNK) file data stream is not reliable
 for indicating the size of the data stream (file).
 
+[yellow-background]*Trailing data?*
+
+[cols="1,1,1,5",options="header"]
+|===
+| ... | 4 | 0xbabffbab | Signature
+| ... | 4 | | [yellow-background]*Unknown (empty values)*
+| ... | 2 | | Number of characters
+| 114 | ... | | string +
+Contains a UTF-16 little-endian string without an end-of-string character
+| ... | 4 | | [yellow-background]*Unknown*
+|===
+
 === File footer
 The custom destinations file footer is 4 bytes of size and consists of:
 
