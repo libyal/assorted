@@ -35,10 +35,20 @@ def FromFiletime(filetime):
   """
   if filetime < 0:
     return None
-  timestamp = filetime / 10
- 
+  timestamp, _ = divmod(filetime, 10)
+
   return datetime.datetime(1601, 1, 1) + datetime.timedelta(
       microseconds=timestamp)
+
+
+class UnknownTableEntry(object):
+  """Class that contains an unknown table entry."""
+
+  def __init__(self):
+    """Initializes the unknown table entry object."""
+    super(UnknownTableEntry, self).__init__()
+    self.unknown_record_offset = 0
+    self.unknown_record_size = 0
 
 
 class WMIRepositoryObjectsDataFile(object):
@@ -54,7 +64,8 @@ class WMIRepositoryObjectsDataFile(object):
   _UNKNOWN_RECORD_HEADER = construct.Struct(
       u'unknown_record_header',
       construct.ULInt32(u'number_of_characters'),
-      construct.String(u'utf16_stream', lambda ctx: ctx.number_of_characters * 2),
+      construct.String(
+          u'utf16_stream', lambda ctx: ctx.number_of_characters * 2),
       construct.ULInt64(u'filetime'))
 
   def __init__(self, debug=False):
@@ -70,7 +81,7 @@ class WMIRepositoryObjectsDataFile(object):
     self._file_object_opened_in_object = False
     self._file_size = 0
 
-    self._unknown_table = {}
+    self._unknown_table = []
 
   def _ReadUnknownRecord(self, offset, size):
     """Reads an unknown record.
@@ -92,6 +103,9 @@ class WMIRepositoryObjectsDataFile(object):
     if self._debug:
       print(u'Unknown record data:')
       print(hexdump.Hexdump(unknown_record_data))
+
+    if unknown_record_data[2:4] != b'\x00\x00':
+      return
 
     try:
       unknown_record_header = self._UNKNOWN_RECORD_HEADER.parse(
@@ -123,19 +137,24 @@ class WMIRepositoryObjectsDataFile(object):
     Raises:
       IOError: if the unknown records cannot be read.
     """
-    for offset, size in self._unknown_table.items():
-      self._ReadUnknownRecord(offset, size)
+    for unknown_table_entry in self._unknown_table:
+      self._ReadUnknownRecord(
+          unknown_table_entry.unknown_record_offset,
+          unknown_table_entry.unknown_record_size)
 
-  def _ReadUnknownTable(self):
+  def _ReadUnknownTable(self, offset):
     """Reads the unknown table.
+
+    Args:
+      offset: the offset.
 
     Raises:
       IOError: if the unknown table cannot be read.
     """
     if self._debug:
-      print(u'Seeking unknown table offset: 0x{0:08x}:'.format(0))
+      print(u'Seeking unknown table offset: 0x{0:08x}:'.format(offset))
 
-    self._file_object.seek(0, os.SEEK_SET)
+    self._file_object.seek(offset, os.SEEK_SET)
 
     terminator = False
     while not terminator:
@@ -147,32 +166,40 @@ class WMIRepositoryObjectsDataFile(object):
         print(hexdump.Hexdump(unknown_table_entry_data))
 
       try:
-        unknown_table_entry = self._UNKNOWN_TABLE_ENTRY.parse(
+        unknown_table_entry_struct = self._UNKNOWN_TABLE_ENTRY.parse(
             unknown_table_entry_data)
       except construct.FieldError as exception:
         raise IOError(
             u'Unable to parse unknown table entry with error: {0:s}'.format(
                 exception))
 
-      unknown1 = unknown_table_entry.get(u'unknown1')
-      unknown_record_offset = unknown_table_entry.get(u'unknown_record_offset')
-      unknown_record_size = unknown_table_entry.get(u'unknown_record_size')
-      unknown2 = unknown_table_entry.get(u'unknown2')
+      unknown1 = unknown_table_entry_struct.get(u'unknown1')
+      unknown_record_offset = unknown_table_entry_struct.get(
+          u'unknown_record_offset')
+      unknown_record_size = unknown_table_entry_struct.get(
+          u'unknown_record_size')
+      unknown2 = unknown_table_entry_struct.get(u'unknown2')
 
       if self._debug:
         print(u'Unknown1\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(unknown1))
-        print(u'Unknown record offset\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-            unknown_record_offset))
+        print((
+            u'Unknown record offset\t\t\t\t\t\t\t: 0x{0:08x} '
+            u'(0x{1:08x})').format(
+                unknown_record_offset, offset + unknown_record_offset))
         print(u'Unknown record size\t\t\t\t\t\t\t: {0:d}'.format(
             unknown_record_size))
         print(u'Unknown2\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(unknown2))
         print(u'')
 
       if (unknown1 == 0 and unknown_record_offset == 0 and
-          unknown_record_size == 0 and unknown2 == 0 ):
+          unknown_record_size == 0 and unknown2 == 0):
         terminator = True
       else:
-        self._unknown_table[unknown_record_offset] = unknown_record_size
+        unknown_table_entry = UnknownTableEntry()
+        unknown_table_entry.unknown_record_offset = (
+            offset + unknown_record_offset)
+        unknown_table_entry.unknown_record_size = unknown_record_size
+        self._unknown_table.append(unknown_table_entry)
 
   def Close(self):
     """Closes the objects.data file."""
@@ -191,8 +218,14 @@ class WMIRepositoryObjectsDataFile(object):
 
     self._file_object = open(filename, 'rb')
     self._file_object_opened_in_object = True
-    self._ReadUnknownTable()
-    self._ReadUnknownRecords()
+
+    offset = 0
+    while offset < self._file_size:
+      self._ReadUnknownTable(offset)
+      self._ReadUnknownRecords()
+
+      offset += 0x00002000
+      self._unknown_table = []
 
 
 def Main():
