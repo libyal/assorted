@@ -290,20 +290,22 @@ class CustomDestinationsFile(object):
         entry_header = self._ENTRY_HEADER.parse_stream(self._file_object)
       except (IOError, construct.FieldError) as exception:
         if not first_guid_checked:
-          raise IOError(
-              u'Unable to parse file entry header with error: {0:s}'.format(
-                  exception))
+          raise IOError((
+              u'Unable to parse file entry header at offset: 0x{0:08x} '
+              u'with error: {1:s}').format(file_offset, exception))
         else:
-          logging.warning(
-              u'Unable to parse file entry header with error: {0:s}'.format(
-                  exception))
+          logging.warning((
+              u'Unable to parse file entry header at offset: 0x{0:08x} '
+              u'with error: {1:s}').format(file_offset, exception))
         break
 
       if entry_header.guid != self._LNK_GUID:
         if not first_guid_checked:
-          raise IOError(u'Invalid entry header.')
+          raise IOError(u'Invalid entry header at offset: 0x{0:08x}.'.format(
+              file_offset))
         else:
-          logging.warning(u'Invalid entry header.')
+          logging.warning(u'Invalid entry header at offset: 0x{0:08x}.'.format(
+              file_offset))
         break
 
       first_guid_checked = True
@@ -329,14 +331,18 @@ class CustomDestinationsFile(object):
     Raises:
       IOError: if the file footer cannot be read.
     """
+    file_offset = self._file_object.tell()
+
     try:
       file_footer = self._FILE_FOOTER.parse_stream(self._file_object)
     except (IOError, construct.FieldError) as exception:
-      raise IOError(u'Unable to parse file footer with error: {0:s}'.format(
-          exception))
+      raise IOError((
+          u'Unable to parse file footer at offset: 0x{0:08x} '
+          u'with error: {1:s}').format(file_offset, exception))
 
     if file_footer.signature != 0xbabffbab:
-      raise IOError(u'Invalid footer signature.')
+      raise IOError(u'Invalid footer signature at offset: 0x{0:08x}.'.format(
+          file_offset))
 
   def Close(self):
     """Closes the .customDestinations-ms file."""
