@@ -314,6 +314,8 @@ class CustomDestinationsFile(object):
         else:
           logging.warning(u'Invalid entry header at offset: 0x{0:08x}.'.format(
               file_offset))
+
+        self._file_object.seek(-16, os.SEEK_CUR)
         break
 
       first_guid_checked = True

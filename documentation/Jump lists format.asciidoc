@@ -185,6 +185,7 @@ The DestList stream consists of:
 * File header
 * An array Windows Shortcut (LNK) file entries
 * File footer
+* [yellow-background]*Trailing data?*
 
 === File header
 The custom destinations file header is variable of size and consists of:
@@ -264,6 +265,16 @@ Contains a Windows Shortcut (LNK) file. For more information about the LNK forma
 The file size in the Windows Shortcut (LNK) file data stream is not reliable
 for indicating the size of the data stream (file).
 
+=== File footer
+The custom destinations file footer is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0xbabffbab | Signature
+|===
+
+=== Notes
 [yellow-background]*Trailing data?*
 
 [cols="1,1,1,5",options="header"]
@@ -274,15 +285,12 @@ for indicating the size of the data stream (file).
 | 114 | ... | | string +
 Contains a UTF-16 little-endian string without an end-of-string character
 | ... | 4 | | [yellow-background]*Unknown*
-|===
-
-=== File footer
-The custom destinations file footer is 4 bytes of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 4 | 0xbabffbab | Signature
+| ... | 16 | | Class identifier +
+Contains a GUID +
+00021401-0000-0000-c000-000000000046 (Windows Shortcut (LNK))
+| ... | ... | | Data stream +
+Contains a Windows Shortcut (LNK) file. For more information about the LNK format see `[LIBLNK09]`.
+| ... | ... | | 0xbabffbab | Footer signature
 |===
 
 == .library-ms
