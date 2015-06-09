@@ -18,6 +18,7 @@ import sys
 import construct
 import pyfwsi
 import pylnk
+import pyolecf
 
 
 # pylint: disable=logging-format-interpolation
@@ -147,19 +148,19 @@ class LNKFileEntry(object):
   """Class that contains a LNK file entry.
 
   Attributes:
-    data_offset: the offset of the LNK file entry data.
     data_size: the size of the LNK file entry data.
+    identifier: the LNK file entry identifier.
   """
 
-  def __init__(self, data_offset):
+  def __init__(self, identifier):
     """Initializes the LNK file entry object.
 
     Args:
-      data_offset: the offset of the LNK file entry data.
+      identifier: the LNK file entry identifier.
     """
     super(LNKFileEntry, self).__init__()
     self._lnk_file = pylnk.file()
-    self.data_offset = data_offset
+    self.identifier = identifier
     self.data_size = 0
 
   def Close(self):
@@ -172,12 +173,13 @@ class LNKFileEntry(object):
     Yields:
       A shell item (instance of pyfswi.item).
     """
-    shell_item_list = pyfwsi.item_list()
-    shell_item_list.copy_from_byte_stream(
-        self._lnk_file.link_target_identifier_data)
+    if self._lnk_file.link_target_identifier_data:
+      shell_item_list = pyfwsi.item_list()
+      shell_item_list.copy_from_byte_stream(
+          self._lnk_file.link_target_identifier_data)
 
-    for shell_item in shell_item_list.items:
-      yield shell_item
+      for shell_item in shell_item_list.items:
+        yield shell_item
 
   def Open(self, file_object):
     """Opens the LNK file entry.
@@ -191,6 +193,111 @@ class LNKFileEntry(object):
     # that was read instead. Because of DataRange the offset will be relative
     # to the start of the LNK data.
     self.data_size = file_object.get_offset()
+
+
+class AutomaticDestinationsFile(object):
+  """Class that contains an .automaticDestinations-ms file.
+
+  Attributes:
+    entries: list of the LNK file entries.
+    recovered_entries: list of the recovered LNK file entries.
+  """
+
+  def __init__(self, debug=False):
+    """Initializes the .automaticDestinations-ms file object.
+
+    Args:
+      debug: optional boolean value to indicate if debug information should
+             be printed. The default is false.
+    """
+    super(AutomaticDestinationsFile, self).__init__()
+    self._debug = debug
+    self._file_object = None
+    self._file_object_opened_in_object = False
+    self._file_size = 0
+    self._olecf_file = pyolecf.file()
+
+    self.entries = []
+    self.recovered_entries = []
+
+  def _ReadDestList(self):
+    """Reads the DestList stream.
+
+    Raises:
+      IOError: if the DestList stream cannot be read.
+    """
+    olecf_item = self._olecf_file.root_item.get_sub_item_by_name(u'DestList')
+
+    # TODO
+
+  def _ReadLNKFile(self, olecf_item):
+    """Reads a LNK file.
+
+    Args:
+      olecf_item: the OLECF item (instance of pyolecf.item).
+
+    Returns:
+      A LNK file entry (instance of LNKFileEntry).
+
+    Raises:
+      IOError: if the LNK file cannot be read.
+    """
+    if self._debug:
+      print(u'Reading LNK file from stream: {0:s}'.format(olecf_item.name))
+
+    lnk_file_entry = LNKFileEntry(olecf_item.name)
+
+    try:
+      lnk_file_entry.Open(olecf_item)
+    except IOError as exception:
+      raise IOError((
+          u'Unable to parse LNK file from stream: {0:s} '
+          u'with error: {1:s}').format(olecf_item.name, exception))
+
+    if self._debug:
+      print(u'')
+
+    return lnk_file_entry
+
+  def _ReadLNKFiles(self):
+    """Reads the LNK files.
+
+    Raises:
+      IOError: if the LNK files cannot be read.
+    """
+    for olecf_item in self._olecf_file.root_item.sub_items:
+      if olecf_item.name == u'DestList':
+        continue
+
+      lnk_file_entry = self._ReadLNKFile(olecf_item)
+      if lnk_file_entry:
+        self.entries.append(lnk_file_entry)
+
+  def Close(self):
+    """Closes the .customDestinations-ms file."""
+    if self._olecf_file:
+      self._olecf_file.close()
+
+    if self._file_object_opened_in_object:
+      self._file_object.close()
+    self._file_object = None
+
+  def Open(self, filename):
+    """Opens the .customDestinations-ms file.
+
+    Args:
+      filename: the filename.
+    """
+    stat_object = os.stat(filename)
+    self._file_size = stat_object.st_size
+
+    self._file_object = open(filename, 'rb')
+    self._file_object_opened_in_object = True
+
+    self._olecf_file.open_file_object(self._file_object)
+
+    self._ReadDestList()
+    self._ReadLNKFiles()
 
 
 class CustomDestinationsFile(object):
@@ -316,9 +423,10 @@ class CustomDestinationsFile(object):
     """
     file_offset = self._file_object.tell()
     if self._debug:
-      print(u'LNK file at offset: 0x{0:08x}'.format(file_offset))
+      print(u'Reading LNK file at offset: 0x{0:08x}'.format(file_offset))
 
-    lnk_file_entry = LNKFileEntry(file_offset)
+    identifier = u'0x{0:08x}'.format(file_offset)
+    lnk_file_entry = LNKFileEntry(identifier)
 
     try:
       lnk_file_entry.Open(file_object)
@@ -475,7 +583,12 @@ def Main():
   logging.basicConfig(
       level=logging.INFO, format=u'[%(levelname)s] %(message)s')
 
-  jump_list_file = CustomDestinationsFile(debug=options.debug)
+  if pyolecf.check_file_signature(options.source):
+    jump_list_file = AutomaticDestinationsFile(debug=options.debug)
+
+  else:
+    jump_list_file = CustomDestinationsFile(debug=options.debug)
+
   jump_list_file.Open(options.source)
 
   print(u'Windows Jump List information:')
@@ -485,8 +598,7 @@ def Main():
   print(u'')
 
   for lnk_file_entry in jump_list_file.entries:
-    print(u'LNK file entry at offset: 0x{0:08x}'.format(
-        lnk_file_entry.data_offset))
+    print(u'LNK file entry: {0:s}'.format(lnk_file_entry.identifier))
 
     for shell_item in lnk_file_entry.GetShellItems():
       print(u'Shell item: 0x{0:02x}'.format(shell_item.class_type))
