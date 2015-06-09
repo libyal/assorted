@@ -143,8 +143,63 @@ class DataRange(object):
     return self._range_size
 
 
+class LNKFileEntry(object):
+  """Class that contains a LNK file entry.
+
+  Attributes:
+    data_offset: the offset of the LNK file entry data.
+    data_size: the size of the LNK file entry data.
+  """
+
+  def __init__(self, data_offset):
+    """Initializes the LNK file entry object.
+
+    Args:
+      data_offset: the offset of the LNK file entry data.
+    """
+    super(LNKFileEntry, self).__init__()
+    self._lnk_file = pylnk.file()
+    self.data_offset = data_offset
+    self.data_size = 0
+
+  def Close(self):
+    """Closes the LNK file entry."""
+    self._lnk_file.close()
+
+  def GetShellItems(self):
+    """Retrieves the shell items.
+
+    Yields:
+      A shell item (instance of pyfswi.item).
+    """
+    shell_item_list = pyfwsi.item_list()
+    shell_item_list.copy_from_byte_stream(
+        self._lnk_file.link_target_identifier_data)
+
+    for shell_item in shell_item_list.items:
+      yield shell_item
+
+  def Open(self, file_object):
+    """Opens the LNK file entry.
+
+    Args:
+      file_object: the file-like object that contains the LNK file entry data.
+    """
+    self._lnk_file.open_file_object(file_object)
+
+    # We cannot trust the file size in the LNK data so we get the last offset
+    # that was read instead. Because of DataRange the offset will be relative
+    # to the start of the LNK data.
+    self.data_size = file_object.get_offset()
+
+
 class CustomDestinationsFile(object):
-  """Class that contains a .customDestinations-ms file."""
+  """Class that contains a .customDestinations-ms file.
+
+  Attributes:
+    entries: list of the LNK file entries.
+    recovered_entries: list of the recovered LNK file entries.
+  """
 
   _LNK_GUID = (
       b'\x01\x14\x02\x00\x00\x00\x00\x00\xc0\x00\x00\x00\x00\x00\x00\x46')
@@ -186,6 +241,9 @@ class CustomDestinationsFile(object):
     self._file_object = None
     self._file_object_opened_in_object = False
     self._file_size = 0
+
+    self.entries = []
+    self.recovered_entries = []
 
   def _ReadFileHeader(self):
     """Reads the file header.
@@ -250,6 +308,9 @@ class CustomDestinationsFile(object):
     Args:
       file_object: the file-like object.
 
+    Returns:
+      A LNK file entry (instance of LNKFileEntry).
+
     Raises:
       IOError: if the LNK file cannot be read.
     """
@@ -257,28 +318,19 @@ class CustomDestinationsFile(object):
     if self._debug:
       print(u'LNK file at offset: 0x{0:08x}'.format(file_offset))
 
-    lnk_file = pylnk.file()
+    lnk_file_entry = LNKFileEntry(file_offset)
 
     try:
-      lnk_file.open_file_object(file_object)
+      lnk_file_entry.Open(file_object)
     except IOError as exception:
       raise IOError((
           u'Unable to parse LNK file at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
-    shell_item_list = pyfwsi.item_list()
-    shell_item_list.copy_from_byte_stream(
-        lnk_file.link_target_identifier_data)
-
-    for shell_item in shell_item_list.items:
-      if self._debug:
-        # TODO: print some human readable information.
-        print(u'Shell item: 0x{0:02x}'.format(shell_item.class_type))
-
-    lnk_file.close()
-
     if self._debug:
       print(u'')
+
+    return lnk_file_entry
 
   def _ReadLNKFiles(self):
     """Reads the LNK files.
@@ -297,25 +349,35 @@ class CustomDestinationsFile(object):
       try:
         entry_header = self._ENTRY_HEADER.parse_stream(self._file_object)
       except (IOError, construct.FieldError) as exception:
+        error_message = (
+            u'Unable to parse file entry header at offset: 0x{0:08x} '
+            u'with error: {1:s}').format(file_offset, exception)
+
         if not first_guid_checked:
-          raise IOError((
-              u'Unable to parse file entry header at offset: 0x{0:08x} '
-              u'with error: {1:s}').format(file_offset, exception))
-        else:
-          logging.warning((
-              u'Unable to parse file entry header at offset: 0x{0:08x} '
-              u'with error: {1:s}').format(file_offset, exception))
+          raise IOError(error_message)
+
+        logging.warning(error_message)
         break
 
       if entry_header.guid != self._LNK_GUID:
+        error_message = u'Invalid entry header at offset: 0x{0:08x}.'.format(
+            file_offset)
+
         if not first_guid_checked:
-          raise IOError(u'Invalid entry header at offset: 0x{0:08x}.'.format(
-              file_offset))
-        else:
-          logging.warning(u'Invalid entry header at offset: 0x{0:08x}.'.format(
-              file_offset))
+          raise IOError(error_message)
 
         self._file_object.seek(-16, os.SEEK_CUR)
+        try:
+          file_footer = self._FILE_FOOTER.parse_stream(self._file_object)
+        except (IOError, construct.FieldError) as exception:
+          raise IOError((
+              u'Unable to parse file footer at offset: 0x{0:08x} '
+              u'with error: {1:s}').format(file_offset, exception))
+
+        if file_footer.signature != 0xbabffbab:
+          logging.warning(error_message)
+
+        self._file_object.seek(-4, os.SEEK_CUR)
         break
 
       first_guid_checked = True
@@ -324,14 +386,12 @@ class CustomDestinationsFile(object):
 
       lnk_file_object = DataRange(self._file_object)
       lnk_file_object.SetRange(file_offset, remaining_file_size)
-      self._ReadLNKFile(lnk_file_object)
+      lnk_file_entry = self._ReadLNKFile(lnk_file_object)
+      if lnk_file_entry:
+        self.entries.append(lnk_file_entry)
 
-      # We cannot trust the file size in the LNK data so we get the last offset
-      # that was read instead.
-      lnk_file_size = lnk_file_object.get_offset()
-
-      file_offset += lnk_file_size
-      remaining_file_size -= lnk_file_size
+      file_offset += lnk_file_entry.data_size
+      remaining_file_size -= lnk_file_entry.data_size
 
       self._file_object.seek(file_offset, os.SEEK_SET)
 
@@ -374,6 +434,15 @@ class CustomDestinationsFile(object):
 
     self._ReadFileHeader()
     self._ReadLNKFiles()
+
+    file_offset = self._file_object.tell()
+    if file_offset < self._file_size - 4:
+      # TODO: recover LNK files
+      # * scan for LNK GUID and run _ReadLNKFiles on remaining data.
+      if self._debug:
+        print(u'Detected trailing data')
+        print(u'')
+
     self._ReadFileFooter()
 
 
@@ -410,8 +479,19 @@ def Main():
   jump_list_file.Open(options.source)
 
   print(u'Windows Jump List information:')
+  print(u'Number of entries:\t\t{0:d}'.format(len(jump_list_file.entries)))
+  print(u'Number of recovered entries:\t{0:d}'.format(
+      len(jump_list_file.recovered_entries)))
   print(u'')
-  # TODO: print some file information.
+
+  for lnk_file_entry in jump_list_file.entries:
+    print(u'LNK file entry at offset: 0x{0:08x}'.format(
+        lnk_file_entry.data_offset))
+
+    for shell_item in lnk_file_entry.GetShellItems():
+      print(u'Shell item: 0x{0:02x}'.format(shell_item.class_type))
+
+    print(u'')
 
   jump_list_file.Close()
 
