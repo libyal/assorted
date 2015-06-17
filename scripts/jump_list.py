@@ -332,6 +332,8 @@ class CustomDestinationsFile(object):
       u'entry_header',
       construct.String(u'guid', 16))
 
+  _FOOTER_SIGNATURE = 0xbabffbab
+
   _FILE_FOOTER = construct.Struct(
       u'file_footer',
       construct.ULInt32(u'signature'))
@@ -482,7 +484,7 @@ class CustomDestinationsFile(object):
               u'Unable to parse file footer at offset: 0x{0:08x} '
               u'with error: {1:s}').format(file_offset, exception))
 
-        if file_footer.signature != 0xbabffbab:
+        if file_footer.signature != self._FOOTER_SIGNATURE:
           logging.warning(error_message)
 
         self._file_object.seek(-4, os.SEEK_CUR)
@@ -518,7 +520,7 @@ class CustomDestinationsFile(object):
           u'Unable to parse file footer at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
-    if file_footer.signature != 0xbabffbab:
+    if file_footer.signature != self._FOOTER_SIGNATURE:
       raise IOError(u'Invalid footer signature at offset: 0x{0:08x}.'.format(
           file_offset))
 
