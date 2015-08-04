@@ -180,7 +180,7 @@ information about the LNK format see `[LIBLNK09]`.
 The custom destinations files are stored in the CustomDestinations sub 
 directory and have the extension .customDestinations-ms. 
 
-The DestList stream consists of:
+The custom destinations file consists of:
 
 * File header
 * An array Windows Shortcut (LNK) file entries
