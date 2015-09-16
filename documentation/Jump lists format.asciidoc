@@ -65,7 +65,7 @@ This directory contains Windows Shortcut (LNK) files and the following sub direc
 
 * AutomaticDestinations
 * CustomDestinations
-* Explorer StartPage2 ProgramsCache Registry values
+* Explorer ProgramsCache Registry values
 
 For more information about the LNK format see `[LIBLNK09]`.
 
@@ -250,6 +250,12 @@ Empty
 [yellow-background]*TODO*
 
 == Explorer ProgramsCache Registry values
+The Explorer ProgramsCache Registry values can be stored in the following 
+Registry keys.`
+
+* Explorer StartPage Registry key
+* Explorer StartPage2 Registry key
+
 === Explorer StartPage Registry key
 The Explorer StartPage Registry key:
 ....
