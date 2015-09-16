@@ -75,7 +75,17 @@ Additionally Jump lists can be stored in:
 === Test version
 The following version of programs were used to test the information within this document:
 
+* Windows NT4
+* Windows 2000
+* Windows XP
+* Windows 2003
+* Windows Vista
 * Windows 7
+* Windows 2008
+* Windows 8.0
+* Windows 8.1
+* [yellow-background]*TODO: Windows 2012*
+* Windows 10
 
 == Automatic destinations files
 The automatic destinations files are stored in the AutomaticDestinations sub 
@@ -265,7 +275,7 @@ The Explorer StartPage Registry key:
 HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\StartPage
 ....
 
-Contains several values that contain Jump lists.
+Seen in Windows XP, 2003 and Vista.
 
 [cols="1,1,5",options="header"]
 |===
@@ -280,7 +290,7 @@ The Explorer StartPage2 Registry key:
 HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\StartPage2
 ....
 
-Contains several values that contain Jump lists.
+Seen in Windows 7.
 
 [cols="1,1,5",options="header"]
 |===
@@ -342,6 +352,7 @@ end of list?
 
 StartPage2\ProgramsCache
 ....
+Window 7
 00000000  13 00 00 00 c3 53 5b 62  48 ab c1 4e ba 1f a1 ef  |.....S[bH..N....|
 00000010  41 46 fc 19 00 80 00 00  00                       |AF.......~.1....|
 
@@ -366,11 +377,26 @@ shell item list?
 
 ...
 00012e80  00 00 00 00 00 00 1c 00  00 00 02                 |...........|
+
+
+0x00019890  6d 00 2e 00 65 00 78 00  65 00 00 00 00 00 00 00  m...e.x.e.......
+0x000198a0  20 00 00 00                                        ......9....O.'H
+
+TODO: edge case or remnant data?
+0x000198a0              02 ab 95 39  9e 9c 1f 13 4f b8 27 48   ......9....O.'H
+0x000198b0  b2 4b 6c 71 74 00                                 .Klqt.T...R.1...
+
+0x000198b0                    54 00  00 00 52 00 31 00 00 00  .Klqt.T...R.1...
+0x000198c0  00 00 0c 3d a4 33 11 00  54 61 73 6b 42 61 72 00  ...=.3..TaskBar.
+0x000198d0  3c 00 08 00 04 00 ef be  0c 3d a4 33 0c 3d a4 33  <........=.3.=.3
+0x000198e0  2a 00 00 00 69 ee 00 00  00 00 04 00 00 00 00 00  *...i...........
 ....
 
 StartPage\ProgramsCache
 ....
+Windows XP and 2003
 00000000  09 00 00 00 0b 00                                 |......V...T.1...|
+
 data size
 00000000                    56 00  00 00                    |......V...T.1...|
 shell item list
@@ -415,6 +441,54 @@ unknown data 11 bytes
 00004b20  00 00 00 00 00 1c 00 00  00                       |..........|
 00004b20                              02                    |..........|
 ....
+
+....
+Windows Vista (c3535b62-48ab-c14e-ba1f-a1ef4146fc19 FOLDERID_StartMenu)
+
+0x00000000  0c 00 00 00 c3 53 5b 62  48 ab c1 4e ba 1f a1 ef  .....S[bH..N....
+0x00000010  41 46 fc 19                                       AF...|...z.1....
+0x00000010              00 7c 00 00  00                       AF...|...z.1....
+...
+0x00009fe0  72 00 33 00 32 00 2e 00  65 00 78 00 65 00 00 00  r.3.2...e.x.e...
+0x00009ff0  00 00 00 00 1c 00 00 00                           .........a.O..M.
+
+TODO: edge case or remnant data?
+0x00009ff0                           02 61 ae 4f 05 d8 4d 87  .........a.O..M.
+0x0000a000  47 80 b6 09 02 20 c4 b7  00 02                    G.... ....
+....
+
+Value data header Windows XP and 2003.
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0x00000009 | Format version
+| 4 | 2 | 0x000b | [yellow-background]*Unknown*
+|===
+
+Value data header Windows Vista.
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0x0000000c | Format version
+| 4 | 16 | | Known folder identifier +
+Contains a GUID +
+c3535b62-48ab-c14e-ba1f-a1ef4146fc19 (FOLDERID_StartMenu)
+|===
+
+Value data header Windows 7 and 2008.
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0x00000013 | Format version
+| 4 | 16 | | Known folder identifier +
+Contains a GUID +
+c3535b62-48ab-c14e-ba1f-a1ef4146fc19 (FOLDERID_StartMenu)
+|===
+
+Value data entry.
 
 [cols="1,1,1,5",options="header"]
 |===
