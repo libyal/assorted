@@ -65,9 +65,12 @@ This directory contains Windows Shortcut (LNK) files and the following sub direc
 
 * AutomaticDestinations
 * CustomDestinations
-* Explorer ProgramsCache Registry values
 
 For more information about the LNK format see `[LIBLNK09]`.
+
+Additionally Jump lists can be stored in:
+
+* Explorer ProgramsCache Registry values
 
 === Test version
 The following version of programs were used to test the information within this document:
