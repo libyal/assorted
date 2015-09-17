@@ -304,7 +304,7 @@ Contains a Jump list.
 |===
 
 [NOTE]
-The format of the ProgramsCache value data differs from that of the 
+The format of the ProgramsCache value data slightly differs from that of the
 ProgramsCacheSMP and ProgramsCacheTBP value data.
 
 === ProgramsCache value data format 
@@ -319,11 +319,13 @@ ProgramsCacheSMP - Empty list
 
 ProgramsCacheTBP
 ....
+0x00000000  01 00 00 00 0b 00 00 00  01 aa 02 00 00           ................
+
+0x00000000  01 00 00 00 07 00 00 00  01 0e 03 00 00           ................
+
 00000000  01 00 00 00                                       |................|
 number of entries?
-00000000              0e 00                                 |................|
-unknown
-00000000                    00 00                           |................|
+00000000              0e 00 00 00                           |................|
 start of entry marker?
 00000000                           01                       |................|
 relative offset to next entry?
@@ -475,9 +477,10 @@ Value data header Windows Vista.
 | 4 | 16 | | Known folder identifier +
 Contains a GUID +
 c3535b62-48ab-c14e-ba1f-a1ef4146fc19 (FOLDERID_StartMenu)
+| 20 | 1 | | [yellow-background]*Unknown (sentinel?)*
 |===
 
-Value data header Windows 7 and 2008.
+ProgramsCache value data header Windows 7 and 2008.
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -486,6 +489,17 @@ Value data header Windows 7 and 2008.
 | 4 | 16 | | Known folder identifier +
 Contains a GUID +
 c3535b62-48ab-c14e-ba1f-a1ef4146fc19 (FOLDERID_StartMenu)
+| 20 | 1 | | [yellow-background]*Unknown (sentinel?)*
+|===
+
+ProgramsCacheSMP and ProgramsCacheTBP value data header Windows 7 and 2008.
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0x00000001 | Format version
+| 4 | 4 | | [yellow-background]*Unknown*
+| 5 | 1 | | [yellow-background]*Unknown (sentinel?)*
 |===
 
 Value data entry.
