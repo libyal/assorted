@@ -227,7 +227,7 @@ class IndexFile(object):
       IOError: if the file header cannot be read.
     """
     if self._debug:
-      print(u'Seeking file header offset: 0x{0:08x}:'.format(0))
+      print(u'Seeking file header offset: 0x{0:08x}'.format(0))
 
     self._file_object.seek(0, os.SEEK_SET)
 
@@ -460,7 +460,7 @@ class DataBlockFile(object):
       IOError: if the file header cannot be read.
     """
     if self._debug:
-      print(u'Seeking file header offset: 0x{0:08x}:'.format(0))
+      print(u'Seeking file header offset: 0x{0:08x}'.format(0))
 
     self._file_object.seek(0, os.SEEK_SET)
 
@@ -546,7 +546,7 @@ class DataBlockFile(object):
   def ReadCacheEntry(self, block_offset):
     """Reads a cache entry."""
     if self._debug:
-      print(u'Seeking cache entry offset: 0x{0:08x}:'.format(block_offset))
+      print(u'Seeking cache entry offset: 0x{0:08x}'.format(block_offset))
 
     self._file_object.seek(block_offset, os.SEEK_SET)
 

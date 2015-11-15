@@ -94,7 +94,7 @@ class WMIRepositoryObjectsDataFile(object):
       IOError: if the unknown record cannot be read.
     """
     if self._debug:
-      print(u'Seeking unknown record offset: 0x{0:08x}:'.format(offset))
+      print(u'Seeking unknown record offset: 0x{0:08x}'.format(offset))
 
     self._file_object.seek(offset, os.SEEK_SET)
 
@@ -152,7 +152,7 @@ class WMIRepositoryObjectsDataFile(object):
       IOError: if the unknown table cannot be read.
     """
     if self._debug:
-      print(u'Seeking unknown table offset: 0x{0:08x}:'.format(offset))
+      print(u'Seeking unknown table offset: 0x{0:08x}'.format(offset))
 
     self._file_object.seek(offset, os.SEEK_SET)
 

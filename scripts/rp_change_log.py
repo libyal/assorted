@@ -269,7 +269,7 @@ class RestorePointChangeLogFile(object):
       IOError: if the file header cannot be read.
     """
     if self._debug:
-      print(u'Seeking file header offset: 0x{0:08x}:'.format(0))
+      print(u'Seeking file header offset: 0x{0:08x}'.format(0))
 
     self._file_object.seek(0, os.SEEK_SET)
 
