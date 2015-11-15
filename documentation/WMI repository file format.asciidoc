@@ -41,6 +41,7 @@ in the section entitled "GNU Free Documentation License".
 |===
 | Version | Author | Date | Comments
 | 0.0.1 | J.B. Metz | May 2015 | Initial version.
+| 0.0.2 | J.B. Metz | November 2015 | Additional information about binary-tree index file format.
 |===
 
 :numbered:
@@ -66,7 +67,7 @@ In Windows XP:
 %SystemRoot%\System32\WBEM\Repository\FS
 ....
 
-* `Index.btr`; binary-tree (btree) index file;
+* `Index.btr`; binary-tree index file;
 * `Index.map`; transaction control file;
 * `Objects.data`; repository where managed resource definitions are stored;
 * `Objects.map`; transaction control file.
@@ -81,27 +82,120 @@ information within this document:
 * Windows XP
 * Windows 7
 
-== Index.btr
-....
-00000000  cc ac 00 00 5f 00 00 00  00 00 00 00 00 00 00 00  |...._...........|
-00000010  40 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |@...............|
-00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-00000210  00 00 00 00 00 00 00 00  00 00 03 00 ae 00 06 00  |................|
-00000220  09 00 0c 00 0f 00 12 00  15 00 b4 00 18 00 1b 00  |................|
-00000230  b1 00 1e 00 21 00 24 00  27 00 2a 00 2d 00 30 00  |....!.$.'.*.-.0.|
-00000240  33 00 36 00 39 00 3c 00  3f 00 ba 00 42 00 45 00  |3.6.9.<.?...B.E.|
-00000250  48 00 4b 00 4e 00 51 00  54 00 57 00 5a 00 5d 00  |H.K.N.Q.T.W.Z.].|
-00000260  60 00 63 00 bd 00 66 00  69 00 6c 00 6f 00 72 00  |`.c...f.i.l.o.r.|
-00000270  75 00 78 00 7b 00 7e 00  81 00 84 00 87 00 8a 00  |u.x.{.~.........|
-00000280  8d 00 90 00 93 00 96 00  b7 00 99 00 9c 00 9f 00  |................|
-00000290  a2 00 a5 00 a8 00 ab 00  c0 00 02 00 40 00 00 00  |............@...|
-000002a0  02 00 40 00 01 00 02 00  40 00 03 00 02 00 40 00  |..@.....@.....@.|
-000002b0  04 00 02 00 40 00 05 00  02 00 40 00 06 00 02 00  |....@.....@.....|
-000002c0  40 00 07 00 02 00 40 00  08 00 02 00 40 00 0a 00  |@.....@.....@...|
-000002d0  02 00 40 00 0b 00 02 00  40 00 0d 00 02 00 40 00  |..@.....@.....@.|
-000002e0  0e 00 02 00 40 00 0f 00  02 00 40 00 10 00 02 00  |....@.....@.....|
-....
+== The binary-tree index file (index.btr)
+The binary-tree index file (index.btr) consists of:
+
+* an array of pages
+
+=== Binary-tree index page
+The binary-tree index page is 8192 bytes of size and consists of:
+
+* a page header
+* [yellow-background]*Unknown*
+* [yellow-background]*Unknown (child pages array?)*
+* [yellow-background]*Unknown (page key offsets)*
+* [yellow-background]*Unknown (page key data)*
+* page value offsets
+* page value data
+* padding (0-byte values)
+
+=== Binary-tree index page header
+The binary-tree index page header is 20 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Index page type +
+See section: <<btr_index_page_types,Binary-tree index page types>>
+| 4 | 4 | | [yellow-background]*Unknown (identifier)*
+| 8 | 4 | | [yellow-background]*Unknown (empty values)*
+| 12 | 4 | | Root page number
+| 16 | 4 | | Number of page values
+|===
+
+=== [[btr_index_page_types]]Binary-tree index page types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x0000 | | [yellow-background]*Unknown*
+| 0xaccc | | [yellow-background]*Unknown (Is active)*
+| 0xaddd | | [yellow-background]*Unknown (Is admin)*
+| 0xbadd | | [yellow-background]*Unknown (Is deleted)*
+|===
+
+=== Binary-tree index page unknown array
+The binary-tree index page unknown array is variable of size and consists of:
+
+* number of page values x [yellow-background]*Unknown array entry*
+
+The unknown entry is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | [yellow-background]*Unknown (empty values)*
+|===
+
+=== Binary-tree index page unknown array
+The binary-tree index page unknown array is variable of size and consists of:
+
+* (number of page values + 1) x unknown array entry
+
+The unknown entry is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | [yellow-background]*Unknown (empty values)*
+|===
+
+=== Binary-tree index page key offsets
+The binary-tree index page key offsets are variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | ... | | array of 16-bit offsets +
+The offsets are relative to the start of the binary-tree index page key data
+|===
+
+[NOTE]
+The number of offsets equals the number of page values.
+
+=== Binary-tree index page key data
+The binary-tree index page key data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | data size +
+Contains the number of words (16-bit values) of the data, where: +
+data size = value x 2
+| 2 | ... | | data
+|===
+
+=== Binary-tree index page value offsets
+The binary-tree index page value offsets are variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | number of offsets
+| 2 | ... | | array of 16-bit offsets +
+The offsets are relative to the start of the binary-tree index page value data
+|===
+
+=== Binary-tree index page value data
+The binary-tree index page value data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | data size +
+Contains the number of bytes of the data
+| 2 | ... | | data
+|===
 
 == Index.map, Mapping#.map and Objects.map
 
@@ -431,6 +525,15 @@ String table entry?
 :numbered!:
 [appendix]
 == References
+
+`[TUNSTALL02]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | Developing WMI Solutions: A Guide to Windows Management Instrumentation
+| Author(s): | Craig Tunstall, Gwyn Cole
+| Date: | November 22, 2002
+|===
 
 `[TECHNET]`
 
