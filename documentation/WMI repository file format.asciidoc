@@ -42,6 +42,7 @@ in the section entitled "GNU Free Documentation License".
 | Version | Author | Date | Comments
 | 0.0.1 | J.B. Metz | May 2015 | Initial version.
 | 0.0.2 | J.B. Metz | November 2015 | Additional information about binary-tree index file format.
+| 0.0.3 | J.B. Metz | November 2015 | Additional information about objects.data file format.
 |===
 
 :numbered:
@@ -80,7 +81,13 @@ Files created by the following version of programs were used to test the
 information within this document:
 
 * Windows XP
+* [yellow-background]*Windows 2003*
+* [yellow-background]*Windows Vista*
+* [yellow-background]*Windows 2008*
 * Windows 7
+* [yellow-background]*Windows 2012*
+* [yellow-background]*Windows 8*
+* [yellow-background]*Windows 10*
 
 == The binary-tree index file (index.btr)
 The binary-tree index file (index.btr) consists of:
@@ -151,7 +158,7 @@ The unknown entry is 4 bytes of size and consists of:
 |===
 
 === Binary-tree index page key offsets
-The binary-tree index page key offsets are variable of size and consists of:
+The binary-tree index page key offsets are variable of size and consist of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -176,7 +183,7 @@ data size = value x 2
 |===
 
 === Binary-tree index page value offsets
-The binary-tree index page value offsets are variable of size and consists of:
+The binary-tree index page value offsets are variable of size and consist of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -199,44 +206,88 @@ Contains the number of bytes of the data
 
 == Index.map, Mapping#.map and Objects.map
 
+[yellow-background]*TODO: maps x to Objects.data page numbers*
+
+The mapping file consists of:
+
+* file header
+* mappings
+* unknown entries
+* file footer
+
+=== File header
+The file header is 8 bytes of size and consists of:
+
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 0x0000abcd | [yellow-background]*Unknown*
-| 4 | 4 | | [yellow-background]*Unknown* +
-Seen: 0x000035be, 0x000035bf
-| 8 | 4 | | [yellow-background]*Unknown (number of 32-bit values)* +
-Allocated?
-| 12 | 4 | | [yellow-background]*Unknown (number of 32-bit values)* +
-Used ?
-| 16 | 4 | | [yellow-background]*Unknown (number of 32-bit values)*
-| 20 | 4 | | [yellow-background]*Unknown (flags?)* + 
-Seen: 0x00000008, 0x00000041
-| 24 | 4 | | [yellow-background]*Unknown* +
-Seen: 0x00000000, 0x00000028
-| 28 | 4 | | [yellow-background]*Unknown* +
-Seen: 0x00000004
+| 0 | 4 | 0x0000abcd | [yellow-background]*Unknown (signature)*
+| 4 | 4 | | [yellow-background]*Unknown (format version and flags?)*
 |===
 
 ....
-00000000  cd ab 00 00 be 35 00 00  bb 09 00 00 8e 09 00 00  |.....5..........|
-00000010  77 09 00 00 08 00 00 00  00 00 00 00 04 00 00 00  |w...............|
-00000020  05 00 00 00 a2 01 00 00  a7 02 00 00 07 00 00 00  |................|
-
-00000000  cd ab 00 00 bf 35 00 00  95 00 00 00 7d 00 00 00  |.....5......}...|
-00000010  75 00 00 00 41 00 00 00  28 00 00 00 04 00 00 00  |u...A...(.......|
-00000020  03 00 00 00 06 00 00 00  38 00 00 00 6a 00 00 00  |........8...j...|
-
-00000000  cd ab 00 00 bf 35 00 00  bb 09 00 00 8e 09 00 00  |.....5..........|
-00000010  9d 02 00 00 08 00 00 00  00 00 00 00 04 00 00 00  |................|
-00000020  05 00 00 00 a2 01 00 00  a7 02 00 00 07 00 00 00  |................|
-
-00000000  cd ab 00 00 bf 35 00 00  bb 09 00 00 8e 09 00 00  |.....5..........|
-00000010  9d 02 00 00 08 00 00 00  00 00 00 00 04 00 00 00  |................|
-00000020  05 00 00 00 a2 01 00 00  a7 02 00 00 07 00 00 00  |................|
+0x000035be => Mapping#.map
+0x000035bf => Index.map, Objects.map
 ....
 
-Footer
+[yellow-background]*TODO: check Windows 7 file header*
+
+=== Mappings
+The mappings are variable of size and consis of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | number of entries
+| 4 | ... | | array of entries
+|===
+
+=== Mapping entry - Windows XP
+The mapping entry - Windows XP is 24 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | [yellow-background]*Unknown (page number)*
+|===
+
+[yellow-background]*TODO: what about MSB in the page number*
+[yellow-background]*TODO: 0xffffffff unavailable*
+
+=== Mapping entry - Windows 7
+[yellow-background]*TODO: check?*
+
+The mapping entry - Windows 7 is 24 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | [yellow-background]*Unknown (page number)*
+| 4 | 4 | | [yellow-background]*Unknown (checksum)* +
+[yellow-background]*Contains a CRC-32?*
+| 8 | 4 | | [yellow-background]*Unknown (free space?)*
+| 12 | 4 | | [yellow-background]*Unknown (used space?)*
+| 16 | 4 | | [yellow-background]*Unknown (identifier?)*
+| 20 | 4 | | [yellow-background]*Unknown (identifier?)*
+|===
+
+[yellow-background]*TODO: what about MSB ini page number*
+
+=== Unknown entries
+[yellow-background]*TODO: are these free pages?*
+
+The unknown entries are variable of size and consis of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | number of entries
+| 4 | ... | | array of entries
+|===
+
+[yellow-background]*TODO: 32-bit entry contains page size?*
+
+=== File footer
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -244,36 +295,27 @@ Footer
 | 0 | 4 | 0x0000dcba | [yellow-background]*Unknown*
 |===
 
-....
-00002960  55 00 00 00 62 00 00 00  91 00 00 00 80 00 00 00  |U...b...........|
-00002970  70 00 00 00 29 00 00 00  7d 00 00 00 10 00 00 00  |p...)...}.......|
-00002980  65 00 00 00 1d 00 00 00  27 00 00 00 23 00 00 00  |e.......'...#...|
-00002990  ba dc 00 00                                       |....|
-
-00002960  55 00 00 00 62 00 00 00  91 00 00 00 80 00 00 00  |U...b...........|
-00002970  70 00 00 00 29 00 00 00  7d 00 00 00 65 00 00 00  |p...)...}...e...|
-00002980  1d 00 00 00 27 00 00 00  23 00 00 00 0b 00 00 00  |....'...#.......|
-00002990  ba dc 00 00                                       |....|
-
-00000240  81 00 00 00 55 00 00 00  62 00 00 00 91 00 00 00  |....U...b.......|
-00000250  80 00 00 00 70 00 00 00  29 00 00 00 7d 00 00 00  |....p...)...}...|
-00000260  65 00 00 00 1d 00 00 00  27 00 00 00 23 00 00 00  |e.......'...#...|
-00000270  0b 00 00 00 ba dc 00 00                           |........|
-
-....
-
 == Mapping.ver
+
 ....
 00000000  02 00 00 00                                       |....|
 ....
 
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | [yellow-background]*Unknown (format version)*
+|===
+
 == Objects.data
 The Objects.data file consists of:
 
-[yellow-background]*multiple tables per file?*
-[yellow-background]*tables in 0x2000 blocks in windows 7? what depicts the end of tables?*
+* an array of pages
 
-* [yellow-background]*unknown table*
+=== Objects data page
+The objects data page is 8192 bytes of size and consists of:
+
+* Object descriptors
 * [yellow-background]*unknown records*
 * [yellow-background]*unknown*
 
@@ -287,25 +329,28 @@ Though technically maybe incorrect, this document will use term (extended) ASCII
 Unicode strings are stored in UTF-16 little-endian without the byte order mark (BOM).
 |===
 
-==== [yellow-background]*Unknown table*
-The [yellow-background]*unknown table* consists of:
+==== Object descriptors
+The object descriptors consists of:
 
-* table entries
+* an array of object descriptor entries
 * empty (zero byte filled) table entry (or terminator)
 
-===== [yellow-background]*Unknown table entry*
+===== Object descriptor entry
+The object descriptor entry is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | [yellow-background]*Unknown* +
-| 4 | 4 | | [yellow-background]*Unknown record* offset +
+| 0 | 4 | | Object identifier
+| 4 | 4 | | Object record data offset +
 The offset is relative to the start of the table
-| 8 | 4 | | [yellow-background]*Unknown record* size
-| 12 | 4 | | [yellow-background]*Unknown (checksum?)*
+| 8 | 4 | | Object record data size
+| 12 | 4 | | Checksum +
+Contains a CRC-32 with polynomial 0xedb88320 and initial value 0 of the object record data
 |===
 
-==== [yellow-background]*Unknown record*
+==== Object record
+The object record is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -522,17 +567,70 @@ String table entry?
 0093ea40  46 39 34 30 38 42 32 45  37 35 42 37 44 38 42 39  |F9408B2E75B7D8B9|
 ....
 
+== CIM database
+
+=== Binary-tree index identifier strings
+The page values in the binary-tree index (Index.btr) contain identifier strings
+that map to object records. Example of identifier strings are:
+
+....
+R_7F02F51F97C31228F1ADE773040492C4
+R_889E073E24E009B2E955B1E9560E641E.625.860151.342
+....
+
+The values in the identifier string can contain segments seperated by '.'
+
+[cols="1,5",options="header"]
+|===
+| Segment index | Usage
+| 0 | Type prefix and MD5 hash
+2+| _Optional values_
+| 1 | Objects data mappings index number
+| 2 | Object identifier
+| 3 | Object record data size
+|===
+
+The following the prefixes are known:
+
+[cols="1,5",options="header"]
+|===
+| Prefix | Usage
+| CD | Class definition
+| CI | 
+| CR | 
+| I | 
+| KI | 
+| KL | 
+| NS | Name space
+| R | 
+|===
+
+=== Class definition (CD)
+
+[yellow-background]*TODO: add descriptions*
+
+== Notes
+
+Listing name spaces:
+....
+gwmi -namespace "root" -class "__Namespace" | Select Name
+....
+
+Listing classes:
+....
+gwmi -namespace root\cimv2 -list
+....
+
 :numbered!:
 [appendix]
 == References
 
-`[TUNSTALL02]`
+`[FLAREWMI]`
 
 [cols="1,5",options="header"]
 |===
-| Title: | Developing WMI Solutions: A Guide to Windows Management Instrumentation
-| Author(s): | Craig Tunstall, Gwyn Cole
-| Date: | November 22, 2002
+| Title: | Flare WMI project
+| URL: | https://github.com/fireeye/flare-wmi
 |===
 
 `[TECHNET]`
@@ -541,6 +639,15 @@ String table entry?
 |===
 | Title: | Technet: WMI Infrastructure
 | URL: | https://technet.microsoft.com/en-us/library/ee198935.aspx
+|===
+
+`[TUNSTALL02]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | Developing WMI Solutions: A Guide to Windows Management Instrumentation
+| Author(s): | Craig Tunstall, Gwyn Cole
+| Date: | November 22, 2002
 |===
 
 [appendix]

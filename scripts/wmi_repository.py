@@ -286,10 +286,10 @@ class IndexBinaryTreeFile(object):
       for index in range(len(self._page_value_offsets)):
         page_value_offset = self._page_value_offsets[index]
         # TODO: determine size
-        page_value_size = page_value_offset + 16
 
-        print(u'Page value: {0:d} data:'.format(index))
-        print(hexdump.Hexdump(data[page_value_offset:page_value_size]))
+        string = construct.CString(u'string').parse(data[page_value_offset:])
+        print(u'Page value: {0:d} data: {1:s}'.format(index, string))
+
       print(u'')
 
   def Close(self):
