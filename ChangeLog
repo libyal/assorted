@@ -47,6 +47,7 @@ Filetime:
 
 20151225
 * worked on merging atools and assorted
+* merged crc32 and wcrc32
 
 20150612
 * worked on lzxpressdecompress

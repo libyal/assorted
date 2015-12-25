@@ -27,7 +27,7 @@
 
 /* Prints the copyright information
  */
-void assortedoutput_copyright_fprint(
+void assorted_output_copyright_fprint(
       FILE *stream )
 {
 	if( stream == NULL )
@@ -55,5 +55,26 @@ void assortedoutput_copyright_fprint(
 	 stream,
 	 _( "Report bugs to <%s>.\n" ),
 	 PACKAGE_BUGREPORT );
+}
+
+/* Prints the version information
+ */
+void assorted_output_version_fprint(
+      FILE *stream,
+      const char *program )
+{
+	if( stream == NULL )
+	{
+		return;
+	}
+	if( program == NULL )
+	{
+		return;
+	}
+        fprintf(
+	 stream,
+	 "%s %s\n\n",
+         program,
+	 VERSION );
 }
 

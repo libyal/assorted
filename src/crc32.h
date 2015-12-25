@@ -1,5 +1,5 @@
 /*
- * Common output functions for the assorted
+ * CRC-32 functions
  *
  * Copyright (c) 2008-2015, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,23 +19,50 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _ASSORTED_OUTPUT_H )
-#define _ASSORTED_OUTPUT_H
+#if !defined( _CRC32_H )
+#define _CRC32_H
 
 #include <common.h>
-#include <file_stream.h>
 #include <types.h>
+
+#include "assorted_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-void assorted_output_copyright_fprint(
-      FILE *stream );
+void initialize_crc32_table(
+      uint32_t polynomial );
 
-void assorted_output_version_fprint(
-      FILE *stream,
-      const char *program );
+int crc32_calculate_modulo2(
+     uint32_t *crc32,
+     uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     uint8_t weak_crc,
+     libcerror_error_t **error );
+
+int crc32_calculate(
+     uint32_t *crc32,
+     uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     uint8_t weak_crc,
+     libcerror_error_t **error );
+
+int crc32_validate(
+     uint32_t crc32,
+     uint32_t calculated_crc32,
+     uint8_t *bit_index,
+     libcerror_error_t **error );
+
+int crc32_locate_error_offset(
+     uint32_t crc32,
+     uint32_t calculated_crc32,
+     uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

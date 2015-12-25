@@ -107,7 +107,9 @@ stamp-h[1-9]
 /common/config.h
 /common/config.h.in
 /common/types.h
-/src/adler32
+/src/adler32sum
+/src/crc32sum
+/src/crc64sum
 /tests/input
 /tests/tmp*
 
