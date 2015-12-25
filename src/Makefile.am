@@ -19,9 +19,11 @@ AM_LDFLAGS = @STATIC_LDFLAGS@
 
 bin_PROGRAMS = \
 	adler32sum \
+	ascii7decompress \
 	crc32sum \
 	crc64sum \
 	fletcher32sum \
+	lzfudecompress \
 	rc4crypt \
 	xor32sum \
 	xor64sum
@@ -43,6 +45,23 @@ adler32sum_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@ \
 	@ZLIB_LIBADD@
+
+ascii7decompress_SOURCES = \
+	ascii7.c ascii7.h \
+	ascii7decompress.c \
+	assorted_libcerror.h \
+	assorted_libcnotify.h \
+	assorted_libcstring.h \
+	assorted_libcsystem.h \
+	assorted_output.c assorted_output.h
+
+ascii7decompress_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
 
 crc32sum_SOURCES = \
 	assorted_libcerror.h \
@@ -91,6 +110,25 @@ fletcher32sum_SOURCES = \
 	fletcher32sum.c
 
 fletcher32sum_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
+
+lzfudecompress_SOURCES = \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libcstring.h \
+	assorted_libcsystem.h \
+	assorted_output.c assorted_output.h \
+	crc32.c crc32.h \
+	lzfu.c lzfu.h \
+	lzfudecompress.c
+
+lzfudecompress_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
@@ -162,12 +200,16 @@ distclean: clean
 splint:
 	@echo "Running splint on adler32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(adler32sum_SOURCES)
+	@echo "Running splint on ascii7decompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(ascii7decompress_SOURCES)
 	@echo "Running splint on crc32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(crc32sum_SOURCES)
 	@echo "Running splint on crc64sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(crc64sum_SOURCES)
 	@echo "Running splint on fletcher32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(fletcher32sum_SOURCES)
+	@echo "Running splint on lzfudecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzfudecompress_SOURCES)
 	@echo "Running splint on rc4crypt ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(rc4crypt_SOURCES)
 	@echo "Running splint on xor32sum ..."

@@ -108,9 +108,11 @@ stamp-h[1-9]
 /common/config.h.in
 /common/types.h
 /src/adler32sum
+/src/ascii7decompress
 /src/crc32sum
 /src/crc64sum
 /src/fletcher32sum
+/src/lzfudecompress
 /src/rc4crypt
 /src/xor32sum
 /src/xor64sum
