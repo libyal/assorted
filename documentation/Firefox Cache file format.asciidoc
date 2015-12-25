@@ -1,5 +1,5 @@
-= Chrome Cache file format
-Analysis of the Chrome Cache
+= Firefox Cache file format
+Analysis of the Firefox Cache
 
 :toc:
 :toclevels: 4
@@ -7,11 +7,10 @@ Analysis of the Chrome Cache
 :numbered!:
 [abstract]
 == Summary
-The Chrome Cache file format is used by Google Chrome and Chromium to store 
-persistent cached data. This specification is based on the source code and 
-documentation.
+The Firefox Cache file format is used by Mozilla Firefox to store persistent 
+cached data. This specification is based on the source code and documentation.
 
-This document is intended as a working document for the Chrome Cache file 
+This document is intended as a working document for the Firefox Cache file 
 format specification. Which should allow existing Open Source forensic tooling 
 to be able to process this file type.
 
@@ -20,15 +19,15 @@ to be able to process this file type.
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the Chrome Cache file format
+| Abstract: | This document contains information about the Firefox Cache file format
 | Classification: | Public
-| Keywords: | Chrome Cache
+| Keywords: | Firefox Cache
 |===
 
 [preface]
 == License
 ....
-Copyright (C) 2014-2015, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2015, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the 
 terms of the GNU Free Documentation License, Version 1.3 or any later version 
 published by the Free Software Foundation; with no Invariant Sections, no 
@@ -41,408 +40,83 @@ in the section entitled "GNU Free Documentation License".
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
-| 0.0.1 | J.B. Metz | April 2014 | Initial version.
-| 0.0.2 | J.B. Metz | November 2014 | Switched to asccidoc format.
-| 0.0.3 | J.B. Metz | December 2015 | Small changes.
+| 0.0.1 | J.B. Metz | December 2015 | Initial version.
 |===
 
 :numbered:
 == Overview
-The Chrome Cache file format is used by Google Chrome and Chromium to store 
+The Firefox Cache file format is used by Mozilla Firefox to store 
 persistent cached data. 
+
+== Cache version 1
+
+[yellow-background]*TODO: complete this section*
+
+== Cache version 2
+
+[yellow-background]*TODO: complete this section*
 
 [cols="1,5",options="header"]
 |===
 | Characteristics | Description
-| Byte order | little-endian
-| Date and time values | Number of microseconds since January 1, 1601 00:00:00 UTC
-| Character strings | UTF-8 formatted strings.
+| Byte order | big-endian
+| Date and time values | POSIX timestamp in UTC
+| Character strings | 
 |===
 
-=== Cache types
-The following file-based cache types (CacheType) are known:
+=== Index file
 
-[cols="1,2",options="header"]
-|===
-| Identifier | Description
-| DISK_CACHE | HTTP response headers and web content cache
-| MEDIA_CACHE | Media files cache
-| APP_CACHE | Application cache
-| SHADER_CACHE | GL shader cache
-| PNACL_CACHE | PNaCl translation cache
-|===
+[yellow-background]*TODO: complete this section*
 
-=== Cache files
-The cache is stored in multiple:
-
-[cols="1,2",options="header"]
-|===
-| Filename | Description
-| index | The index file
-| data_# | Data block files
-| f_###### | (Separate) data stream file
-|===
-
-== Cache address
-The cache address is 4 bytes in size and consists of: 
+==== Index file header
+The index file header is 12 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-4+| _If file type is 0 (Separate file)_
-| 0.0 | 28 bits | | File number +
-The value represents the value of # in f_######
-4+| _Else_
-| 0.0 | 16 bits | | Block number
-| 2.0 | 8 bits | | File number (or file selector) +
-The value represents the value of # in data_#
-| 3.0 | 2 bits | | Block size +
-The number of contiguous blocks where 0 represents 1 block and 3 represents 4 blocks.
-| 3.2 | 2 bits | | Reserved
-4+| _Common_
-| 3.4 | 3 bits | | File type
-| 3.7 | 1 bit | | Initialized flag
+| 0 | 4 | 1 | Format version
+| 4 | 4 | | Last modified time
+| 8 | 4 | | Dirty flag
 |===
 
-=== File types
-
-[cols="1,2",options="header"]
-|===
-| Value | Description
-| 0 | (Separate) data stream file
-| 1 | (Rankings) block data file (36 byte block data file)
-| 2 | 256 byte block data file
-| 3 | 1024 byte block data file
-| 4 | 4096 byte block data file
-| |
-| 6 | [yellow-background]*Unknown; seen on Mac OS X 0x6f430074*
-|===
-
-=== Examples
-
-[cols="1,2",options="header"]
-|===
-| Value | Description
-| 0x00000000 | Not initialized
-| 0x8000002a | Data stream file: f_00002a
-| 0xa0010003 | Block data file: data_1, block number 3, 1 block of size
-|===
-
-== Index file format (index)
-Overview:
-
-* File header
-* least recently used (LRU) data (or eviction control data)
-* index table
-
-=== File header
-The index file header (struct IndexHeader) is 256 bytes in size and consists of:
+==== Index file entry
+The index file entry is 36 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | "\xc3\xca\x03\xc1" | Signature
-| 4 | 2 | | Minor version
-| 6 | 2 | | Major version
-| 8 | 4 | | Number of entries
-| 12 | 4 | | [yellow-background]*Stored data size*
-| 16 | 4 | | Last created file number +
-The value represents the value of # in f_######
-| 20 | 4 | | [yellow-background]*Dirty flag* +
-[yellow-background]*Identifier for all entries being changed*
-| 24 | 4 | | [yellow-background]*Usage statistics data cache address*
-| 28 | 4 | | [yellow-background]*Table size* +
-[yellow-background]*Where 0 represents 0x10000 (is this the same as the file size?)*
-| 32 | 4 | | [yellow-background]*Signals a previous crash*
-| 36 | 4 | | [yellow-background]*Identifier of an ongoing test or experiment*
-| 40 | 8 | | Creation time
-| 48 | 52 x 8 = 208 | | Padding +
-Contains 0-byte values
+| 0 | 20 | | SHA-1 digest hash
+| 20 | 4 | | Frequency
+| 24 | 4 | | Expiration time
+| 28 | 4 | | Application identifier
+| 32 | 1 | | Flags
+| 33 | 3 | | File size
 |===
 
-=== Format versions
-
-[cols="1,2",options="header"]
-|===
-| Value | Description
-| 2.0 | [yellow-background]*TODO*
-| 2.1 | [yellow-background]*TODO*
-|===
-
-=== Least recently used (LRU) data
-The least recently used (LRU) data (struct LruData) is 112 bytes in size and consists of:
+==== Index file footer
+The index file footer is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 x 4 = 8 | | Padding
-| 8 | 4 | | Filled flag +
-[yellow-background]*Value to indicate if when the cache was filled*
-| 12 | 5 x 4 = 20 | | Array of sizes
-| 32 | 5 x 4 = 20 | | Array of head cache addresses
-| 52 | 5 x 4 = 20 | | Array of tail cache addresses
-| 72 | 4 | | Transaction cache address +
-[yellow-background]*Value to indicate an in-flight operation*
-| 76 | 4 | | [yellow-background]*Operation* +
-[yellow-background]*The in-flight operation*
-| 80 | 4 | | [yellow-background]*Operations list* +
-[yellow-background]*The in-flight operations list*
-| 84 | 7 x 4 = 28 | | Padding +
-Contains 0-byte values
+| 0 | 4 | | [yellow-background]*Unknown time*
 |===
 
-==== Array indexes
-[yellow-background]*The array indexes correspond to the file types.*
+=== Data file
 
-[cols="1,2",options="header"]
-|===
-| Value | Description
-| 0 | Separate file
-| 1 | (Rankings) block data file
-| 2 | 256 byte block data file
-| 3 | 1024 byte block data file
-| 4 | 4096 byte block data file
-|===
-
-=== Index table
-The index table is an array of cache addresses.
-
-== Data block file format (data_#)
-Overview:
-
-* File header
-* array of blocks
-
-The maximum number of blocks that can be stored in the file can be calculated as:
-....
-Maximum number of blocks = ( block header size – 80 ) x 8
-                         = ( 8192 – 80 ) x 8 = 64896
-....
-
-The block offset of a certain block number can be calculated as:
-....
-Block offset =  8192 + ( block number * block size )
-....
-
-=== File header
-The index file header (struct BlockFileHeader) is 8192 bytes in size and consists of:
+[yellow-background]*TODO: complete this section*
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | "\xc3\xca\x04\xc1" | Signature
-| 4 | 2 | | Minor version
-| 6 | 2 | | Major version
-| 8 | 2 | | File number (or file index) +
-The value represents the value of # in data_#
-| 10 | 2 | | Next file number (or next file index) +
-The value represents the value of # in data_#
-| 12 | 4 | | Block size (or cache entry) size
-| 16 | 4 | | Number of entries
-| 20 | 4 | | Maximum number of entries
-| 24 | 4 x 4 = 16 | | Array of empty entry counters +
-[yellow-background]*The counters of empty entries for each type*
-| 40 | 4 x 4 = 16 | | Array of last used position (hints) +
-[yellow-background]*The last used position for each type*
-| 56 | 4 | | [yellow-background]*Updating* +
-[yellow-background]*Value to keep track of updates to the header*
-| 60 | 5 x 4 = 20 | | [yellow-background]*User*
-| 80 | 2028 x 4 = 8112 | | Block allocation bitmap
+| 0 | 4 | 1 | Format version
+| 4 | 4 | | Fetch count
+| 8 | 4 | | Last fetched time
+| 12 | 4 | | Last modified time
+| 16 | 4 | | Frequency
+| 20 | 4 | | Expiration time
+| 24 | 4 | | Request size
 |===
-
-=== Format versions
-
-[cols="1,2",options="header"]
-|===
-| Value | Description
-| 2.0 | [yellow-background]*TODO*
-| 2.1 | [yellow-background]*TODO*
-|===
-
-=== Cache entry
-The cache entry (struct EntryStore) is 256 bytes in size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 4 | | Hash +
-The hash of the key
-| 4 | 4 | | Next entry cache address +
-The next entry with the same hash or bucket
-| 8 | 4 | | Rankings node cache address
-| 12 | 4 | | Reuse count +
-Value that indicates how often this entry was (re-)used
-| 16 | 4 | | Refetch count +
-Value that indicates how often this entry was (re-)fetched (or downloaded)
-| 20 | 4 | | Cache entry state
-| 24 | 8 | | Creation time
-| 32 | 4 | | Key data size
-| 36 | 4 | | Long key data cache address +
-The value is 0 if no long key data is present
-| 40 | 4 x 4 = 16 | | Array of data stream sizes
-| 56 | 4 x 4 = 16 | | Array of data stream cache addresses
-| 72 | 4 | | Cache entry flags
-| 76 | 4 x 4 = 16 | | Padding
-| 92 | 4 | | [yellow-background]*Self hash* +
-[yellow-background]*The hash of the first 92 bytes of the cache entry is this used as a checksum?*
-| 96 | 160 | | Key data +
-Contains an UTF-8 encoded string with an end-of-string character with the original URL
-|===
-
-==== Array indexes
-The data stream array indexes correspond to:
-
-[cols="1,2",options="header"]
-|===
-| Value | Description
-| 0 | HTTP response headers
-| 1 | Page contents (Payload)
-| 2 | 
-| 3 |
-|===
-
-=== Cache entry state
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0 | ENTRY_NORMAL | Normal cache entry
-| 1 | ENTRY_EVICTED | The cache entry was recently evicted
-| 2 | ENTRY_DOOMED | The cache entry was doomed
-|===
-
-=== Cache entry flags
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x00000001 | PARENT_ENTRY | Parent cache entry
-| 0x00000002 | CHILD_ENTRY | Child cache entry
-|===
-
-=== Rankings node
-The rankings node (struct RankingsNode) is 36 bytes in size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 8 | | Last used +
-[yellow-background]*Contains LRU information?*
-| 8 | 8 | | Last modified +
-[yellow-background]*Contains LRU information?*
-| 16 | 4 | | Next rankings node cache address
-| 20 | 4 | | Previous rankings node cache address
-| 24 | 4 | | Cache entry cache address
-| 28 | 4 | | Is dirty flag
-| 32 | 4 | | [yellow-background]*Self hash* +
-[yellow-background]*The hash of the first 32 bytes of the rankings node is this used as a checksum?*
-|===
-
-== Data stream
-The data stream is stored inside the data block file (data_#), for small 
-amounts of data, or stored as a separate file (f_######). The data stream is 
-stored as a gzip file, for more information about the gzip file format see: 
-`[FORENSICWIKI]`.
-
-[NOTE]
-The last modification time of the gzip file is set to 0.
-
-== Hash
-The hash algorithm used is referred to as SuperFastHash. A pseudo C implementation:
-....
-uint32_t SuperFastHash(
-          const uint8_t *key,
-          size_t key_size )
-{ 
-    size_t key_index    = 0;
-    size_t remainder    = 0;
-    uint32_t hash_value = 0;
-    uint32_t temp_value = 0;
-
-    if( ( key == NULL ) || ( key_siz 0 ) )
-    {
-       return( 0 );
-    }
-    remainder = key_size % 4;
-    key_size -= remainder;
-
-    for( key_index = 0;
-         key_index < key_size;
-         key_index += 4 )
-    {
-        hash_value += key[ key_index ] + ( key[ key_index + 1 ] << 8 );
-        temp_value  = key[ key_index + 2 ] + ( key[ key_index + 3 ] << 8 );
-
-        temp_value = ( temp_value << 11 ) ^ hash_value;
-
-        hash_value  = ( hash_value << 16 ) ^ temp_value;
-        hash_value += hash_value >> 11;
-    }
-
-    switch( remainder )
-    {
-        case 3:
-            hash_value += key[ key_index ] + ( key[ key_index + 1 ] << 8 );
-            hash_value ^= hash_value<< 16;
-            hash_value ^= key[ key_index + 2 ] << 18;
-            hash_value += hash_value >> 11;
-            break;
-
-        case 2:
-            hash_value += key[ key_index ] + ( key[ key_index + 1 ] << 8 );
-            hash_value ^= hash_value << 11;
-            hash_value += hash_value >> 17;
-            break;
-
-        case 1:
-            hash_value += key[ key_index ];
-            hash_value ^= hash_value << 10;
-            hash_value += hash_value >> 1;
-            break;
-    }
-
-    /* Force "avalanching" of final 127 bits */
-    hash_value ^= hash_value << 3;
-    hash_value += hash_value >> 5;
-    hash_value ^= hash_value << 4;
-    hash_value += hash_value >> 17;
-    hash_value ^= hash_value << 25;
-    hash_value += hash_value >> 6;
-
-    return hash_value;
-}
-....
-
-== The Chrome Cache
-http://www.chromium.org/developers/design-documents/network-stack/disk-cache/files4.PNG[The Big Picture]
-
-[yellow-background]*Head and tail cache address in the index file point to the chain of data block files?*
-
-1. The hash of the key (URL) points to an entry in the index table, stored in the index file;
-2. The cache addresses, from the index table, points to a cache entries, stored in block in data block files;
-3. The cache entry points to the rankings, long key, HTTP response headers and page content data, stored in block in data block and separate files.
-
-== Notes
-....
-struct SparseHeader {
-  int64 signature;          // The parent and children signature.
-  uint32 magic;             // Structure identifier (equal to kIndexMagic).
-  int32 parent_key_len;     // Key length for the parent entry.
-  int32 last_block;         // Index of the last written block.
-  int32 last_block_len;     // Lenght of the last written block.
-  int32 dummy[10];
-};
-// The SparseHeader will be followed by a bitmap, as described by this
-// structure.
-struct SparseData {
-  SparseHeader header;
-  uint32 bitmap[32];        // Bitmap representation of known children (if this
-                            // is a parent entry), or used blocks (for child
-                            // entries. The size is fixed for child entries but
-                            // not for parents; it can be as small as 4 bytes
-                            // and as large as 8 KB.
-};
-....
 
 :numbered!:
 [appendix]
@@ -452,22 +126,14 @@ struct SparseData {
 
 [cols="1,5",options="header"]
 |===
-| Title: | Google Chrome
-| URL: | http://www.forensicswiki.org/wiki/Google_Chrome
+| Title: | Mozilla Firefox
+| URL: | http://forensicswiki.org/wiki/Mozilla_Firefox
 |===
 
 [cols="1,5",options="header"]
 |===
 | Title: | Gzip
 | URL: | http://www.forensicswiki.org/wiki/Gzip
-|===
-
-`[CHROMIUM]`
-
-[cols="1,5",options="header"]
-|===
-| Title: | Disk Cache
-| URL: | http://www.chromium.org/developers/design-documents/network-stack/disk-cache
 |===
 
 [appendix]
