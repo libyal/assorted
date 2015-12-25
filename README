@@ -1,5 +1,8 @@
 Assorted tools, scripts and documentation.
 
+Project information:
+
+* Status: experimental
 * C source files are released under GNU Lesser General Public License (LGPL) version 3
 * Python scripts are released under Apache License (APL) version 2
 * Documentation is released under GNU Free Documentation License (GFDL) version 1.3

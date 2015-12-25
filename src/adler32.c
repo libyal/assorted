@@ -38,6 +38,7 @@
 #include "assorted_libcnotify.h"
 #include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
+#include "assorted_output.h"
 
 typedef union
 {
@@ -78,23 +79,6 @@ void usage_fprint(
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
 	fprintf( stream, "\t-V:     print version\n" );
 	fprintf( stream, "\n" );
-}
-
-/* Prints the copyright information
- */
-void copyright_fprint(
-      FILE *stream )
-{
-	if( stream == NULL )
-	{
-		return;
-	}
-	fprintf(
-	 stream,
-	 "Copyright (c) 2008-2015, Joachim Metz <%s>.\n"
-	 "This is free software; see the source for copying conditions. There is NO\n"
-	 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
-	 PACKAGE_BUGREPORT );
 }
 
 /* Prints the version information
@@ -1181,7 +1165,6 @@ int checksum_calculate_adler32_cpu_aligned(
 	uint8_t alignment_size                  = 0;
 	uint8_t byte_count                      = 0;
 	uint8_t byte_order                      = 0;
-	int8_t byte_shift                       = 0;
 	int block_index                         = 0;
 	int number_of_blocks                    = 0;
 
@@ -1723,7 +1706,7 @@ int main( int argc, char * const argv[] )
 				break;
 
 			case 'V':
-				copyright_fprint(
+				assortedoutput_copyright_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );

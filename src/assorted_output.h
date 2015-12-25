@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _ASSORTEDOUTPUT_H )
-#define _ASSORTEDOUTPUT_H
+#if !defined( _ASSORTED_OUTPUT_H )
+#define _ASSORTED_OUTPUT_H
 
 #include <common.h>
 #include <file_stream.h>
