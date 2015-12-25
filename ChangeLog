@@ -1,0 +1,206 @@
+TODO
+* replace individual copyright_fprint by atoolsoutput_copyright_fprint
+* create xor tool that will byte-wise xor a file using a "key"
+* create equivalent of sigfind that is more powerful
+  can handle more than 4 byte signatures
+* create lz1decompress (or equiv) for NSF compression
+
+* decompression tools and code
+  - clean up, make stand-alone libs
+  - add compression equiv
+  - move ntfs compression to lznt1.[ch]
+  - move all the decompression into one tool?
+
+* lznt1decompress
+  - add support for source size
+  - merge with other decompress tools
+
+* zdecompress
+  - zdecompress enlarge buffer when zlib uncompress fails (size uncompressed = 81 x size compressed)
+
+lzxpressdecompress
+- allow to set size of decompressed data
+
+* xor64
+  - check/fix mode 2
+* fix winapi build on cygwin
+* use PRI definions for winapi build E.g. %jd
+* change 7-bit ascii into 7-bit
+* 2011 update
+* move data dump to verbose output
+* automatically detect file size
+
+Alder-32
+* finish SIMD variant
+
+CRC
+* implement basic (scalar) CRC-32 calculation method
+* implement basic (scalar) weak CRC-32 calculation method
+* add mod2 weak crc
+* add mod2 polynomial support
+
+Fletcher-16
+* finish fletcher16
+
+Filetime:
+* create equivalent tool in libfdatetime
+
+20151225
+* worked on merging atools and assorted
+
+20150612
+* worked on lzxpressdecompress
+
+20141203
+* worked on rc4decrypt
+* worked on lzxpressdecompress
+* worked on moving copyright_fprint to atoolsoutput_copyright_fprint
+
+20140512
+* worked on lzxpressdecompress
+
+20140418
+* moved lzxpress and lznt1 support to libfwnt
+* renamed on ntfsdecompress to lznt1decompress
+
+20140414
+* worked on ntfsdecompress
+* worked on lzxpressdecompress
+  - XPRESS Huffman compression
+
+20140228
+* worked on cxdecompress
+
+20140131
+* 2014 update
+
+20130706
+* worked on zdecompress
+
+20130401
+* 2013 update
+* updated dependencies
+* worked on replacing notify.[ch] by libcnotify
+* worked on replacing file_io.[ch] by libcfile
+* worked on replacing getopt by libcsystem
+* code clean up
+
+20121205
+* banalyze added entropy
+* removed memwatch
+
+20120825
+* fixed issue in bmd5sum not handling size correctly
+* reverse library order in Makefile.am
+* bmd5sum: replaced fopen by libcfile_stream
+* bmcp:
+  - code clean up
+  - added file IO method for testing
+* created bcat
+
+20120824
+* updated configure
+
+20120809
+* improved crc32 and wcrc32
+
+20120729
+* improved adler32
+
+20120728
+* improved banalyze
+
+20120528
+* minor changes
+
+20120516
+* minor changes for winapi build
+
+20120515
+* updated dependencies
+* added libcfile support
+
+20110925
+* small changes
+
+20110828
+* updated configure, common, libcstring, libnotify, liberror,
+* fixed ascii7decompress
+* worked on mssearchdecode
+
+20110730
+* updated ascii7decompress
+
+20101110
+* fix in fletcher32
+
+20101024
+* updated common, libcstring, liberror, libnotify, libbfio
+* worked on CRC-64
+
+20100711
+* worked on CRC-32 error correcting
+
+20100701
+* worked on optimized Adler-32
+* worked on CRC-32 error correcting
+
+20100630
+* worked on optimized Adler-32
+
+20100626
+* worked on optimized XOR-32
+  - added big-endian support
+
+20100625
+* worked on optimized XOR-32
+  - added big-endian support
+
+20100623
+* updated common, liberror
+* added libcstring
+* updated configure.ac and acinclude.m4
+* replaced endian.h by byte_stream.h
+* worked on optimized XOR-32
+
+20100204
+* fixed error in XOR-32 regarding non 4 byte modulus sized buffers
+
+20091129
+* worked on MS Search decode
+
+20091128
+* worked on MS Search decode
+
+20091127
+* worked on MS Search decode
+
+20091126
+* worked on MS Search decode
+
+20091125
+* worked on 7-bit ASCII string compression decompressor
+* worked on MS XPRESS (LZ77 + DIRECT2)
+
+20091124
+* worked on 7-bit ASCII string compression decompressor
+
+20091123
+* worked on 7-bit ASCII string compression decompressor
+* worked on MS XPRESS (LZ77 + DIRECT2)
+
+20091121
+* worked on 7-bit ASCII string compression decompressor
+
+20090915
+* worked on Alder-32 calculator
+* worked on Fletcher-32 calculator
+* worked on XOR-32 calculator
+
+20090809
+* updated common and file_io
+* worked on data characteristics analyzer
+
+20081024
+* Created initial version to calculate a CRC of a part of file data
+
