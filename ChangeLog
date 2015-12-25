@@ -1,5 +1,4 @@
 TODO
-* replace individual copyright_fprint by atoolsoutput_copyright_fprint
 * create xor tool that will byte-wise xor a file using a "key"
 * create equivalent of sigfind that is more powerful
   can handle more than 4 byte signatures
@@ -47,6 +46,7 @@ Filetime:
 20151225
 * worked on merging atools and assorted
 * merged crc32 and wcrc32
+* replaced individual copyright_fprint by assorted_output_copyright_fprint
 
 20150612
 * worked on lzxpressdecompress
@@ -54,7 +54,7 @@ Filetime:
 20141203
 * worked on rc4decrypt
 * worked on lzxpressdecompress
-* worked on moving copyright_fprint to atoolsoutput_copyright_fprint
+* worked on moving copyright_fprint to assorted_output_copyright_fprint
 
 20140512
 * worked on lzxpressdecompress
