@@ -24,6 +24,7 @@ bin_PROGRAMS = \
 	crc64sum \
 	fletcher32sum \
 	lzfudecompress \
+	lzxpressdecompress \
 	rc4crypt \
 	xor32sum \
 	xor64sum
@@ -136,6 +137,25 @@ lzfudecompress_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@
 
+lzxpressdecompress_SOURCES = \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libcstring.h \
+	assorted_libcsystem.h \
+	assorted_libfwnt.h \
+	assorted_output.c assorted_output.h \
+	lzxpressdecompress.c
+
+lzxpressdecompress_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBFWNT_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
+
 rc4crypt_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
@@ -210,6 +230,8 @@ splint:
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(fletcher32sum_SOURCES)
 	@echo "Running splint on lzfudecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzfudecompress_SOURCES)
+	@echo "Running splint on lzxpressdecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzxpressdecompress_SOURCES)
 	@echo "Running splint on rc4crypt ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(rc4crypt_SOURCES)
 	@echo "Running splint on xor32sum ..."
