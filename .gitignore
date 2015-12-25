@@ -110,6 +110,7 @@ stamp-h[1-9]
 /src/adler32sum
 /src/crc32sum
 /src/crc64sum
+/src/rc4crypt
 /tests/input
 /tests/tmp*
 

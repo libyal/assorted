@@ -20,7 +20,8 @@ AM_LDFLAGS = @STATIC_LDFLAGS@
 bin_PROGRAMS = \
 	adler32sum \
 	crc32sum \
-	crc64sum
+	crc64sum \
+	rc4crypt
 
 adler32sum_SOURCES = \
 	adler32.c adler32.h \
@@ -76,6 +77,25 @@ crc64sum_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@
 
+rc4crypt_SOURCES = \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libcstring.h \
+	assorted_libcsystem.h \
+	assorted_libuna.h \
+	assorted_output.c assorted_output.h \
+	rc4.c rc4.h \
+	rc4crypt.c
+
+rc4crypt_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
+
 MAINTAINERCLEANFILES = \
 	Makefile.in
 
@@ -89,4 +109,6 @@ splint:
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(crc32sum_SOURCES)
 	@echo "Running splint on crc64sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(crc64sum_SOURCES)
+	@echo "Running splint on rc4crypt ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(rc4crypt_SOURCES)
 
