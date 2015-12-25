@@ -1,5 +1,5 @@
 /*
- * rc4crypt de- or encrypts data using RC4
+ * De- or encrypts data using RC4
  *
  * Copyright (c) 2008-2015, Joachim Metz <joachim.metz@gmail.com>
  *
