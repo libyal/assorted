@@ -184,7 +184,7 @@ int rc4_context_set_key(
 		return( -1 );
 	}
 	if( ( key_bit_size == 0 )
-	 || ( ( key_bit_size & 8 ) != 0 ) )
+	 || ( ( key_bit_size % 8 ) != 0 ) )
 	{
 		libcerror_error_set(
 		 error,
