@@ -76,7 +76,15 @@ def SuperFastHash(key):
 
 
 class CacheAddress(object):
-  """Class that contains a cache address."""
+  """Class that contains a cache address.
+
+  Attributes:
+    block_number: an integer containing the block data file number.
+    block_offset: an integer containing the offset within the block data file.
+    block_size: an integer containing the block size.
+    filename: a string containing the name of the block data file.
+    value: an integer containing the cache address.
+  """
   FILE_TYPE_SEPARATE = 0
   FILE_TYPE_BLOCK_RANKINGS = 1
   FILE_TYPE_BLOCK_256 = 2
@@ -99,10 +107,10 @@ class CacheAddress(object):
   _FILE_TYPE_BLOCK_SIZES = [0, 36, 256, 1024, 4096]
 
   def __init__(self, cache_address):
-    """Initializes the cache address object.
+    """Initializes a cache address object.
 
     Args:
-      cache_address: the cache address value.
+      cache_address: an integer containing the cache address.
     """
     super(CacheAddress, self).__init__()
     self.block_number = None
@@ -160,10 +168,20 @@ class CacheAddress(object):
 
 
 class CacheEntry(object):
-  """Class that contains a cache entry."""
+  """Class that contains a cache entry.
+
+  Attributes:
+    creation_time: an integer containing the creation time, in number of
+                   micro seconds since January 1, 1970, 00:00:00 UTC.
+    hash: an integer containing the super fast hash of the key.
+    key: a binary string containing the key.
+    next: an integer containing the cache address of the next cache entry.
+    rankings_node: an integer containing the cache address of the rankings
+                   node.
+  """
 
   def __init__(self):
-    """Initializes the cache entry object."""
+    """Initializes a cache entry object."""
     super(CacheEntry, self).__init__()
     self.creation_time = None
     self.hash = None
@@ -573,8 +591,8 @@ class DataBlockFile(object):
     cache_entry.creation_time = cache_entry_struct.get(u'creation_time')
 
     byte_array = cache_entry_struct.get(u'key')
-    string = u''.join(map(chr, byte_array))
-    cache_entry.key, _, _ = string.partition(u'\x00')
+    byte_string = b''.join(map(chr, byte_array))
+    cache_entry.key, _, _ = byte_string.partition(b'\x00')
 
     if self._debug:
       print(u'Hash\t\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(cache_entry.hash))
@@ -616,7 +634,16 @@ class DataBlockFile(object):
       print(u'Self hash\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
           cache_entry_struct.get(u'self_hash')))
 
-      print(u'Key\t\t\t\t\t\t\t\t\t: {0:s}'.format(cache_entry.key))
+      try:
+        cache_entry_key = cache_entry.key.decode(u'ascii')
+      except UnicodeDecodeError:
+        logging.warning(
+            u'Unable to decode cache entry key at cache address: '
+            u'0x{0:08x}. Characters that cannot be decoded will be '
+            u'replaced with "?" or "\\ufffd".').format(cache_address.value))
+        cache_entry_key = cache_entry.key.decode(u'ascii', errors=u'replace')
+
+      print(u'Key\t\t\t\t\t\t\t\t\t: {0:s}'.format(cache_entry_key))
 
       # TODO: calculate and verify hash.
 
@@ -691,7 +718,7 @@ def Main():
 
     data_block_files = {}
     have_all_data_block_files = True
-    for cache_address in index_file.index_table.itervalues():
+    for cache_address in iter(index_file.index_table.values()):
       if cache_address.filename not in data_block_files:
         data_block_file_path = os.path.join(
             options.source, cache_address.filename)
@@ -709,7 +736,7 @@ def Main():
 
     if have_all_data_block_files:
       # TODO: read the cache entries from the data block files
-      for cache_address in index_file.index_table.itervalues():
+      for cache_address in iter(index_file.index_table.values()):
         cache_address_chain_length = 0
         while cache_address.value != 0x00000000:
           if cache_address_chain_length >= 64:
@@ -728,7 +755,16 @@ def Main():
           #     cache_address.GetDebugString()))
           cache_entry = data_file.ReadCacheEntry(cache_address.block_offset)
 
-          # print(u'Url\t\t: {0:s}'.format(cache_entry.key))
+          try:
+            cache_entry_key = cache_entry.key.decode(u'ascii')
+          except UnicodeDecodeError:
+            logging.warning(
+                u'Unable to decode cache entry key at cache address: '
+                u'0x{0:08x}. Characters that cannot be decoded will be '
+                u'replaced with "?" or "\\ufffd".').format(cache_address.value))
+            cache_entry_key = cache_entry.key.decode(u'ascii', errors=u'replace')
+
+          # print(u'Url\t\t: {0:s}'.format(cache_entry_key))
 
           date_string = (datetime.datetime(1601, 1, 1) + datetime.timedelta(
               microseconds=cache_entry.creation_time))
@@ -736,12 +772,13 @@ def Main():
           # print(u'Creation time\t: {0!s}'.format(date_string))
 
           # print(u'')
+
           print(u'{0!s}\t{1:s}'.format(date_string, cache_entry.key))
 
           cache_address = cache_entry.next
           cache_address_chain_length += 1
 
-    for data_block_file in data_block_files.itervalues():
+    for data_block_file in iter(data_block_files.values()):
       data_block_file.Close()
 
     index_file.Close()
