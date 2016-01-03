@@ -33,7 +33,7 @@ class IndexBinaryTreeFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(IndexBinaryTreeFile, self).__init__()
     self._debug = debug
@@ -337,7 +337,7 @@ class MappingFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(MappingFile, self).__init__()
     self._debug = debug
@@ -534,7 +534,7 @@ class ObjectsDataFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(ObjectsDataFile, self).__init__()
     self._debug = debug
@@ -592,6 +592,7 @@ class ObjectsDataFile(object):
       # TODO: add debug print
 
     # TODO: implement
+    _ = object_descriptor_struct
 
   def Close(self):
     """Closes the change.log file."""

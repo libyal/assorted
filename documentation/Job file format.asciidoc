@@ -1,5 +1,4 @@
-= Title
-Sub title
+= The Windows Job file format
 
 :toc:
 :toclevels: 4
@@ -7,15 +6,22 @@ Sub title
 :numbered!:
 [abstract]
 == Summary
+The Windows Job file format are used by the Task Scheduler subsystem of
+Windows. This specification is based on available documentation and was 
+enhanced by reverse engineering of the file format. 
+
+This document is intended as a working document for the Windows Job file
+format specification. Which should allow existing Open Source forensic 
+tooling to be able to process these file types.
 
 [preface]
 == Document information
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | 
+| Abstract: | This document contains information about the Windows Job file format
 | Classification: | Public
-| Keywords: | 
+| Keywords: | Job file, .job
 |===
 
 [preface]
@@ -34,40 +40,151 @@ in the section entitled "GNU Free Documentation License".
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
-| 0.0.1 | J.B. Metz | | Initial version.
+| 0.0.1 | J.B. Metz | January 2016 | Initial version.
 |===
 
 :numbered:
 == Overview
+The job file consists of:
+
+* fixed size data section
+* variable size data section
 
 [cols="1,5",options="header"]
 |===
 | Characteristics | Description
-| Byte order | 
+| Byte order | little-endian
 | Date and time values | 
 | Character strings | 
 |===
 
-=== Heading 2
+=== Fixed size data section
+The fixed size data (FIXDLEN_DATA) is 68 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | Signature
+| 0 | 2 | | Product version +
+See section: <<product_versions,Product versions>>
+| 2 | 2 | | Format version
+| 4 | 16 | | Job identifier +
+Contains a UUID stored in little-endian
+| 20 | 2 | | Application name size offset +
+Contains the offest of the size of the application name string +
+The offset is relative from the start of the file
+| 22 | 2 | | Trigger offset +
+The offset is relative from the start of the file
+| 24 | 2 | | Error retry count
+| 26 | 2 | | Error retry interval +
+Contains a value in minutes
+| 28 | 2 | | Idle deadline +
+Contains a value in minutes
+| 30 | 2 | | Idle wait +
+Contains a value in minutes
+| 32 | 4 | | Priority +
+See section: <<priority,Priority>>
+| 36 | 4 | | Maximum run time +
+Contains a value in milliseconds
+| 40 | 4 | | Exit code
+| 44 | 4 | | Status +
+See section: <<status,Status>>
+| 48 | 4 | | Flags +
+See section: <<flags,Flags>>
+| 52 | 2 | | Year +
+Contains a value ranging from 1601 to (including) 30827
+| 54 | 2 | | Month +
+Contains a value ranging from 1 to (including) 12, where 1 represents January
+| 56 | 2 | | Weekday +
+Contains a value ranging from 0 to (including) 6, where 0 represents Sunday
+| 58 | 2 | | Day +
+Contains a value ranging from 1 to (including) 31
+| 60 | 2 | | Hours +
+Contains a value ranging from 1 to (including) 23
+| 62 | 2 | | Minutes +
+Contains a value ranging from 0 to (including) 59
+| 64 | 2 | | Seconds +
+Contains a value ranging from 0 to (including) 59
+| 66 | 2 | | Milliseconds +
+Contains a value ranging from 0 to (including) 999
 |===
+
+==== [[product_versions]]Product versions
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x0400 | | Windows NT 4.0
+| 0x0500 | | Windows 2000
+| 0x0501 | | Windows XP
+| 0x0600 | | Windows Vista
+| 0x0601 | | Windows 7
+| 0x0602 | | Windows 8
+| 0x0603 | | Windows 8.1
+| 0x0a00 | | Windows 10
+|===
+
+[NOTE]
+The values above are those defined by MS-TSCH, they are known to be an 
+approximation to the actual Windows product version, and should be considered
+more of a Window API (WINAPI) compatibility version.
+
+==== [[priority]]Priority
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000020 | NORMAL_PRIORITY_CLASS | Normal priority class; no special scheduling requirements.
+| 0x00000040 | HIGH_PRIORITY_CLASS | High priority class; preempt the threads of normal or idle priority class processes
+| 0x00000080 | IDLE_PRIORITY_CLASS | Idle priority class; run only when the machine is idle.
+| 0x00000100 | REALTIME_PRIORITY_CLASS | Real-time priority class; preempt the threads of all other processes, including operating system processes performing important tasks.
+|===
+
+==== [[status]]Status
+
+[cols="1,1,5",options="header"]
+|===
+| 0x00041300 | SCHED_S_TASK_READY | Task is not running but is scheduled to run at some time in the future.
+| 0x00041301 | SCHED_S_TASK_RUNNING | Task is currently running.
+| 0x00041305 | SCHED_S_TASK_NOT_SCHEDULED | The task is not running and has no valid triggers.
+|===
+
+==== [[flags]]Flags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000001 | TASK_FLAG_INTERACTIVE | The task can interact with the logged-on user
+| 0x00000002 | TASK_FLAG_DELETE_WHEN_DONE | The task can be deleted when there are no more scheduled run times
+| 0x00000004 | TASK_FLAG_DISABLED | The task is disabled
+| | |
+| 0x00000010 | TASK_FLAG_START_ONLY_IF_IDLE | The task begins only if the computer is not in use at the scheduled time
+| 0x00000020 | TASK_FLAG_KILL_ON_IDLE_END | The task can be terminated if the computer makes an idle to non-idle transition while the task is running
+| 0x00000040 | TASK_FLAG_DONT_START_IF_ON_BATTERIES | The task cannot start if its target computer is running on battery power
+| 0x00000080 | TASK_FLAG_KILL_IF_GOING_ON_BATTERIES | The task can end, and the associated application quit if the task's target computer switches to battery power
+| 0x00000100 | TASK_FLAG_RUN_ONLY_IF_DOCKED | [yellow-background]*Unused*
+| 0x00000200 | TASK_FLAG_HIDDEN | The task is hidden
+| 0x00000400 | TASK_FLAG_RUN_IF_CONNECTED_TO_INTERNET | [yellow-background]*Unused*
+| 0x00000800 | TASK_FLAG_RESTART_ON_IDLE_RESUME | The task can start again if the computer makes a non-idle to idle transition before all the task's triggers elapse
+| 0x00001000 | TASK_FLAG_SYSTEM_REQUIRED | The task can cause the system to resume, or awaken if the system is sleeping
+| 0x00002000 | TASK_FLAG_RUN_ONLY_IF_LOGGED_ON | The task can only run if the user specified in the task is logged on interactively
+| | |
+| [yellow-background]*0x00800000* | | [yellow-background]*Unknown*
+| | |
+| [yellow-background]*0x01000000* | TASK_APPLICATION_NAME | The task has an application name defined
+|===
+
+=== Variable size data section
 
 :numbered!:
 [appendix]
 == References
 
-`[REFERENCE]`
+`[MSDN]`
 
 [cols="1,5",options="header"]
 |===
-| Title: | 
-| Author(s): | 
-| Date: | 
-| URL: | 
+| Title: | MS-TSCH: Task Scheduler Service Remoting Protocol
+| URL: | https://msdn.microsoft.com/en-us/library/cc248263.aspx
 |===
 
 [appendix]

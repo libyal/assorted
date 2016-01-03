@@ -6,7 +6,7 @@
 :numbered!:
 [abstract]
 == Summary
-The Windows Restore Point format were used by the System Restore subsystem
+The Windows Restore Point formats were used by the System Restore subsystem
 prior to Windows Vista. This specification is based on available documentation
 and was enhanced by reverse engineering of the file format. 
 

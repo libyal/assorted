@@ -73,7 +73,7 @@ class WMIRepositoryObjectsDataFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(WMIRepositoryObjectsDataFile, self).__init__()
     self._debug = debug

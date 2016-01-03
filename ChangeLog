@@ -43,6 +43,9 @@ Fletcher-16
 Filetime:
 * create equivalent tool in libfdatetime
 
+20160103
+* 2016 update
+
 20151225
 * worked on merging atools and assorted
 * merged crc32 and wcrc32

@@ -208,7 +208,7 @@ class AutomaticDestinationsFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(AutomaticDestinationsFile, self).__init__()
     self._debug = debug
@@ -228,7 +228,8 @@ class AutomaticDestinationsFile(object):
     """
     olecf_item = self._olecf_file.root_item.get_sub_item_by_name(u'DestList')
 
-    # TODO
+    # TODO: implement
+    _ = olecf_item
 
   def _ReadLNKFile(self, olecf_item):
     """Reads a LNK file.
@@ -343,7 +344,7 @@ class CustomDestinationsFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(CustomDestinationsFile, self).__init__()
     self._debug = debug

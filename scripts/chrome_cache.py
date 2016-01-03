@@ -228,7 +228,7 @@ class IndexFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(IndexFile, self).__init__()
     self._debug = debug
@@ -460,7 +460,7 @@ class DataBlockFile(object):
 
     Args:
       debug: optional boolean value to indicate if debug information should
-             be printed. The default is false.
+             be printed.
     """
     super(DataBlockFile, self).__init__()
     self._debug = debug
@@ -637,7 +637,7 @@ class DataBlockFile(object):
       try:
         cache_entry_key = cache_entry.key.decode(u'ascii')
       except UnicodeDecodeError:
-        logging.warning(
+        logging.warning((
             u'Unable to decode cache entry key at cache address: '
             u'0x{0:08x}. Characters that cannot be decoded will be '
             u'replaced with "?" or "\\ufffd".').format(cache_address.value))
@@ -758,13 +758,15 @@ def Main():
           try:
             cache_entry_key = cache_entry.key.decode(u'ascii')
           except UnicodeDecodeError:
-            logging.warning(
+            logging.warning((
                 u'Unable to decode cache entry key at cache address: '
                 u'0x{0:08x}. Characters that cannot be decoded will be '
                 u'replaced with "?" or "\\ufffd".').format(cache_address.value))
-            cache_entry_key = cache_entry.key.decode(u'ascii', errors=u'replace')
+            cache_entry_key = cache_entry.key.decode(
+                u'ascii', errors=u'replace')
 
-          # print(u'Url\t\t: {0:s}'.format(cache_entry_key))
+          # TODO: print(u'Url\t\t: {0:s}'.format(cache_entry_key))
+          _ = cache_entry_key
 
           date_string = (datetime.datetime(1601, 1, 1) + datetime.timedelta(
               microseconds=cache_entry.creation_time))
