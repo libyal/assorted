@@ -145,8 +145,136 @@ a CRC-32 of the stored data
 |===
 
 == The decryption header definition
+[yellow-background]*TODO: structure the following information*
 
 [yellow-background]*TODO: migrate remaining documentation*
+
+The archive extra data record definition:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | "PK\x06\x08" | the signature
+| 4 | 4 | | extra field length in little endian
+| 8 | ... | | extra field data
+|===
+
+The file header:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | "PK\x01\x02" | the signature
+| 4 | 2 | | version made by
+| 6 | 2 | | version needed to extract
+| 8 | 2 | | general purpose bit flag
+| 10 | 2 | | compression method
+| 12 | 2 | | last modification file time
+| 14 | 2 | | last modification file date
+| 16 | 4 | | crc-32
+| 20 | 4 | | compressed size
+| 24 | 4 | | uncompressed size
+| 28 | 2 | | filename length in little endian
+| 30 | 2 | | extra field length in little endian
+| 32 | 2 | | file comment length in little endian
+| 34 | 2 | | disk number start
+| 36 | 2 | | internal file attributes
+| 38 | 4 | | external file attributes
+| 42 | 4 | | relative offset of local header
+|===
+
+The file header definition is directly followed by data:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 46 | ... | | filename
+| ... | ... | | extra field
+| ... | ... | | file comment
+|===
+
+The file header definition can be followed by:
+
+* a digital signature definition
+* zip64 end of central directory record
+* zip64 end of central directory locator
+
+The digital signature definition:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | "PK\x05\x05" | the signature
+| 4 | 2 | | size of data in little endian
+|===
+
+The digital signature definition is directly followed by data:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 6 | ...  | | signature data
+|===
+
+The zip64 end of central directory record definition
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | "PK\x06\x06" | the signature
+| 4 | 8 | | size of zip64 end of central directory record in little endian +
+[yellow-background]*Uncertain if its only the size of the zip64 extensible data sector or the entire zip64 end of central directory record.*
+| 12 | 2 | | version made by
+| 14 | 2 | | version needed to extract
+| 16 | 4 | | number of this disk
+| 20 | 4 | | number of the disk with the start of the central directory
+| 24 | 8 | | total number of entries in the central directory on this disk
+| 32 | 8 | | total number of entries in the central directory
+| 40 | 8 | | size of the central directory in little endian
+| 48 | 8 | | offset of start of central directory with respect to the starting disk number
+|===
+
+The digital signature definition is directly followed by data:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| ... | ... | | zip64 extensible data sector
+|===
+
+The zip64 end of central directory locator definition
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | "PK\x06\x07" | the signature
+| 4 | 4 | | number of the disk with the start of the zip64 end of central directory
+| 8 | 8 | | relative offset of the zip64 end of central directory record
+| 16 | 4 | | total number of disks
+|===
+
+The end of central directory definition:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | "PK\x05\x06" | the signature
+| 4 | 2 | | number of this disk
+| 6 | 2 | | number of the disk with the start of the central directory
+| 8 | 2 | | total number of entries in the central directory on this disk 
+| 10 | 2 | | total number of entries in the central directory
+| 12 | 4 | | size of the central directory
+| 16 | 4 | | offset of start of central directory with respect to the starting disk number
+| 20 | 2 | | zipfile comment length
+|===
+
+The end of central directory definition is directly followed by data:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 22 | ... | | zipfile comment
+|===
 
 == ZIP container format
 ZIP is also used as a container format for several file types.
