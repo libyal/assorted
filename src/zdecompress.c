@@ -1,5 +1,5 @@
 /*
- * Decompresses LZFu compressed data
+ * zdecompress decompresses zlib compressed data
  *
  * Copyright (C) 2008-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -28,13 +28,17 @@
 #include <stdlib.h>
 #endif
 
+#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
+#include <zlib.h>
+#endif
+
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
 #include "assorted_output.h"
-#include "lzfu.h"
+#include "deflate.h"
 
 /* Prints the executable usage information
  */
@@ -45,12 +49,14 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use lzfudecompress to decompress data as LZFu compressed data.\n\n" );
+	fprintf( stream, "Use zdecompress to decompress data as zlib compressed data.\n\n" );
 
-	fprintf( stream, "Usage: lzfudecompress [ -o offset ] [ -s size ] [ -hvV ] source\n\n" );
+	fprintf( stream, "Usage: zdecompress [ -o offset ] [ -s size ] [ -12hvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
+	fprintf( stream, "\t-1:     use the zlib decompression method\n" );
+	fprintf( stream, "\t-2:     use the internal decompression method (default)\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
@@ -74,7 +80,7 @@ int main( int argc, char * const argv[] )
 	libcfile_file_t *source_file       = NULL;
 	uint8_t *buffer                    = NULL;
 	uint8_t *uncompressed_data         = NULL;
-	char *program                      = "lzfudecompress";
+	char *program                      = "zdecompress";
 	char *source                       = NULL;
 	libcstring_system_integer_t option = 0;
 	size64_t source_size               = 0;
@@ -82,9 +88,11 @@ int main( int argc, char * const argv[] )
 	size_t uncompressed_data_size      = 0;
 	ssize_t read_count                 = 0;
 	ssize_t write_count                = 0;
+	int decompression_method           = 2;
 	int print_count                    = 0;
 	int result                         = 0;
 	int verbose                        = 0;
+	uLongf zlib_uncompressed_data_size = 0;
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -93,7 +101,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "ho:s:vV" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _LIBCSTRING_SYSTEM_STRING( "12ho:s:vV" ) ) ) != (libcstring_system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -108,6 +116,16 @@ int main( int argc, char * const argv[] )
 				 stdout );
 
 				return( EXIT_FAILURE );
+
+			case '1':
+				decompression_method = 1;
+
+				break;
+
+			case '2':
+				decompression_method = 2;
+
+				break;
 
 			case 'h':
 				usage_fprint(
@@ -202,7 +220,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( source_size > (size64_t) ( SSIZE_MAX / 16 ) )
+	if( source_size > (size64_t) SSIZE_MAX / 16 )
 	{
 		fprintf(
 		 stderr,
@@ -251,7 +269,7 @@ int main( int argc, char * const argv[] )
 	print_count = libcstring_narrow_string_snprintf(
 	               destination,
 	               128,
-	               "%s.lzfudecompressed",
+	               "%s.zdecompressed",
 	               source );
 
 	if( ( print_count < 0 )
@@ -279,18 +297,39 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( lzfu_decompress(
-	     buffer,
-	     source_size,
-	     uncompressed_data,
-	     &uncompressed_data_size,
-	     &error ) != 1 )
+	if( decompression_method == 1 )
 	{
-		fprintf(
-		 stderr,
-		 "Unable to decompress data.\n" );
+		zlib_uncompressed_data_size = (uLongf) uncompressed_data_size;
 
-		goto on_error;
+		if( uncompress(
+		     (Bytef *) uncompressed_data,
+		     &zlib_uncompressed_data_size,
+		     (Bytef *) buffer,
+		     (uLong) source_size ) != Z_OK )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to decompress data.\n" );
+
+			goto on_error;
+		}
+		uncompressed_data_size = (size_t) zlib_uncompressed_data_size;
+	}
+	else if( decompression_method == 2 )
+	{
+		if( deflate_decompress(
+		     buffer,
+		     source_size,
+		     uncompressed_data,
+		     &uncompressed_data_size,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to decompress data.\n" );
+
+			goto on_error;
+		}
 	}
 	/* Open the destination file
 	 */
@@ -382,13 +421,13 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stdout,
-		 "LZFu decompression:\tFAILURE\n" );
+		 "Z decompression:\tFAILURE\n" );
 
 		return( EXIT_FAILURE );
 	}
 	fprintf(
 	 stdout,
-	 "LZFu decompression:\tSUCCESS\n" );
+	 "Z decompression:\tSUCCESS\n" );
 
 	return( EXIT_SUCCESS );
 

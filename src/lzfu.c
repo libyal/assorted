@@ -262,10 +262,10 @@ int lzfu_get_uncompressed_data_size(
  * Returns 1 on success or -1 on error
  */
 int lzfu_compress(
-     uint8_t *compressed_data,
-     size_t *compressed_data_size,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
+     uint8_t *compressed_data,
+     size_t *compressed_data_size,
      libcerror_error_t **error )
 {
 	static char *function = "lzfu_compress";
@@ -314,7 +314,7 @@ int lzfu_compress(
 
 		return( -1 );
 	}
-	/* TODO implement */
+/* TODO implement */
 	libcerror_error_set(
 	 error,
 	 LIBCERROR_ERROR_DOMAIN_RUNTIME,
@@ -329,10 +329,10 @@ int lzfu_compress(
  * Returns 1 on success or -1 on error
  */
 int lzfu_decompress(
-     uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
      uint8_t *compressed_data,
      size_t compressed_data_size,
+     uint8_t *uncompressed_data,
+     size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
 	lzfu_header_t lzfu_header;

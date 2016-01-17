@@ -61,17 +61,17 @@ int lzfu_get_uncompressed_data_size(
      libcerror_error_t **error );
 
 int lzfu_compress(
-     uint8_t *compressed_data,
-     size_t *compressed_data_size,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
+     uint8_t *compressed_data,
+     size_t *compressed_data_size,
      libcerror_error_t **error );
 
 int lzfu_decompress(
-     uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
      uint8_t *compressed_data,
      size_t compressed_data_size,
+     uint8_t *uncompressed_data,
+     size_t *uncompressed_data_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

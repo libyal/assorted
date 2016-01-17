@@ -28,7 +28,9 @@ bin_PROGRAMS = \
 	mssearchdecode \
 	rc4crypt \
 	xor32sum \
-	xor64sum
+	xor64sum \
+	zcompress \
+	zdecompress
 
 adler32sum_SOURCES = \
 	adler32.c adler32.h \
@@ -231,6 +233,44 @@ xor64sum_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@
 
+zcompress_SOURCES = \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libcstring.h \
+	assorted_libcsystem.h \
+	assorted_output.c assorted_output.h \
+	deflate.c deflate.h \
+	zcompress.c
+
+zcompress_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@ \
+	@ZLIB_LIBADD@
+
+zdecompress_SOURCES = \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libcstring.h \
+	assorted_libcsystem.h \
+	assorted_output.c assorted_output.h \
+	deflate.c deflate.h \
+	zdecompress.c
+
+zdecompress_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@ \
+	@ZLIB_LIBADD@
+
 MAINTAINERCLEANFILES = \
 	Makefile.in
 
@@ -260,4 +300,8 @@ splint:
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(xor32sum_SOURCES)
 	@echo "Running splint on xor64sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(xor64sum_SOURCES)
+	@echo "Running splint on zcompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(zdecompress_SOURCES)
+	@echo "Running splint on zdecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(zdecompress_SOURCES)
 

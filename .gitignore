@@ -115,6 +115,8 @@ stamp-h[1-9]
 /src/lzfudecompress
 /src/lzxpressdecompress
 /src/mssearchdecode
+/src/zcompress
+/src/zdecompress
 /src/rc4crypt
 /src/xor32sum
 /src/xor64sum

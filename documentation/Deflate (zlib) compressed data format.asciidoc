@@ -194,8 +194,6 @@ Contains a 1s complement of the uncompressed data size
 
 The uncompressed data size can range between 0 and 65535 bytes.
 
-[yellow-background]*TODO: does the block size include the size of the header?*
-
 ==== Huffman compressed block data
 Deflate uses a Huffman tree of 288 symbols where the byte values:
 
@@ -363,11 +361,15 @@ do
     if( block_header.type == UNCOMPRESSED )
     {
         align with next byte
-        read block_header.size and block_header.size_copy
+        read and check block_header.size and block_header.size_copy
         read data of block_header.size
     }
     else
     {
+        if( block_header.type == HUFFMANN_FIXED )
+        {
+            TODO
+        }
         if( block_header.type == HUFFMANN_DYNAMIC )
         {
             read representation of code trees (see subsection below)

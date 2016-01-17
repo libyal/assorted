@@ -1,5 +1,5 @@
 /*
- * Decompresses LZFu compressed data
+ * zcompress compresses zlib compressed data
  *
  * Copyright (C) 2008-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -28,13 +28,17 @@
 #include <stdlib.h>
 #endif
 
+#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
+#include <zlib.h>
+#endif
+
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
 #include "assorted_output.h"
-#include "lzfu.h"
+#include "deflate.h"
 
 /* Prints the executable usage information
  */
@@ -45,13 +49,17 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use lzfudecompress to decompress data as LZFu compressed data.\n\n" );
+	fprintf( stream, "Use zcompress to compress data as zlib compressed data.\n\n" );
 
-	fprintf( stream, "Usage: lzfudecompress [ -o offset ] [ -s size ] [ -hvV ] source\n\n" );
+	fprintf( stream, "Usage: zcompress [ -l compression_level ] [ -o offset ]\n"
+	                 "                 [ -s size ] [ -12hvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
+	fprintf( stream, "\t-1:     use the zlib compression method\n" );
+	fprintf( stream, "\t-2:     use the internal compression method (default)\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
+	fprintf( stream, "\t-l:     compression level (default is 0)\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
@@ -73,18 +81,21 @@ int main( int argc, char * const argv[] )
 	libcfile_file_t *destination_file  = NULL;
 	libcfile_file_t *source_file       = NULL;
 	uint8_t *buffer                    = NULL;
-	uint8_t *uncompressed_data         = NULL;
-	char *program                      = "lzfudecompress";
+	uint8_t *compressed_data           = NULL;
+	char *program                      = "zcompress";
 	char *source                       = NULL;
 	libcstring_system_integer_t option = 0;
 	size64_t source_size               = 0;
 	off_t source_offset                = 0;
-	size_t uncompressed_data_size      = 0;
+	size_t compressed_data_size        = 0;
 	ssize_t read_count                 = 0;
 	ssize_t write_count                = 0;
+	int compression_level              = 0;
+	int compression_method             = 2;
 	int print_count                    = 0;
 	int result                         = 0;
 	int verbose                        = 0;
+	uLongf zlib_compressed_data_size   = 0;
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -93,7 +104,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "ho:s:vV" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _LIBCSTRING_SYSTEM_STRING( "12ho:s:vV" ) ) ) != (libcstring_system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -109,11 +120,26 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_FAILURE );
 
+			case '1':
+				compression_method = 1;
+
+				break;
+
+			case '2':
+				compression_method = 2;
+
+				break;
+
 			case 'h':
 				usage_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );
+
+			case 'l':
+				compression_level = atol( optarg );
+
+				break;
 
 			case 'o':
 				source_offset = atol( optarg );
@@ -202,7 +228,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( source_size > (size64_t) ( SSIZE_MAX / 16 ) )
+	if( source_size > (size64_t) SSIZE_MAX )
 	{
 		fprintf(
 		 stderr,
@@ -221,16 +247,16 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	uncompressed_data_size = source_size * 16;
+	compressed_data_size = source_size * 2;
 
-	uncompressed_data = (uint8_t *) memory_allocate(
-	                                 sizeof( uint8_t ) * uncompressed_data_size );
+	compressed_data = (uint8_t *) memory_allocate(
+	                               sizeof( uint8_t ) * compressed_data_size );
 
-	if( uncompressed_data == NULL )
+	if( compressed_data == NULL )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to create uncompressed data buffer.\n" );
+		 "Unable to create compressed data buffer.\n" );
 
 		goto on_error;
 	}
@@ -251,7 +277,7 @@ int main( int argc, char * const argv[] )
 	print_count = libcstring_narrow_string_snprintf(
 	               destination,
 	               128,
-	               "%s.lzfudecompressed",
+	               "%s.zcompressed",
 	               source );
 
 	if( ( print_count < 0 )
@@ -263,7 +289,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	/* Read and decompress the data
+	/* Read and compress the data
 	 */
 	read_count = libcfile_file_read_buffer(
 		      source_file,
@@ -279,18 +305,116 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( lzfu_decompress(
-	     buffer,
-	     source_size,
-	     uncompressed_data,
-	     &uncompressed_data_size,
-	     &error ) != 1 )
+	if( compression_method == 1 )
 	{
-		fprintf(
-		 stderr,
-		 "Unable to decompress data.\n" );
+#if defined( USE_COMPRESS2 )
+		zlib_compressed_data_size = (uLongf) compressed_data_size;
 
-		goto on_error;
+		if( compress2(
+		     (Bytef *) compressed_data,
+		     &zlib_compressed_data_size,
+		     (Bytef *) buffer,
+		     (uLong) source_size,
+		     compression_level ) != Z_OK )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to compress data.\n" );
+
+			goto on_error;
+		}
+		compressed_data_size = (size_t) zlib_compressed_data_size;
+#else
+		z_stream stream;
+
+		int level      = Z_DEFAULT_COMPRESSION;
+		int flush      = Z_FINISH;
+
+#if !defined( USE_DEFLATE_INIT )
+		int memLevel   = 8;
+		int method     = Z_DEFLATED;
+		int strategy   = Z_FIXED;
+		int windowBits = 15;
+#endif
+
+		stream.opaque = Z_NULL;
+		stream.zalloc = Z_NULL;
+		stream.zfree  = Z_NULL;
+
+		level         = Z_NO_COMPRESSION;
+		strategy      = Z_RLE;
+
+#if defined( USE_DEFLATE_INIT )
+		if( deflateInit(
+		     &stream,
+		     level ) != Z_OK )
+#else
+		if( deflateInit2(
+		     &stream,
+		     level,
+		     method,
+		     windowBits,
+		     memLevel,
+		     strategy ) != Z_OK )
+#endif
+		{
+			fprintf(
+			 stderr,
+			 "Unable to compress data - deflateInit2.\n" );
+
+			goto on_error;
+		}
+		stream.avail_in  = (uInt) source_size;
+		stream.next_in   = (Bytef *) buffer;
+		stream.avail_out = (uInt) compressed_data_size;
+		stream.next_out  = (Bytef *) compressed_data;
+
+		result = deflate(
+			  &stream,
+			  flush );
+
+		if( result < 0 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to compress data - deflate (%d, %s).\n",
+			 result,
+			 stream.msg );
+
+			goto on_error;
+		}
+		result = deflateEnd(
+		          &stream );
+
+		if( result != Z_OK )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to compress data - deflateEnd (%d, %s).\n",
+			 result,
+			 stream.msg );
+
+			goto on_error;
+		}
+		compressed_data_size = stream.total_out;
+#endif
+	}
+	else if( compression_method == 2 )
+	{
+		if( deflate_compress(
+		     buffer,
+		     source_size,
+		     compression_level,
+		     compressed_data,
+		     &compressed_data_size,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to compress data.\n" );
+
+			goto on_error;
+		}
 	}
 	/* Open the destination file
 	 */
@@ -318,11 +442,11 @@ int main( int argc, char * const argv[] )
 	}
 	write_count = libcfile_file_write_buffer(
 		       destination_file,
-		       uncompressed_data,
-		       uncompressed_data_size,
+		       compressed_data,
+		       compressed_data_size,
 		       &error );
 
-	if( write_count != (ssize_t) uncompressed_data_size )
+	if( write_count != (ssize_t) compressed_data_size )
 	{
 		fprintf(
 		 stderr,
@@ -373,7 +497,7 @@ int main( int argc, char * const argv[] )
 		goto on_error;
 	}
 	memory_free(
-	 uncompressed_data );
+	 compressed_data );
 
 	memory_free(
 	 buffer );
@@ -382,13 +506,13 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stdout,
-		 "LZFu decompression:\tFAILURE\n" );
+		 "Z compression:\tFAILURE\n" );
 
 		return( EXIT_FAILURE );
 	}
 	fprintf(
 	 stdout,
-	 "LZFu decompression:\tSUCCESS\n" );
+	 "Z compression:\tSUCCESS\n" );
 
 	return( EXIT_SUCCESS );
 
@@ -406,10 +530,10 @@ on_error:
 		 &destination_file,
 		 NULL );
 	}
-	if( uncompressed_data != NULL )
+	if( compressed_data != NULL )
 	{
 		memory_free(
-		 uncompressed_data );
+		 compressed_data );
 	}
 	if( buffer != NULL )
 	{
