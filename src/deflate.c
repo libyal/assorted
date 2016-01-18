@@ -932,7 +932,7 @@ int deflate_decode_huffman(
 		}
 		if( code_value < 256 )
 		{
-			if( ( data_offset + 1 ) > uncompressed_data_size )
+			if( data_offset >= uncompressed_data_size )
 			{
 				libcerror_error_set(
 				 error,
@@ -1180,6 +1180,9 @@ int deflate_compress(
 	return( -1 );
 }
 
+/* TODO split read zlib header and decompress */
+/* TODO after split add uint16_t compression_window_size */
+
 /* Decompresses data using zlib compression
  * Returns 1 on success or -1 on error
  */
@@ -1207,7 +1210,9 @@ int deflate_decompress(
 	uint8_t block_type                    = 0;
 	uint8_t compression_information       = 0;
 	uint8_t compression_method            = 0;
+	uint8_t compression_window_bits       = 0;
 	uint8_t last_block_flag               = 0;
+	uint8_t skip_bits                     = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -1220,7 +1225,6 @@ int deflate_decompress(
 
 		return( -1 );
 	}
-/* TODO add option to ignore zlib header or read header in separate function */
 	if( compressed_data_size < 2 )
 	{
 		libcerror_error_set(
@@ -1386,14 +1390,16 @@ int deflate_decompress(
 
 		return( -1 );
 	}
-	compression_window_size = 1UL << ( compression_information + 8 );
+	compression_window_bits = (uint8_t) compression_information + 8;
+	compression_window_size = 1UL << compression_window_bits;
 
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: header compression window size\t\t\t\t: %" PRIu32 "\n",
+		 "%s: header compression window size\t\t\t\t: %" PRIu32 " (%" PRIu8 ")\n",
 		 function,
-		 compression_window_size );
+		 compression_window_size,
+		 compression_window_bits );
 	}
 	if( compression_window_size > 32768 )
 	{
@@ -1412,7 +1418,7 @@ int deflate_decompress(
 		libcnotify_printf(
 		 "\n" );
 	}
-	if( ( compressed_data_offset + 1 ) >= compressed_data_size )
+	if( compressed_data_offset >= compressed_data_size )
 	{
 		libcerror_error_set(
 		 error,
@@ -1510,24 +1516,38 @@ int deflate_decompress(
 		switch( block_type )
 		{
 			case BLOCK_TYPE_UNCOMPRESSED:
-				if( deflate_bit_stream_get_value(
-				     &bit_stream,
-				     5,
-				     &value_32bit,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve value from bit stream.",
-					 function );
+				/* Ignore the bits in the buffer upto the next byte
+				 */
+				skip_bits = bit_stream.bit_buffer_size & 0x07;
 
-					return( -1 );
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+					 "%s: skip bits\t\t\t\t\t\t\t: %" PRIu8 "\n",
+					 function,
+					 skip_bits );
+				}
+				if( skip_bits > 0 )
+				{
+					if( deflate_bit_stream_get_value(
+					     &bit_stream,
+					     skip_bits,
+					     &value_32bit,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+						 "%s: unable to retrieve value from bit stream.",
+						 function );
+
+						return( -1 );
+					}
 				}
 				if( deflate_bit_stream_get_value(
 				     &bit_stream,
-				     16,
+				     32,
 				     &block_size,
 				     error ) != 1 )
 				{
@@ -1540,21 +1560,9 @@ int deflate_decompress(
 
 					return( -1 );
 				}
-				if( deflate_bit_stream_get_value(
-				     &bit_stream,
-				     16,
-				     &block_size_copy,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve value from bit stream.",
-					 function );
+				block_size_copy = block_size >> 16;
+				block_size     &= 0x0000ffffUL;
 
-					return( -1 );
-				}
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
@@ -1570,10 +1578,10 @@ int deflate_decompress(
 					libcnotify_printf(
 					 "%s: block header block size copy\t\t\t\t: %" PRIu16 " (%" PRIu32 ")\n",
 					 function,
-					 ~( (int16_t) block_size_copy ),
+					 block_size_copy ^ 0x0000ffffUL,
 					 block_size_copy );
 				}
-				block_size_copy = ~( (int16_t) block_size_copy );
+				block_size_copy ^= 0x0000ffffUL;
 
 				if( block_size != block_size_copy )
 				{
@@ -1587,6 +1595,10 @@ int deflate_decompress(
 					 block_size_copy );
 
 					return( -1 );
+				}
+				if( block_size == 0 )
+				{
+					break;
 				}
 				if( (size_t) block_size > ( bit_stream.byte_stream_size - bit_stream.byte_stream_offset ) )
 				{

@@ -129,6 +129,17 @@ int deflate_bit_stream_get_huffman_encoded_codes_array(
      uint32_t number_of_codes,
      libcerror_error_t **error );
 
+int deflate_initialize_dynamic_huffman_tables(
+     deflate_bit_stream_t *bit_stream,
+     deflate_huffman_table_t *literals_table,
+     deflate_huffman_table_t *distances_table,
+     libcerror_error_t **error );
+
+int deflate_initialize_fixed_huffman_tables(
+     deflate_huffman_table_t *literals_table,
+     deflate_huffman_table_t *distances_table,
+     libcerror_error_t **error );
+
 int deflate_compress(
      const uint8_t *uncompressed_data,
      size_t uncompressed_data_size,

@@ -354,6 +354,10 @@ not 0.
 [yellow-background]*TODO: complete this section, add text and check code*
 
 ....
+if( block_header.type == HUFFMANN_FIXED )
+{
+    initialize the fixed huffman code trees
+}
 do
 {
     read block_header from input stream
@@ -366,13 +370,9 @@ do
     }
     else
     {
-        if( block_header.type == HUFFMANN_FIXED )
-        {
-            TODO
-        }
         if( block_header.type == HUFFMANN_DYNAMIC )
         {
-            read representation of code trees (see subsection below)
+            read the dynamic huffman code trees (see subsection below)
         }
         loop (until end of block code recognized)
         {
@@ -381,20 +381,17 @@ do
             {
                 copy value (literal byte) to output stream
             }
-            else
+            else if value = end of block (256)
             {
-                if value = end of block (256)
-                {
-                    break from loop
-                }
-                else (value = 257..285)
-                {
-                    decode distance from input stream
+                 break from loop
+             }
+             else (value = 257..285)
+             {
+                 decode distance from input stream
 
-                    move backwards distance bytes in the output
-                    stream, and copy length bytes from this
-                    position to the output stream.
-                }
+                 move backwards distance bytes in the output
+                 stream, and copy length bytes from this
+                 position to the output stream.
             }
         }
     }
@@ -411,26 +408,26 @@ uint32_t adler32(
           size_t buffer_size,
           uint32_t previous_key )
 {
-	size_t buffer_iterator = 0;
-	uint32_t lower_word    = previous_key & 0xffff;
-	uint32_t upper_word    = ( previous_key >> 16 ) & 0xffff;
+    size_t buffer_iterator = 0;
+    uint32_t lower_word    = previous_key & 0xffff;
+    uint32_t upper_word    = ( previous_key >> 16 ) & 0xffff;
 
-	for( buffer_iterator = 0;
-	     buffer_iterator < buffer_size;
-	     buffer_iterator++ )
-	{
-		lower_word += buffer[ buffer_iterator ];
-		upper_word += lower_word;
+    for( buffer_iterator = 0;
+         buffer_iterator < buffer_size;
+         buffer_iterator++ )
+    {
+        lower_word += buffer[ buffer_iterator ];
+        upper_word += lower_word;
 
-		if( ( buffer_iterator != 0 )
-		 && ( ( buffer_iterator % 0x15b0 == 0 )
-		  || ( buffer_iterator == buffer_size - 1 ) ) )
-		{
-			lower_word = lower_word % 0xfff1;
-			upper_word = upper_word % 0xfff1;
-		}
-	}
-	return( ( upper_word << 16 ) | lower_word );
+        if( ( buffer_iterator != 0 )
+         && ( ( buffer_iterator % 0x15b0 == 0 )
+          ||  ( buffer_iterator == buffer_size - 1 ) ) )
+        {
+            lower_word = lower_word % 0xfff1;
+            upper_word = upper_word % 0xfff1;
+        }
+    }
+    return( ( upper_word << 16 ) | lower_word );
 }
 ....
 
