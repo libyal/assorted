@@ -834,6 +834,9 @@ int deflate_initialize_fixed_huffman_tables(
 	return( 1 );
 }
 
+/* Decodes a Huffman compressed block
+ * Returns 1 on success or -1 on error
+ */
 int deflate_decode_huffman(
      deflate_bit_stream_t *bit_stream,
      deflate_huffman_table_t *literals_table,
@@ -929,7 +932,7 @@ int deflate_decode_huffman(
 		}
 		if( code_value < 256 )
 		{
-			if( ( data_offset + 1 ) >= uncompressed_data_size )
+			if( ( data_offset + 1 ) > uncompressed_data_size )
 			{
 				libcerror_error_set(
 				 error,
@@ -1059,7 +1062,7 @@ int deflate_decode_huffman(
 
 				return( -1 );
 			}
-			if( ( data_offset + compression_size ) >= uncompressed_data_size )
+			if( ( data_offset + compression_size ) > uncompressed_data_size )
 			{
 				libcerror_error_set(
 				 error,
@@ -1217,6 +1220,7 @@ int deflate_decompress(
 
 		return( -1 );
 	}
+/* TODO add option to ignore zlib header or read header in separate function */
 	if( compressed_data_size < 2 )
 	{
 		libcerror_error_set(
