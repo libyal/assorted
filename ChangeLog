@@ -16,6 +16,7 @@ TODO
 
 * zdecompress
   - zdecompress enlarge buffer when zlib uncompress fails (size uncompressed = 81 x size compressed)
+  - add support for adler
 
 lzxpressdecompress
 - allow to set size of decompressed data
