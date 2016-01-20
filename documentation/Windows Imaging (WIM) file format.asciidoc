@@ -1,5 +1,5 @@
-= Cabinet (CAB) format
-Analysis of CAB
+= Windows Imaging (WIM) file format
+Analysis of WIM
 
 :toc:
 :toclevels: 4
@@ -7,22 +7,24 @@ Analysis of CAB
 :numbered!:
 [abstract]
 == Summary
-The Cabinet file format is an archive file format primarily used by Windows. 
-This specification is based on available documentation and was enhanced by 
-reverse engineering of the file format. 
+The Windows Imaging (WIM) fomat is a file-based disk image format that was 
+introduced in Windows Vista. It is primarily used to capture, to modify, and to 
+apply file-based disk images for rapid deployment. This specification is based 
+on available documentation and was enhanced by reverse engineering of the file 
+format. 
 
-This document is intended as a working document for the Cabinet format 
-specification. Which should allow existing Open Source forensic tooling to be 
-able to process this file type.
+This document is intended as a working document for the Windows Imaging (WIM) 
+file format format specification. Which should allow existing Open Source 
+forensic tooling to be able to process this file type.
 
 [preface]
 == Document information
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the Cabinet format
+| Abstract: | This document contains information about the Windows Imaging (WIM) file format.
 | Classification: | Public
-| Keywords: | Cabinet
+| Keywords: | Windows Imaging, WIM
 |===
 
 [preface]
@@ -41,20 +43,35 @@ in the section entitled "GNU Free Documentation License".
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
-| 0.0.1 | J.B. Metz | May 2014 | Initial version.
+| 0.0.1 | J.B. Metz | February 2014 | Initial version.
 | 0.0.2 | J.B. Metz | January 2016 | Switched to asccidoc format.
 |===
 
 :numbered:
 == Overview
-The Cabinet file format is an archive file format primarily used by Windows. 
+The Windows Imaging (WIM) fomat is a file-based disk image format that was 
+introduced in Windows Vista. It is primarily used to capture, to modify, and to 
+apply file-based disk images for rapid deployment.
+
+* .wim (single segment WIM file set)
+* .swm (multi segment WIM file set)
+
+A Windows Imaging (WIM) file consist of the following distinguishable elements:
+
+* File header
+* One or more images
+* One or more (image data) file resources
+** Metadata resource
+** Lookup table
+** XML data
+** Integrity table
 
 [cols="1,5",options="header"]
 |===
 | Characteristics | Description
 | Byte order | little-endian
 | Date and time values | 
-| Character strings | 
+| Character strings | Unicode strings are stored in UTF-16 little-endian without the byte order mark (BOM).
 |===
 
 === Test version
@@ -62,110 +79,178 @@ Files created by the following version of programs were used to test the
 information within this document:
 
 == File header
-The file header (CFHEADER) is variable of size and consists of:
+The file header (WIMHEADER_V1_PACKED) is 204 bytes of size and consists of:
+
+[yellow-background]*TODO migrate remaining documentation*
+
+=== File flags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000001 | FLAG_HEADER_RESERVED | [yellow-background]*Unknown (Reserved)*
+| 0x00000002 | FLAG_HEADER_COMPRESSION | Resources within the WIM (both file and metadata) are compressed.
+| 0x00000004 | FLAG_HEADER_READONLY | The contents of this WIM should not be changed.
+| 0x00000008 | FLAG_HEADER_SPANNED | Resource data specified by the images within this WIM may be contained in another WIM.
+| 0x00000010 | FLAG_HEADER_RESOURCE_ONLY | This WIM contains file resources only.  It does not contain any file metadata.
+| 0x00000020 | FLAG_HEADER_METADATA_ONLY | This WIM contains file metadata only.
+| 0x00000040 | FLAG_HEADER_WRITE_IN_PROGRESS | Limits one writer to the WIM file when opened with the WIM_FLAG_SHARE_WRITE mode. This flag is primarily used in the Windows Deployment Services (WDS) scenario. 
+| 0x00000080 | FLAG_HEADER_RP_FIX | [yellow-background]*Unknown (Reparse point fixup)*
+| | | 
+| 0x00010000 | FLAG_HEADER_COMPRESS_RESERVED | [yellow-background]*Unknown (Reserved)*
+| 0x00020000 | FLAG_HEADER_COMPRESS_XPRESS | Resources within the wim are compressed using XPRESS compression. Requires FLAG_HEADER_COMPRESSION to be set.
+| 0x00040000 | FLAG_HEADER_COMPRESS_LZX | Resources within the wim are compressed using LZX compression. Requires FLAG_HEADER_COMPRESSION to be set.
+|===
+
+== File resource
+[yellow-background]*TODO add text*
+
+* File resource entry
+* Chunk table
+* zero or more data chunks
+
+=== Notes
+....
+File Resource Layout
+In a compressed file resource, the chunk table is placed at the beginning of the resource. An uncompressed file is divided into 32K block sizes, compressed and then stored sequentially after the chunk table. 
+The number of chunk entries will be 
+( ( ( liOriginalSize.QuadPart + 32768 – 1 ) / 32768 ) – 1 )
+
+If the original file is >4GB, then the chunk entry is a LARGE_INTEGER; otherwise it is a DWORD. Each value is the offset of the next chunk, so you can compute what the block compressed to. For example, if the entries are 0x4000, 0x6000, 0x12000, then you know that block #1 compressed to 0x4000 bytes, block #2 compressed to 0x2000 bytes, and block #3 compressed to 0x6000 bytes. All three should expand to 32768, unless it is the end block, which will uncompress to whatever is left over. The block decompressor is determined by the WIM header’s flag value.
+....
+
+=== File resource entry
+The file resource entry (_RESHDR_DISK_SHORT) is 24 bytes of size and consists 
+of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | "MSCF" | Signature
-| 4 | 4 | | [yellow-background]*Unknown (reserved)*
-| 8 | 4 | | File size
-| 12 | 4 | | [yellow-background]*Unknown (reserved)*
-| 16 | 4 | | First file entry offset
-| 20 | 4 | | [yellow-background]*Unknown (reserved)*
-| 24 | 1 | | Minor version number
-| 25 | 1 | | Major version number
-| 26 | 2 | | Number of folder entries
-| 28 | 2 | | Number of file entries
-| 30 | 2 | | Flags
-| 32 | 2 | | Cabinet file set identifier
-| 34 | 2 | | Cabinet file segment number
-| 36 | | | 
+| 0 | 16 | | Base
+| 24 | 8 | | Original size
 |===
 
-[yellow-background]*TODO: add remaining information to table*
+==== File resource entry base
+The file resource entry base (_RESHDR_BASE_DISK) is 16 bytes of size and 
+consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 7 | | Size
+| 7 | 1 | | Flags +
+Also see section: <<file_resource_entry_flags,File resource entry flags>>
+| 8 | 8 | | Offset
+| The offset is relative to the start of the file
+|===
+
+==== [[file_resource_entry_flags]]File resource entry flags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x01 | RESHDR_FLAG_FREE | The entry is free
+| 0x02 | RESHDR_FLAG_METADATA | The entry contains metadata
+| 0x04 | RESHDR_FLAG_COMPRESSED | The entry is compressed
+| 0x08 | RESHDR_FLAG_SPANNED | The entry is spanned
+|===
+
+== Metadata Resource
+[yellow-background]*TODO add text*
+
+* Security data
+** Zero or more security descriptors
+* Zero or more directory entries
+** directory entry
+*** zero or more alternate data stream entries
+
+=== Security data
+The security data (_SECURITYBLOCK_DISK) is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Security data size +
+Includes the size of the size value itself
+| 4 | 4 | | Number of security descriptors
+| 8 | 8 x number | | Security descriptor data size array
+|===
+
+=== Directory entry
+
+[yellow-background]*TODO migrate remaining documentation*
+
+== Lookup table
+Lookup Table Layout
+
+Zero or more file entry references
+
+Lookup Table Layout
+....
+typedef struct _RESHDR_DISK
+{
+    RESHDR_DISK_SHORT;
+    USHORT                  usPartNumber;
+    DWORD                   dwRefCount;
+    BYTE                    bHash[HASH_SIZE];
+}
+....
+
+== XML data
+The file begins with a Unicode lead byte of 0xFEFF followed by the following 
+default XML structure.
 
 ....
-struct CFHEADER
-{
+<WIM>
+  <TOTALBYTES>121960277</TOTALBYTES>
+  <IMAGE INDEX="1">
+    <DIRCOUNT>526</DIRCOUNT>
+    <FILECOUNT>3030</FILECOUNT>
+    <TOTALBYTES>258581030</TOTALBYTES>
+    <CREATIONTIME>
+      <HIGHPART>0x01C6FE73</HIGHPART>
+      <LOWPART>0x4ADB2D90</LOWPART>
+    </CREATIONTIME>
+    <LASTMODIFICATIONTIME>
+      <HIGHPART>0x01C6FE73</HIGHPART>
+      <LOWPART>0x5E8DBB1E</LOWPART>
+    </LASTMODIFICATIONTIME>
+  </IMAGE>
+</WIM>
+....
 
-  u2  cbCFHeader;       /* (optional) size of per-cabinet reserved */
-                        /*    area */
-  u1  cbCFFolder;       /* (optional) size of per-folder reserved */
-                        /*    area */
-  u1  cbCFData;         /* (optional) size of per-datablock reserved */
-                        /*    area */
-  u1  abReserve[];      /* (optional) per-cabinet reserved area */
-  u1  szCabinetPrev[];  /* (optional) name of previous cabinet file */
-  u1  szDiskPrev[];     /* (optional) name of previous disk */
-  u1  szCabinetNext[];  /* (optional) name of next cabinet file */
-  u1  szDiskNext[];     /* (optional) name of next disk */
-};
+== Integrity table
+....
+typedef struct _WIMHASH
+{
+    DWORD cbSize;
+    DWORD dwNumElements;
+    DWORD dwChunkSize;
+    BYTE  abHashList[0];
+}
 ....
 
 == Notes
-....
-struct CFFOLDER
-{
-  u4  coffCabStart;  /* offset of the first CFDATA block in this 
-                     /*    folder */
-  u2  cCFData;       /* number of CFDATA blocks in this folder */
-  u2  typeCompress;  /* compression type indicator */
-  u1  abReserve[];   /* (optional) per-folder reserved area */
-};
-
-struct CFFILE
-{
-  u4  cbFile;           /* uncompressed size of this file in bytes */
-  u4  uoffFolderStart;  /* uncompressed offset of this file in the folder */
-  u2  iFolder;          /* index into the CFFOLDER area */
-  u2  date;             /* date stamp for this file */
-  u2  time;             /* time stamp for this file */
-  u2  attribs;          /* attribute flags for this file */
-  u1  szName[];         /* name of this file */
-};
-
-struct CFDATA
-{
-  u4  csum;         /* checksum of this CFDATA entry */
-  u2  cbData;       /* number of compressed bytes in this block */
-  u2  cbUncomp;     /* number of uncompressed bytes in this block */
-  u1  abReserve[];  /* (optional) per-datablock reserved area */
-  u1  ab[cbData];   /* compressed data bytes */
-};
-....
-
-....
-       0   1   2   3   4   5   6    7    8   9   A   B   C   D   E   F
-000   4D   53  43  46  00  00  00 00-FD  00  00  00  00  00  00  00  MSCF
-010   2C   00  00  00  00  00  00 00-03  01  01  00  02  00  00  00  
-020   22   06  00  00  5E  00  00 00-01  00  00  00  4D  00  00  00  
-030   00   00  00  00  00  00  6C 22-BA  59  20  00  68  65  6C  6C  hell
-040   6F   2E  63  00  4A  00  00 00-4D  00  00  00  00  00  6C  22  o.c
-050   E7   59  20  00  77  65  6C 63-6F  6D  65  2E  63  00  BD  5A  welcome.c
-060   A6   30  97  00  97  00  23 69-6E  63  6C  75  64  65  20  3C  #include <
-070   73   74  64  69  6F  2E  68 3E-0D  0A  0D  0A  76  6F  69  64  stdio.h>    void
-080   20   6D  61  69  6E  28  76 6F-69  64  29  0D  0A  7B  0D  0A  main(void)  {
-090   20   20  20  20  70  72  69 6E-74  66  28  22  48  65  6C  6C  printf("Hell
-0A0   6F   2C  20  77  6F  72  6C 64-21  5C  6E  22  29  3B  0D  0A  o, world!\n");
-0B0   7D   0D  0A  23  69  6E  63 6C-75  64  65  20  3C  73  74  64  }  #include <std
-0C0   69   6F  2E  68  3E  0D  0A 0D-0A  76  6F  69  64  20  6D  61  io.h>    void ma
-0D0   69   6E  28  76  6F  69  64 29-0D  0A  7B  0D  0A  20  20  20  in(void)  {
-0E0   20   70  72  69  6E  74  66 28-22  57  65  6C  63  6F  6D  65  printf("Welcome
-0F0   21   5C  6E  22  29  3B  0D 0A-7D  0D  0A  0D  0A              !\n");  }
-....
 
 :numbered!:
 [appendix]
 == References
 
-`[MSDN]`
+`[TECHNET]`
 
 [cols="1,5",options="header"]
 |===
-| Title: | Microsoft Cabinet Format
+| Title: | Windows Imaging File Format (WIM)
 | Author(s): | Microsoft
-| URL: | http://msdn.microsoft.com/en-us/library/bb417343.aspx
+| URL: | https://technet.microsoft.com/en-us/library/cc749478(v=ws.10).aspx
+|===
+
+[cols="1,5",options="header"]
+|===
+| Title: | Windows Imaging File Format (WIM) white paper
+| Author(s): | Microsoft
+| Date: | October 2007
+| Filename: | windows imaging file format.rtf
 |===
 
 [appendix]
