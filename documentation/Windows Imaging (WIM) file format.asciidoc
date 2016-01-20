@@ -81,9 +81,37 @@ information within this document:
 == File header
 The file header (WIMHEADER_V1_PACKED) is 204 bytes of size and consists of:
 
-[yellow-background]*TODO migrate remaining documentation*
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | "MSWIM\x00\x00" | Signature
+| 8 | 4 | | File header size
+| 12 | 4 | 1 | Format version
+| 16 | 4 | | File flags +
+Also see section: <<file_flags,File flags>>
+| 20 | 4 | | Compressed file size +
+[yellow-background]*TODO what about uncompressed files?*
+| 24 | 16 | | Identifier +
+Contains a GUID +
+[yellow-background]*TODO is this identifier unique for the file or the WIM format?*
+| 40 | 2 | | Segment number (or number that identifies the part of spanned set) +
+ Number of parts
+| 42 | 2 | | Number of segments (or number of parts in the spanned set)
+| 44 | 4 | | Number of images +
+[yellow-background]*TODO: the number of images in the file or in the file set?*
+| 48 | 24 | | Offset table file resource +
+[yellow-background]*TODO add reference*
+| 72 | 24 | | XML data file resource +
+[yellow-background]*TODO add reference*
+| 96 | 24 | | Boot metadata file resource +
+[yellow-background]*TODO add reference*
+| 120 | 4 | | Bootable image index
+| 124 | 24 | | Integrity data file resource +
+[yellow-background]*TODO add reference*
+| 148 | 60 | | [yellow-background]*Unknown (Unused?)*
+|===
 
-=== File flags
+=== [[file_flags]]File flags
 
 [cols="1,1,5",options="header"]
 |===
@@ -177,8 +205,58 @@ Includes the size of the size value itself
 |===
 
 === Directory entry
+The directory entry (_DIRENTRY) is variable of size and consists of:
 
-[yellow-background]*TODO migrate remaining documentation*
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | [yellow-background]*Unknown (File data size?)*
+| 8 | 4 | | File attributes
+| 12 | 4 | | Security descriptor index +
+Index of the security descriptor within the security descriptors array or -1 if not set
+| 16 | 8 | | Sub directory offset +
+The offset is relative from the start of the metadata resource (or section)
+| 24 | 8 | | [yellow-background]*Unknown (Unused?)*
+| 32 | 8 | | [yellow-background]*Unknown (Unused?)*
+| 40 | 8 | | Creation time +
+Contains a FILETIME
+| 48 | 8 | | Last access time +
+Contains a FILETIME
+| 56 | 8 | | Last written (or modification) time +
+Contains a FILETIME
+| 64 | 20 | | Integrity hash +
+SHA-1 message digest hash of the uncompressed data
+| 84 | 4 | | [yellow-background]* Unknown (Reparse tag)* +
+Identity of a reparse point
+| 88 | 4 | | [yellow-background]*Unknown (Reparse reserved)*
+| 92 | 8 | | [yellow-background]*Unknown (Hard link)*
+| 100 | 2 | | Number of alternate data streams
+| 102 | 2 | | Short name size
+| 104 | 2 | | Name size
+| 106 | ... | | Short name data +
+Contains an UTF-16 little-endian string +
+[yellow-background]*TODO: with or with an end of string character?*
+| ... | ... | | Name data +
+Contains an UTF-16 little-endian string +
+[yellow-background]*TODO: with or with an end of string character?*
+|===
+
+==== Alternate data stream entry
+The alternate data stream entry (_STREAMENTRY) is variable of size and consists 
+of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | [yellow-background]*Unknown (Alternate data stream data size?)*
+| 8 | 8 | | [yellow-background]*Unknown (Unused?)*
+| 16 | 20 | | Integrity hash +
+SHA-1 message digest hash of the uncompressed data
+| 36 | 2 | | Name size
+| 38 | ... | | Name data +
+Contains an UTF-16 little-endian string +
+[yellow-background]*TODO: with or with an end of string character?*
+|===
 
 == Lookup table
 Lookup Table Layout
