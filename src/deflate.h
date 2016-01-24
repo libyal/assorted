@@ -140,6 +140,13 @@ int deflate_initialize_fixed_huffman_tables(
      deflate_huffman_table_t *distances_table,
      libcerror_error_t **error );
 
+int deflate_calculate_adler32(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
 int deflate_compress(
      const uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
