@@ -20,7 +20,7 @@ able to process this file type.
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
 | Abstract: | This document contains information about the copy in and out (CPIO) archive format
 | Classification: | Public
-| Keywords: | CPIO
+| Keywords: | CPIO, Copy in and out
 |===
 
 [preface]
@@ -154,6 +154,8 @@ Contains a Sum32 if signature is "070702", or 0 otherwise
 [yellow-background]*TODO: describe checksum*
 
 == Permissions
+[yellow-background]*TODO: convert text to table*
+
 ....
 0170000  This masks the file type bits.
 0140000  File type value for sockets.
@@ -185,12 +187,12 @@ Predecessor to CPIO is the PWB/UNIX 1.0 format?
 [appendix]
 == References
 
-`[REFERENCE]`
+`[FREEBSD]`
 
 [cols="1,5",options="header"]
 |===
 | Title: | cpio, format of cpio archive files
-| Author(s): |  FreeBSD
+| Author(s): | FreeBSD
 | Date: | October 5, 2007 
 | URL: | http://people.freebsd.org/~kientzle/libarchive/man/cpio.5.txt
 |===
