@@ -121,7 +121,7 @@ The size of the path string including the end-of-string character (NUL)
 |===
 
 == New ASCII CPIO format
-The new (SVR4_ ASCII CPIO format stores the values as hexadecimal strings. The
+The new (SVR4) ASCII CPIO format stores the values as hexadecimal strings. The
 new ASCII CPIO format is technically 2 different formats one without ("newc")
 and one with a checksum ("crc"). Both support file systems having more than
 65536 i-nodes.
