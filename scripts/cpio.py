@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 import argparse
+import hashlib
 import logging
 import os
 import sys
@@ -23,6 +24,7 @@ class CPIOArchiveFileEntry(object):
       file_object: the file-like object of the CPIO archive file.
     """
     super(CPIOArchiveFileEntry, self).__init__()
+    self._current_offset = 0
     self._file_object = file_object
 
     self.data_offset = None
@@ -32,6 +34,76 @@ class CPIOArchiveFileEntry(object):
     self.path = None
     self.permissions = None
     self.size = None
+
+  def close(self):
+    """Closes the file-like object."""
+    return
+
+  def read(self, size=None):
+    """Reads a byte string from the file-like object at the current offset.
+
+       The function will read a byte string of the specified size or
+       all of the remaining data if no size was specified.
+
+    Args:
+      size: Optional integer value containing the number of bytes to read.
+            Default is all remaining data (None).
+
+    Returns:
+      A byte string containing the data read.
+
+    Raises:
+      IOError: if the read failed.
+    """
+    if self._current_offset >= self.data_size:
+      return b''
+
+    read_size = self.data_size - self._current_offset
+    if read_size > size:
+      read_size = size
+
+    file_offset = self.data_offset + self._current_offset
+    self._file_object.seek(file_offset, os.SEEK_SET)
+    data = self._file_object.read(read_size)
+    self._current_offset += len(data)
+    return data
+
+  def seek(self, offset, whence=os.SEEK_SET):
+    """Seeks an offset within the file-like object.
+
+    Args:
+      offset: The offset to seek.
+      whence: Optional value that indicates whether offset is an absolute
+              or relative position within the file. Default is SEEK_SET.
+
+    Raises:
+      IOError: if the seek failed.
+    """
+    if whence == os.SEEK_CUR:
+      self._current_offset += offset
+
+    elif whence == os.SEEK_END:
+      self._current_offset = self.data_size + offset
+
+    elif whence == os.SEEK_SET:
+      self._current_offset = offset
+
+    else:
+      raise IOError(u'Unsupported whence.')
+
+  # get_offset() is preferred above tell() by the libbfio layer used in libyal.
+  def get_offset(self):
+    """Returns the current offset into the file-like object."""
+    return self._current_offset
+
+  # Pythonesque alias for get_offset().
+  def tell(self):
+    """Returns the current offset into the file-like object."""
+    return self.get_offset()
+
+  def get_size(self):
+    """Returns the size of the file-like object."""
+    return self.data_size
 
 
 class CPIOArchiveFile(object):
@@ -128,7 +200,7 @@ class CPIOArchiveFile(object):
       file_offset: an integer containing the current file offset.
 
     Raises:
-      IOError: if the file header cannot be read.
+      IOError: if the file entry cannot be read.
     """
     if self.format is None:
       self._file_object.seek(file_offset, os.SEEK_SET)
@@ -351,13 +423,13 @@ class CPIOArchiveFile(object):
     return file_entry
 
   def Close(self):
-    """Closes the .job file."""
+    """Closes the CPIO archive file."""
     if self._file_object_opened_in_object:
       self._file_object.close()
     self._file_object = None
 
   def Open(self, filename):
-    """Opens the .job file.
+    """Opens the CPIO archive file.
 
     Args:
       filename: the filename.
@@ -376,6 +448,16 @@ class CPIOArchiveFile(object):
 
       if file_entry.path == u'TRAILER!!!':
         break
+
+      # TODO: move this to Main()
+      sha256_context = hashlib.sha256()
+      file_data = file_entry.read(4096)
+      while file_data:
+        sha256_context.update(file_data)
+        file_data = file_entry.read(4096)
+
+      print(u'SHA-256 sum: {0:s}'.format(sha256_context.hexdigest()))
+      print(u'')
 
     # TODO: print trailing data
 
