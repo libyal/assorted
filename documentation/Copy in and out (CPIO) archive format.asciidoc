@@ -84,7 +84,7 @@ The binary CPIO file entry is variable of size and consists of:
 | 8 | 2 | | User identifier (uid)
 | 10 | 2 | | Group identifier (gid)
 | 12 | 2 | | Number of links
-| 14 | 2 | | Block or character device number or 0 if not set
+| 14 | 2 | | Block or character special device number or 0 if not set
 | 16 | 4 | | Modification time +
 Stored with the most significant 16-bits in the first 2 bytes and the least significant 16-bits in the last 2 bytes
 | 20 | 2 | | Size of path string +
@@ -111,7 +111,7 @@ character or POSIX.1 format, stores the values are as octal strings.
 | 24 | 6 | | User identifier (uid)
 | 30 | 6 | | Group identifier (gid)
 | 36 | 6 | | Number of links
-| 42 | 6 | | Block or character device number or 0 if not set
+| 42 | 6 | | Block or character special device number or 0 if not set
 | 48 | 11 | | Modification time
 | 59 | 6 | | Size of path string +
 The size of the path string including the end-of-string character (NUL)
@@ -138,15 +138,17 @@ and one with a checksum ("crc"). Both support file systems having more than
 | 38 | 8 | | Number of links
 | 46 | 8 | | Modification time
 | 54 | 8 | | File size
-| 62 | 8 | | Major device number
-| 70 | 8 | | Minor device number
-| 78 | 8 | | Block or character major device number
-| 86 | 8 | | Block or character minor device number
-| 94 | 6 | | Size of path string +
+| 62 | 8 | | Device major number
+| 70 | 8 | | Device minor number
+| 78 | 8 | | Block or character special device major number
+| 86 | 8 | | Block or character special device minor number
+| 94 | 8 | | Size of path string +
 The size of the path string including the end-of-string character (NUL)
 | 102 | 8 | | Checksum +
 Contains a Sum32 if signature is "070702", or 0 otherwise 
 | 110 | ... | | Path string
+| ... | ... | | [yellow-background]*TODO: 32-bit alignment padding?* +
+Should be set to 0
 | ... | ... | | File data
 |===
 
