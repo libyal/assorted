@@ -147,9 +147,11 @@ The size of the path string including the end-of-string character (NUL)
 | 102 | 8 | | Checksum +
 Contains a Sum32 if signature is "070702", or 0 otherwise 
 | 110 | ... | | Path string
-| ... | ... | | [yellow-background]*TODO: 32-bit alignment padding?* +
+| ... | ... | | 32-bit alignment padding +
 Should be set to 0
 | ... | ... | | File data
+| ... | ... | | 32-bit alignment padding +
+Should be set to 0
 |===
 
 === Checksum

@@ -27,7 +27,10 @@ class CPIOArchiveFileEntry(object):
 
     self.data_offset = None
     self.data_size = None
+    self.inode_number = None
+    self.modification_time = None
     self.path = None
+    self.permissions = None
     self.size = None
 
 
@@ -176,19 +179,37 @@ class CPIOArchiveFile(object):
           u'{0:s}').format(exception))
 
     if self.format in (u'bin-big', u'big-little'):
-      path_string_size = file_entry_struct.path_string_size
-    elif self.format == u'odc':
-      path_string_size = int(file_entry_struct.path_string_size, 8)
-    elif self.format in (u'crc', u'newc'):
-      path_string_size = int(file_entry_struct.path_string_size, 16)
+      inode_number = file_entry_struct.inode_number
+      permissions = file_entry_struct.permissions
+      user_identifier = file_entry_struct.user_identifier
+      group_identifier = file_entry_struct.group_identifier
 
-    if self.format in (u'bin-big', u'big-little'):
+      modification_time = (
+          (file_entry_struct.modification_time_upper << 16) |
+          file_entry_struct.modification_time_lower)
+
+      path_string_size = file_entry_struct.path_string_size
+
       file_size = (
           (file_entry_struct.file_size_upper << 16) |
           file_entry_struct.file_size_lower)
+
     elif self.format == u'odc':
+      inode_number = int(file_entry_struct.inode_number, 8)
+      permissions = int(file_entry_struct.permissions, 8)
+      user_identifier = int(file_entry_struct.user_identifier, 8)
+      group_identifier = int(file_entry_struct.group_identifier, 8)
+      modification_time = int(file_entry_struct.modification_time, 8)
+      path_string_size = int(file_entry_struct.path_string_size, 8)
       file_size = int(file_entry_struct.file_size, 8)
+
     elif self.format in (u'crc', u'newc'):
+      inode_number = int(file_entry_struct.inode_number, 16)
+      permissions = int(file_entry_struct.permissions, 16)
+      user_identifier = int(file_entry_struct.user_identifier, 16)
+      group_identifier = int(file_entry_struct.group_identifier, 16)
+      modification_time = int(file_entry_struct.modification_time, 16)
+      path_string_size = int(file_entry_struct.path_string_size, 16)
       file_size = int(file_entry_struct.file_size, 16)
 
     if self._debug:
@@ -207,40 +228,11 @@ class CPIOArchiveFile(object):
 
         print(u'Device number\t\t\t\t\t\t\t\t: {0:d}'.format(device_number))
 
-      if self.format in (u'bin-big', u'big-little'):
-        inode_number = file_entry_struct.inode_number
-      elif self.format == u'odc':
-        inode_number = int(file_entry_struct.inode_number, 8)
-      elif self.format in (u'crc', u'newc'):
-        inode_number = int(file_entry_struct.inode_number, 16)
-
       print(u'Inode number\t\t\t\t\t\t\t\t: {0:d}'.format(inode_number))
-
-      if self.format in (u'bin-big', u'big-little'):
-        permissions = file_entry_struct.permissions
-      elif self.format == u'odc':
-        permissions = int(file_entry_struct.permissions, 8)
-      elif self.format in (u'crc', u'newc'):
-        permissions = int(file_entry_struct.permissions, 16)
-
       print(u'Permissions\t\t\t\t\t\t\t\t: {0:o}'.format(permissions))
-
-      if self.format in (u'bin-big', u'big-little'):
-        user_identifier = file_entry_struct.user_identifier
-      elif self.format == u'odc':
-        user_identifier = int(file_entry_struct.user_identifier, 8)
-      elif self.format in (u'crc', u'newc'):
-        user_identifier = int(file_entry_struct.user_identifier, 16)
 
       print(u'User identifier (UID)\t\t\t\t\t\t\t: {0:d}'.format(
           user_identifier))
-
-      if self.format in (u'bin-big', u'big-little'):
-        group_identifier = file_entry_struct.group_identifier
-      elif self.format == u'odc':
-        group_identifier = int(file_entry_struct.group_identifier, 8)
-      elif self.format in (u'crc', u'newc'):
-        group_identifier = int(file_entry_struct.group_identifier, 16)
 
       print(u'Group identifier (GID)\t\t\t\t\t\t\t: {0:d}'.format(
           group_identifier))
@@ -262,15 +254,6 @@ class CPIOArchiveFile(object):
 
         print(u'Special device number\t\t\t\t\t\t\t\t: {0:d}'.format(
             special_device_number))
-
-      if self.format in (u'bin-big', u'big-little'):
-        modification_time = (
-            (file_entry_struct.modification_time_upper << 16) |
-            file_entry_struct.modification_time_lower)
-      elif self.format == u'odc':
-        modification_time = int(file_entry_struct.modification_time, 8)
-      elif self.format in (u'crc', u'newc'):
-        modification_time = int(file_entry_struct.modification_time, 16)
 
       print(u'Modification time\t\t\t\t\t\t\t: {0:d}'.format(modification_time))
 
@@ -329,18 +312,41 @@ class CPIOArchiveFile(object):
 
     if self._debug:
       padding_data = self._file_object.read(padding_size)
-      print(u'Alignment padding:')
+      print(u'Path string alignment padding:')
       print(hexdump.Hexdump(padding_data))
 
-    if self._debug:
-      print(u'')
+    file_offset += padding_size
 
     file_entry = CPIOArchiveFileEntry(self._file_object)
 
     file_entry.data_offset = file_offset
     file_entry.data_size = file_size
+    file_entry.group_identifier = group_identifier
+    file_entry.inode_number = inode_number
+    file_entry.modification_time = modification_time
     file_entry.path = path_string
+    file_entry.permissions = permissions
     file_entry.size = file_entry_struct_size + path_string_size + padding_size + file_size
+    file_entry.user_identifier = user_identifier
+
+    if self.format in (u'crc', u'newc'):
+      file_offset += file_size
+
+      padding_size = file_offset % 4
+      if padding_size > 0:
+        padding_size = 4 - padding_size
+
+      if self._debug:
+        self._file_object.seek(file_offset, os.SEEK_SET)
+        padding_data = self._file_object.read(padding_size)
+
+        print(u'File data alignment padding:')
+        print(hexdump.Hexdump(padding_data))
+
+      file_entry.size += padding_size
+
+    if self._debug:
+      print(u'')
 
     return file_entry
 
