@@ -30,20 +30,16 @@ class CPIOArchiveFileEntry(object):
     self.data_offset = None
     self.data_size = None
     self.inode_number = None
+    self.mode = None
     self.modification_time = None
     self.path = None
-    self.permissions = None
     self.size = None
-
-  def close(self):
-    """Closes the file-like object."""
-    return
 
   def read(self, size=None):
     """Reads a byte string from the file-like object at the current offset.
 
-       The function will read a byte string of the specified size or
-       all of the remaining data if no size was specified.
+    The function will read a byte string of the specified size or
+    all of the remaining data if no size was specified.
 
     Args:
       size: Optional integer value containing the number of bytes to read.
@@ -91,7 +87,6 @@ class CPIOArchiveFileEntry(object):
     else:
       raise IOError(u'Unsupported whence.')
 
-  # get_offset() is preferred above tell() by the libbfio layer used in libyal.
   def get_offset(self):
     """Returns the current offset into the file-like object."""
     return self._current_offset
@@ -107,7 +102,11 @@ class CPIOArchiveFileEntry(object):
 
 
 class CPIOArchiveFile(object):
-  """Class that contains a CPIO archive file."""
+  """Class that contains a CPIO archive file.
+
+  Attributes:
+    file_format: a string containing the CPIO file format.
+  """
 
   _CPIO_SIGNATURE_BINARY_BIG_ENDIAN = b'\x71\xc7'
   _CPIO_SIGNATURE_BINARY_LITTLE_ENDIAN = b'\xc7\x71'
@@ -120,7 +119,7 @@ class CPIOArchiveFile(object):
       construct.UBInt16(u'signature'),
       construct.UBInt16(u'device_number'),
       construct.UBInt16(u'inode_number'),
-      construct.UBInt16(u'permissions'),
+      construct.UBInt16(u'mode'),
       construct.UBInt16(u'user_identifier'),
       construct.UBInt16(u'group_identifier'),
       construct.UBInt16(u'number_of_links'),
@@ -136,7 +135,7 @@ class CPIOArchiveFile(object):
       construct.ULInt16(u'signature'),
       construct.ULInt16(u'device_number'),
       construct.ULInt16(u'inode_number'),
-      construct.ULInt16(u'permissions'),
+      construct.ULInt16(u'mode'),
       construct.ULInt16(u'user_identifier'),
       construct.ULInt16(u'group_identifier'),
       construct.ULInt16(u'number_of_links'),
@@ -152,7 +151,7 @@ class CPIOArchiveFile(object):
       construct.Bytes(u'signature', 6),
       construct.Bytes(u'device_number', 6),
       construct.Bytes(u'inode_number', 6),
-      construct.Bytes(u'permissions', 6),
+      construct.Bytes(u'mode', 6),
       construct.Bytes(u'user_identifier', 6),
       construct.Bytes(u'group_identifier', 6),
       construct.Bytes(u'number_of_links', 6),
@@ -165,7 +164,7 @@ class CPIOArchiveFile(object):
       u'cpio_portable_ascii_file_entry',
       construct.Bytes(u'signature', 6),
       construct.Bytes(u'inode_number', 8),
-      construct.Bytes(u'permissions', 8),
+      construct.Bytes(u'mode', 8),
       construct.Bytes(u'user_identifier', 8),
       construct.Bytes(u'group_identifier', 8),
       construct.Bytes(u'number_of_links', 8),
@@ -187,11 +186,12 @@ class CPIOArchiveFile(object):
     """
     super(CPIOArchiveFile, self).__init__()
     self._debug = debug
+    self._file_entries = None
     self._file_object = None
     self._file_object_opened_in_object = False
     self._file_size = 0
 
-    self.format = None
+    self.file_format = None
 
   def _ReadFileEntry(self, file_offset):
     """Reads a file entry.
@@ -202,37 +202,18 @@ class CPIOArchiveFile(object):
     Raises:
       IOError: if the file entry cannot be read.
     """
-    if self.format is None:
-      self._file_object.seek(file_offset, os.SEEK_SET)
-
-      signature_data = self._file_object.read(6)
-
-      if signature_data[:2] == self._CPIO_SIGNATURE_BINARY_BIG_ENDIAN:
-        self.format = u'bin-big'
-      elif signature_data[:2] == self._CPIO_SIGNATURE_BINARY_LITTLE_ENDIAN:
-        self.format = u'bin-little'
-      elif signature_data == self._CPIO_SIGNATURE_PORTABLE_ASCII:
-        self.format = u'odc'
-      elif signature_data == self._CPIO_SIGNATURE_NEW_ASCII:
-        self.format = u'newc'
-      elif signature_data == self._CPIO_SIGNATURE_NEW_ASCII_WITH_CHECKSUM:
-        self.format = u'crc'
-
-      if self.format is None:
-        raise IOError(u'Unsupported CPIO format.')
-
     if self._debug:
       print(u'Seeking file entry at offset: 0x{0:08x}'.format(file_offset))
 
     self._file_object.seek(file_offset, os.SEEK_SET)
 
-    if self.format == u'bin-big':
+    if self.file_format == u'bin-big-endian':
       file_entry_struct = self._CPIO_BINARY_BIG_ENDIAN_FILE_ENTRY_STRUCT
-    elif self.format == u'bin-little':
+    elif self.file_format == u'bin-little-endian':
       file_entry_struct = self._CPIO_BINARY_LITTLE_ENDIAN_FILE_ENTRY_STRUCT
-    elif self.format == u'odc':
+    elif self.file_format == u'odc':
       file_entry_struct = self._CPIO_PORTABLE_ASCII_FILE_ENTRY_STRUCT
-    elif self.format in (u'crc', u'newc'):
+    elif self.file_format in (u'crc', u'newc'):
       file_entry_struct = self._CPIO_NEW_ASCII_FILE_ENTRY_STRUCT
 
     file_entry_struct_size = file_entry_struct.sizeof()
@@ -248,11 +229,11 @@ class CPIOArchiveFile(object):
     except construct.FieldError as exception:
       raise IOError((
           u'Unable to parse file entry data section with error: '
-          u'{0:s}').format(exception))
+          u'{0:s}').file_format(exception))
 
-    if self.format in (u'bin-big', u'big-little'):
+    if self.file_format in (u'bin-big-endian', u'bin-little-endian'):
       inode_number = file_entry_struct.inode_number
-      permissions = file_entry_struct.permissions
+      mode = file_entry_struct.mode
       user_identifier = file_entry_struct.user_identifier
       group_identifier = file_entry_struct.group_identifier
 
@@ -266,18 +247,18 @@ class CPIOArchiveFile(object):
           (file_entry_struct.file_size_upper << 16) |
           file_entry_struct.file_size_lower)
 
-    elif self.format == u'odc':
+    elif self.file_format == u'odc':
       inode_number = int(file_entry_struct.inode_number, 8)
-      permissions = int(file_entry_struct.permissions, 8)
+      mode = int(file_entry_struct.mode, 8)
       user_identifier = int(file_entry_struct.user_identifier, 8)
       group_identifier = int(file_entry_struct.group_identifier, 8)
       modification_time = int(file_entry_struct.modification_time, 8)
       path_string_size = int(file_entry_struct.path_string_size, 8)
       file_size = int(file_entry_struct.file_size, 8)
 
-    elif self.format in (u'crc', u'newc'):
+    elif self.file_format in (u'crc', u'newc'):
       inode_number = int(file_entry_struct.inode_number, 16)
-      permissions = int(file_entry_struct.permissions, 16)
+      mode = int(file_entry_struct.mode, 16)
       user_identifier = int(file_entry_struct.user_identifier, 16)
       group_identifier = int(file_entry_struct.group_identifier, 16)
       modification_time = int(file_entry_struct.modification_time, 16)
@@ -285,23 +266,23 @@ class CPIOArchiveFile(object):
       file_size = int(file_entry_struct.file_size, 16)
 
     if self._debug:
-      if self.format in (u'bin-big', u'big-little'):
+      if self.file_format in (u'bin-big-endian', u'bin-little-endian'):
         print(u'Signature\t\t\t\t\t\t\t\t: 0x{0:04x}'.format(
             file_entry_struct.signature))
       else:
         print(u'Signature\t\t\t\t\t\t\t\t: {0!s}'.format(
             file_entry_struct.signature))
 
-      if self.format not in (u'crc', u'newc'):
-        if self.format in (u'bin-big', u'big-little'):
+      if self.file_format not in (u'crc', u'newc'):
+        if self.file_format in (u'bin-big-endian', u'bin-little-endian'):
           device_number = file_entry_struct.device_number
-        elif self.format == u'odc':
+        elif self.file_format == u'odc':
           device_number = int(file_entry_struct.device_number, 8)
 
         print(u'Device number\t\t\t\t\t\t\t\t: {0:d}'.format(device_number))
 
       print(u'Inode number\t\t\t\t\t\t\t\t: {0:d}'.format(inode_number))
-      print(u'Permissions\t\t\t\t\t\t\t\t: {0:o}'.format(permissions))
+      print(u'Mode\t\t\t\t\t\t\t\t\t: {0:o}'.format(mode))
 
       print(u'User identifier (UID)\t\t\t\t\t\t\t: {0:d}'.format(
           user_identifier))
@@ -309,19 +290,19 @@ class CPIOArchiveFile(object):
       print(u'Group identifier (GID)\t\t\t\t\t\t\t: {0:d}'.format(
           group_identifier))
 
-      if self.format in (u'bin-big', u'big-little'):
+      if self.file_format in (u'bin-big-endian', u'bin-little-endian'):
         number_of_links = file_entry_struct.number_of_links
-      elif self.format == u'odc':
+      elif self.file_format == u'odc':
         number_of_links = int(file_entry_struct.number_of_links, 8)
-      elif self.format in (u'crc', u'newc'):
+      elif self.file_format in (u'crc', u'newc'):
         number_of_links = int(file_entry_struct.number_of_links, 16)
 
       print(u'Number of links\t\t\t\t\t\t\t\t: {0:d}'.format(number_of_links))
 
-      if self.format not in (u'crc', u'newc'):
-        if self.format in (u'bin-big', u'big-little'):
+      if self.file_format not in (u'crc', u'newc'):
+        if self.file_format in (u'bin-big-endian', u'bin-little-endian'):
           special_device_number = file_entry_struct.special_device_number
-        elif self.format == u'odc':
+        elif self.file_format == u'odc':
           special_device_number = int(file_entry_struct.special_device_number, 8)
 
         print(u'Special device number\t\t\t\t\t\t\t\t: {0:d}'.format(
@@ -329,12 +310,12 @@ class CPIOArchiveFile(object):
 
       print(u'Modification time\t\t\t\t\t\t\t: {0:d}'.format(modification_time))
 
-      if self.format not in (u'crc', u'newc'):
+      if self.file_format not in (u'crc', u'newc'):
         print(u'Path string size\t\t\t\t\t\t\t: {0:d}'.format(path_string_size))
 
       print(u'File size\t\t\t\t\t\t\t\t: {0:d}'.format(file_size))
 
-      if self.format in (u'crc', u'newc'):
+      if self.file_format in (u'crc', u'newc'):
         device_major_number = int(file_entry_struct.device_major_number, 16)
 
         print(u'Device major number\t\t\t\t\t\t\t: {0:d}'.format(device_major_number))
@@ -362,22 +343,20 @@ class CPIOArchiveFile(object):
 
     # TODO: should this be ASCII?
     path_string = path_string_data.decode(u'ascii')
-
-    if path_string[-1] == u'\x00':
-      path_string = path_string[:-1]
+    path_string, _, _ = path_string.partition(u'\x00')
 
     if self._debug:
       print(u'Path string\t\t\t\t\t\t\t\t: {0:s}'.format(path_string))
 
-    if self.format in (u'bin-big', u'big-little'):
+    if self.file_format in (u'bin-big-endian', u'bin-little-endian'):
       padding_size = file_offset % 2
       if padding_size > 0:
         padding_size = 2 - padding_size
 
-    elif self.format == u'odc':
+    elif self.file_format == u'odc':
       padding_size = 0
 
-    elif self.format in (u'crc', u'newc'):
+    elif self.file_format in (u'crc', u'newc'):
       padding_size = file_offset % 4
       if padding_size > 0:
         padding_size = 4 - padding_size
@@ -397,11 +376,12 @@ class CPIOArchiveFile(object):
     file_entry.inode_number = inode_number
     file_entry.modification_time = modification_time
     file_entry.path = path_string
-    file_entry.permissions = permissions
-    file_entry.size = file_entry_struct_size + path_string_size + padding_size + file_size
+    file_entry.mode = mode
+    file_entry.size = (
+        file_entry_struct_size + path_string_size + padding_size + file_size)
     file_entry.user_identifier = user_identifier
 
-    if self.format in (u'crc', u'newc'):
+    if self.file_format in (u'crc', u'newc'):
       file_offset += file_size
 
       padding_size = file_offset % 4
@@ -422,32 +402,19 @@ class CPIOArchiveFile(object):
 
     return file_entry
 
-  def Close(self):
-    """Closes the CPIO archive file."""
-    if self._file_object_opened_in_object:
-      self._file_object.close()
-    self._file_object = None
-
-  def Open(self, filename):
-    """Opens the CPIO archive file.
-
-    Args:
-      filename: the filename.
-    """
-    stat_object = os.stat(filename)
-    self._file_size = stat_object.st_size
-
-    self._file_object = open(filename, 'rb')
-    self._file_object_opened_in_object = True
-
+  def _ReadFileEntries(self):
+    """Reads the file entries from the cpio archive."""
     file_offset = 0
     while file_offset < self._file_size:
       file_entry = self._ReadFileEntry(file_offset)
-
       file_offset += file_entry.size
-
       if file_entry.path == u'TRAILER!!!':
         break
+
+      if file_entry.path in self._file_entries:
+        continue
+
+      self._file_entries[file_entry.path] = file_entry
 
       # TODO: move this to Main()
       sha256_context = hashlib.sha256()
@@ -458,6 +425,90 @@ class CPIOArchiveFile(object):
 
       print(u'SHA-256 sum: {0:s}'.format(sha256_context.hexdigest()))
       print(u'')
+
+  def Close(self):
+    """Closes the CPIO archive file."""
+    if not self._file_object:
+      return
+
+    if self._file_object_opened_in_object:
+      self._file_object.close()
+    self._file_entries = None
+    self._file_object = None
+
+  def FileEntryExistsByPath(self, path):
+    """Determines if file entry for a specific path exists.
+
+    Returns:
+      A boolean value indicating the file entry exists.
+    """
+    if self._file_entries is None:
+      return False
+
+    return path in self._file_entries
+
+  def GetFileEntries(self, path_prefix=u''):
+    """Retrieves the file entries.
+
+    Args:
+      path_prefix: a string containing the path prefix.
+
+    Yields:
+      A CPIO archive file entry (instance of CPIOArchiveFileEntry).
+    """
+    for path, file_entry in iter(self._file_entries.items()):
+      if path.startswith(path_prefix):
+        yield file_entry
+
+  def GetFileEntryByPath(self, path):
+    """Retrieves a file entry for a specific path.
+
+    Returns:
+      A CPIO archive file entry (instance of CPIOArchiveFileEntry) or None.
+    """
+    if self._file_entries is None:
+      return
+
+    return self._file_entries.get(path, None)
+
+  def Open(self, filename):
+    """Opens the CPIO archive file.
+
+    Args:
+      filename: the filename.
+
+    Raises:
+      IOError: if the file format signature is not supported.
+    """
+    file_object = open(filename, 'rb')
+    file_object_opened_in_object = True
+
+    file_object.seek(0, os.SEEK_SET)
+    signature_data = file_object.read(6)
+
+    self.file_format = None
+    if len(signature_data) > 2:
+      if signature_data[:2] == self._CPIO_SIGNATURE_BINARY_BIG_ENDIAN:
+        self.file_format = u'bin-big-endian'
+      elif signature_data[:2] == self._CPIO_SIGNATURE_BINARY_LITTLE_ENDIAN:
+        self.file_format = u'bin-little-endian'
+      elif signature_data == self._CPIO_SIGNATURE_PORTABLE_ASCII:
+        self.file_format = u'odc'
+      elif signature_data == self._CPIO_SIGNATURE_NEW_ASCII:
+        self.file_format = u'newc'
+      elif signature_data == self._CPIO_SIGNATURE_NEW_ASCII_WITH_CHECKSUM:
+        self.file_format = u'crc'
+
+    if self.file_format is None:
+      raise IOError(u'Unsupported CPIO format.')
+
+    stat_object = os.stat(filename)
+
+    self._file_entries = {}
+    self._file_object = file_object
+    self._file_size = stat_object.st_size
+
+    self._ReadFileEntries()
 
     # TODO: print trailing data
 
@@ -495,7 +546,7 @@ def Main():
   cpio_file.Open(options.source)
 
   print(u'CPIO archive information:')
-  print(u'\tFormat\t\t: {0:s}'.format(cpio_file.format))
+  print(u'\tFormat\t\t: {0:s}'.format(cpio_file.file_format))
   print(u'')
 
   cpio_file.Close()

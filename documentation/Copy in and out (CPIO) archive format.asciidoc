@@ -80,7 +80,7 @@ The binary CPIO file entry is variable of size and consists of:
 070707 (0x71c7) in octal where 0x71 0xc7 indicates the format is in big-endian and 0xc7 0x71 little-endian
 | 2 | 2 | | Device number
 | 4 | 2 | | Inode number
-| 6 | 2 | | Permissions (or mode)
+| 6 | 2 | | Mode (permissions and type)
 | 8 | 2 | | User identifier (uid)
 | 10 | 2 | | Group identifier (gid)
 | 12 | 2 | | Number of links
@@ -107,7 +107,7 @@ character or POSIX.1 format, stores the values are as octal strings.
 | 0 | 6 | "070707" | Signature
 | 6 | 6 | | Device number
 | 12 | 6 | | Inode number
-| 18 | 6 | | Permissions (or mode)
+| 18 | 6 | | Mode (permissions and type)
 | 24 | 6 | | User identifier (uid)
 | 30 | 6 | | Group identifier (gid)
 | 36 | 6 | | Number of links
@@ -132,7 +132,7 @@ and one with a checksum ("crc"). Both support file systems having more than
 | 0 | 6 | "070701" +
 "070702" | Signature
 | 6 | 8 | | Inode number
-| 14 | 8 | | Permissions (or mode)
+| 14 | 8 | | Mode (permissions and type)
 | 22 | 8 | | User identifier (uid)
 | 30 | 8 | | Group identifier (gid)
 | 38 | 8 | | Number of links
@@ -157,7 +157,7 @@ Should be set to 0
 === Checksum
 [yellow-background]*TODO: describe checksum*
 
-== Permissions
+== Mode (permissions and type)
 [yellow-background]*TODO: convert text to table*
 
 ....
@@ -178,6 +178,9 @@ Should be set to 0
          for world, group, and user following standard POSIX con-
          ventions.
 ....
+
+[NOTE]
+The link target of a symbolic link is stored as file data.
 
 == Notes
 Predecessor to CPIO is the PWB/UNIX 1.0 format?
