@@ -192,6 +192,7 @@ class CPIOArchiveFile(object):
     self._file_size = 0
 
     self.file_format = None
+    self.size = None
 
   def _ReadFileEntry(self, file_offset):
     """Reads a file entry.
@@ -416,15 +417,7 @@ class CPIOArchiveFile(object):
 
       self._file_entries[file_entry.path] = file_entry
 
-      # TODO: move this to Main()
-      sha256_context = hashlib.sha256()
-      file_data = file_entry.read(4096)
-      while file_data:
-        sha256_context.update(file_data)
-        file_data = file_entry.read(4096)
-
-      print(u'SHA-256 sum: {0:s}'.format(sha256_context.hexdigest()))
-      print(u'')
+    self.size = file_offset
 
   def Close(self):
     """Closes the CPIO archive file."""
@@ -542,14 +535,30 @@ def Main():
   logging.basicConfig(
       level=logging.INFO, format=u'[%(levelname)s] %(message)s')
 
-  cpio_file = CPIOArchiveFile(debug=options.debug)
-  cpio_file.Open(options.source)
+  cpio_archive_file = CPIOArchiveFile(debug=options.debug)
+  cpio_archive_file.Open(options.source)
 
   print(u'CPIO archive information:')
-  print(u'\tFormat\t\t: {0:s}'.format(cpio_file.file_format))
+  print(u'\tFormat\t\t: {0:s}'.format(cpio_archive_file.file_format))
+  print(u'\tSize\t\t: {0:d} bytes'.format(cpio_archive_file.size))
   print(u'')
 
-  cpio_file.Close()
+  for file_entry in sorted(cpio_archive_file.GetFileEntries()):
+    if file_entry.data_size == 0:
+      continue
+
+    sha256_context = hashlib.sha256()
+    file_data = file_entry.read(4096)
+    while file_data:
+      sha256_context.update(file_data)
+      file_data = file_entry.read(4096)
+
+    print(u'{0:s}\t{1:s}'.format(
+        sha256_context.hexdigest(), file_entry.path))
+
+  cpio_archive_file.Close()
+
+  print(u'')
 
   return True
 
