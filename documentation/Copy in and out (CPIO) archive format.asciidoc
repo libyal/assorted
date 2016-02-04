@@ -190,6 +190,8 @@ Predecessor to CPIO is the PWB/UNIX 1.0 format?
 `hpodc' The portable format used by HPUX's cpio (which stores device files differently).
 ....
 
+How do file entries with duplicate path need to be handled?
+
 :numbered!:
 [appendix]
 == References

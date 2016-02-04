@@ -304,7 +304,8 @@ class CPIOArchiveFile(object):
         if self.file_format in (u'bin-big-endian', u'bin-little-endian'):
           special_device_number = file_entry_struct.special_device_number
         elif self.file_format == u'odc':
-          special_device_number = int(file_entry_struct.special_device_number, 8)
+          special_device_number = int(
+              file_entry_struct.special_device_number, 8)
 
         print(u'Special device number\t\t\t\t\t\t\t\t: {0:d}'.format(
             special_device_number))
@@ -319,19 +320,25 @@ class CPIOArchiveFile(object):
       if self.file_format in (u'crc', u'newc'):
         device_major_number = int(file_entry_struct.device_major_number, 16)
 
-        print(u'Device major number\t\t\t\t\t\t\t: {0:d}'.format(device_major_number))
+        print(u'Device major number\t\t\t\t\t\t\t: {0:d}'.format(
+            device_major_number))
 
         device_minor_number = int(file_entry_struct.device_minor_number, 16)
 
-        print(u'Device minor number\t\t\t\t\t\t\t: {0:d}'.format(device_minor_number))
+        print(u'Device minor number\t\t\t\t\t\t\t: {0:d}'.format(
+            device_minor_number))
 
-        special_device_major_number = int(file_entry_struct.special_device_major_number, 16)
+        special_device_major_number = int(
+            file_entry_struct.special_device_major_number, 16)
 
-        print(u'Special device major number\t\t\t\t\t\t: {0:d}'.format(special_device_major_number))
+        print(u'Special device major number\t\t\t\t\t\t: {0:d}'.format(
+            special_device_major_number))
 
-        special_device_minor_number = int(file_entry_struct.special_device_minor_number, 16)
+        special_device_minor_number = int(
+            file_entry_struct.special_device_minor_number, 16)
 
-        print(u'Special device minor number\t\t\t\t\t\t: {0:d}'.format(special_device_minor_number))
+        print(u'Special device minor number\t\t\t\t\t\t: {0:d}'.format(
+            special_device_minor_number))
 
         print(u'Path string size\t\t\t\t\t\t\t: {0:d}'.format(path_string_size))
 
@@ -474,7 +481,6 @@ class CPIOArchiveFile(object):
       IOError: if the file format signature is not supported.
     """
     file_object = open(filename, 'rb')
-    file_object_opened_in_object = True
 
     file_object.seek(0, os.SEEK_SET)
     signature_data = file_object.read(6)
@@ -499,11 +505,53 @@ class CPIOArchiveFile(object):
 
     self._file_entries = {}
     self._file_object = file_object
+    self._file_object_opened_in_object = True
     self._file_size = stat_object.st_size
 
     self._ReadFileEntries()
 
     # TODO: print trailing data
+
+
+class CPIOArchiveFileHasher(object):
+  """Class that defines a CPIO archive file hasher."""
+
+  def __init__(self, path, debug=False):
+    """Initializes the CPIO archive file hasher object.
+
+    Args:
+      path: a string containing the path of the CPIO archive file.
+      debug: optional boolean value to indicate if debug information should
+             be printed.
+    """
+    super(CPIOArchiveFileHasher, self).__init__()
+    self._debug = debug
+    self._path = path
+
+  def HashFileEntries(self):
+    """Hashes the file entries stored in the CPIO archive file."""
+    # TODO: add support for compressed cpio files
+    # b'\x1f\x8b' => gzip
+    # b'BZ' => bzip
+    # b'\xfd7zXZ\x00' => xz (footer b'\x59\x5a')
+
+    cpio_archive_file = CPIOArchiveFile(debug=self._debug)
+    cpio_archive_file.Open(self._path)
+
+    for file_entry in sorted(cpio_archive_file.GetFileEntries()):
+      if file_entry.data_size == 0:
+        continue
+
+      sha256_context = hashlib.sha256()
+      file_data = file_entry.read(4096)
+      while file_data:
+        sha256_context.update(file_data)
+        file_data = file_entry.read(4096)
+
+      print(u'{0:s}\t{1:s}'.format(
+          sha256_context.hexdigest(), file_entry.path))
+
+    cpio_archive_file.Close()
 
 
 def Main():
@@ -518,6 +566,10 @@ def Main():
   argument_parser.add_argument(
       u'-d', u'--debug', dest=u'debug', action=u'store_true', default=False,
       help=u'enable debug output.')
+
+  argument_parser.add_argument(
+      u'--hash', dest=u'hash', action=u'store_true', default=False,
+      help=u'calculate the SHA-256 sum of the file entries.')
 
   argument_parser.add_argument(
       u'source', nargs=u'?', action=u'store', metavar=u'PATH',
@@ -535,28 +587,24 @@ def Main():
   logging.basicConfig(
       level=logging.INFO, format=u'[%(levelname)s] %(message)s')
 
-  cpio_archive_file = CPIOArchiveFile(debug=options.debug)
-  cpio_archive_file.Open(options.source)
+  # TODO: add output writer.
 
-  print(u'CPIO archive information:')
-  print(u'\tFormat\t\t: {0:s}'.format(cpio_archive_file.file_format))
-  print(u'\tSize\t\t: {0:d} bytes'.format(cpio_archive_file.size))
-  print(u'')
+  if options.hash:
+    cpio_archive_file_hasher = CPIOArchiveFileHasher(
+        options.source, debug=options.debug)
 
-  for file_entry in sorted(cpio_archive_file.GetFileEntries()):
-    if file_entry.data_size == 0:
-      continue
+    cpio_archive_file_hasher.HashFileEntries()
 
-    sha256_context = hashlib.sha256()
-    file_data = file_entry.read(4096)
-    while file_data:
-      sha256_context.update(file_data)
-      file_data = file_entry.read(4096)
+  else:
+    # TODO: move functionality to CPIOArchiveFileInfo.
+    cpio_archive_file = CPIOArchiveFile(debug=options.debug)
+    cpio_archive_file.Open(options.source)
 
-    print(u'{0:s}\t{1:s}'.format(
-        sha256_context.hexdigest(), file_entry.path))
+    print(u'CPIO archive information:')
+    print(u'\tFormat\t\t: {0:s}'.format(cpio_archive_file.file_format))
+    print(u'\tSize\t\t: {0:d} bytes'.format(cpio_archive_file.size))
 
-  cpio_archive_file.Close()
+    cpio_archive_file.Close()
 
   print(u'')
 
