@@ -4,14 +4,143 @@
 
 from __future__ import print_function
 import argparse
+import bz2
+import gzip
 import hashlib
 import logging
 import os
 import sys
 
 import construct
+import lzma
 
 import hexdump
+
+
+class DataRange(object):
+  """Class that implements an in-file data range file-like object."""
+
+  def __init__(self, file_object):
+    """Initializes the file-like object.
+
+    Args:
+      file_object: the parent file-like object.
+    """
+    super(DataRange, self).__init__()
+    self._current_offset = 0
+    self._file_object = file_object
+    self._range_offset = 0
+    self._range_size = 0
+
+  def SetRange(self, range_offset, range_size):
+    """Sets the data range (offset and size).
+
+    The data range is used to map a range of data within one file
+    (e.g. a single partition within a full disk image) as a file-like object.
+
+    Args:
+      range_offset: the start offset of the data range.
+      range_size: the size of the data range.
+
+    Raises:
+      ValueError: if the range offset or range size is invalid.
+    """
+    if range_offset < 0:
+      raise ValueError(
+          u'Invalid range offset: {0:d} value out of bounds.'.format(
+              range_offset))
+
+    if range_size < 0:
+      raise ValueError(
+          u'Invalid range size: {0:d} value out of bounds.'.format(
+              range_size))
+
+    self._range_offset = range_offset
+    self._range_size = range_size
+    self._current_offset = 0
+
+  # Note: that the following functions do not follow the style guide
+  # because they are part of the file-like object interface.
+
+  def read(self, size=None):
+    """Reads a byte string from the file-like object at the current offset.
+
+       The function will read a byte string of the specified size or
+       all of the remaining data if no size was specified.
+
+    Args:
+      size: optional integer value containing the number of bytes to read.
+            Default is all remaining data (None).
+
+    Returns:
+      A byte string containing the data read.
+
+    Raises:
+      IOError: if the read failed.
+    """
+    if self._range_offset < 0 or self._range_size < 0:
+      raise IOError(u'Invalid data range.')
+
+    if self._current_offset < 0:
+      raise IOError(
+          u'Invalid current offset: {0:d} value less than zero.'.format(
+              self._current_offset))
+
+    if self._current_offset >= self._range_size:
+      return ''
+
+    if size is None:
+      size = self._range_size
+    if self._current_offset + size > self._range_size:
+      size = self._range_size - self._current_offset
+
+    self._file_object.seek(
+        self._range_offset + self._current_offset, os.SEEK_SET)
+
+    data = self._file_object.read(size)
+
+    self._current_offset += len(data)
+
+    return data
+
+  def seek(self, offset, whence=os.SEEK_SET):
+    """Seeks an offset within the file-like object.
+
+    Args:
+      offset: the offset to seek.
+      whence: optional value that indicates whether offset is an absolute
+              or relative position within the file. Default is SEEK_SET.
+
+    Raises:
+      IOError: if the seek failed.
+    """
+    if self._current_offset < 0:
+      raise IOError(
+          u'Invalid current offset: {0:d} value less than zero.'.format(
+              self._current_offset))
+
+    if whence == os.SEEK_CUR:
+      offset += self._current_offset
+    elif whence == os.SEEK_END:
+      offset += self._range_size
+    elif whence != os.SEEK_SET:
+      raise IOError(u'Unsupported whence.')
+    if offset < 0:
+      raise IOError(u'Invalid offset value less than zero.')
+    self._current_offset = offset
+
+  def get_offset(self):
+    """Returns the current offset into the file-like object."""
+    return self._current_offset
+
+  # Pythonesque alias for get_offset().
+  def tell(self):
+    """Returns the current offset into the file-like object."""
+    return self.get_offset()
+
+  def get_size(self):
+    """Returns the size of the file-like object."""
+    return self._range_size
 
 
 class CPIOArchiveFileEntry(object):
@@ -413,7 +542,7 @@ class CPIOArchiveFile(object):
   def _ReadFileEntries(self):
     """Reads the file entries from the cpio archive."""
     file_offset = 0
-    while file_offset < self._file_size:
+    while file_offset < self._file_size or self._file_size == 0:
       file_entry = self._ReadFileEntry(file_offset)
       file_offset += file_entry.size
       if file_entry.path == u'TRAILER!!!':
@@ -433,6 +562,7 @@ class CPIOArchiveFile(object):
 
     if self._file_object_opened_in_object:
       self._file_object.close()
+      self._file_object_opened_in_object = False
     self._file_entries = None
     self._file_object = None
 
@@ -473,14 +603,34 @@ class CPIOArchiveFile(object):
 
   def Open(self, filename):
     """Opens the CPIO archive file.
-
+ 
     Args:
       filename: the filename.
-
+ 
     Raises:
       IOError: if the file format signature is not supported.
     """
+    stat_object = os.stat(filename)
+
     file_object = open(filename, 'rb')
+
+    self.OpenFileObject(file_object)
+
+    self._file_size = stat_object.st_size
+    self._file_object_opened_in_object = True
+
+  def OpenFileObject(self, file_object):
+    """Opens the CPIO archive file.
+
+    Args:
+      file_object: a file-like object.
+
+    Raises:
+      IOError: if the file is alread opened or the format signature is
+               not supported.
+    """
+    if self._file_object:
+      raise IOError(u'Already open')
 
     file_object.seek(0, os.SEEK_SET)
     signature_data = file_object.read(6)
@@ -501,12 +651,8 @@ class CPIOArchiveFile(object):
     if self.file_format is None:
       raise IOError(u'Unsupported CPIO format.')
 
-    stat_object = os.stat(filename)
-
     self._file_entries = {}
     self._file_object = file_object
-    self._file_object_opened_in_object = True
-    self._file_size = stat_object.st_size
 
     self._ReadFileEntries()
 
@@ -515,6 +661,15 @@ class CPIOArchiveFile(object):
 
 class CPIOArchiveFileHasher(object):
   """Class that defines a CPIO archive file hasher."""
+
+  _BZIP_SIGNATURE = b'BZ'
+  _CPIO_SIGNATURE_BINARY_BIG_ENDIAN = b'\x71\xc7'
+  _CPIO_SIGNATURE_BINARY_LITTLE_ENDIAN = b'\xc7\x71'
+  _CPIO_SIGNATURE_PORTABLE_ASCII = b'070707'
+  _CPIO_SIGNATURE_NEW_ASCII = b'070701'
+  _CPIO_SIGNATURE_NEW_ASCII_WITH_CHECKSUM = b'070702'
+  _GZIP_SIGNATURE = b'\x1f\x8b'
+  _XZ_SIGNATURE = b'\xfd7zXZ\x00'
 
   def __init__(self, path, debug=False):
     """Initializes the CPIO archive file hasher object.
@@ -528,30 +683,110 @@ class CPIOArchiveFileHasher(object):
     self._debug = debug
     self._path = path
 
-  def HashFileEntries(self):
-    """Hashes the file entries stored in the CPIO archive file."""
-    # TODO: add support for compressed cpio files
-    # b'\x1f\x8b' => gzip
-    # b'BZ' => bzip
-    # b'\xfd7zXZ\x00' => xz (footer b'\x59\x5a')
+  def HashFileEntries(self, output_writer):
+    """Hashes the file entries stored in the CPIO archive file.
 
-    cpio_archive_file = CPIOArchiveFile(debug=self._debug)
-    cpio_archive_file.Open(self._path)
+    Args:
+      output_writer: an output writer object.
+    """
+    stat_object = os.stat(self._path)
 
-    for file_entry in sorted(cpio_archive_file.GetFileEntries()):
-      if file_entry.data_size == 0:
-        continue
+    file_object = open(self._path, 'rb')
 
-      sha256_context = hashlib.sha256()
-      file_data = file_entry.read(4096)
-      while file_data:
-        sha256_context.update(file_data)
+    file_offset = 0
+    file_size = stat_object.st_size
+
+    # initrd files can consist of an uncompressed and compressed cpio archive.
+    # Keeping the functionality in this script for now, but this likely
+    # needs to be in a separate initrd hashing script.
+    while file_offset < stat_object.st_size:
+      file_object.seek(file_offset, os.SEEK_SET)
+      signature_data = file_object.read(6)
+
+      file_type = None
+      if len(signature_data) > 2:
+        if (signature_data[:2] in (
+            self._CPIO_SIGNATURE_BINARY_BIG_ENDIAN, 
+            self._CPIO_SIGNATURE_BINARY_LITTLE_ENDIAN) or
+            signature_data in (
+            self._CPIO_SIGNATURE_PORTABLE_ASCII,
+            self._CPIO_SIGNATURE_NEW_ASCII,
+            self._CPIO_SIGNATURE_NEW_ASCII_WITH_CHECKSUM)):
+          file_type = u'cpio'
+        elif signature_data[:2] == self._GZIP_SIGNATURE:
+          file_type = u'gzip'
+        elif signature_data[:2] == self._BZIP_SIGNATURE:
+          file_type = u'bzip'
+        elif signature_data == self._XZ_SIGNATURE:
+          file_type = u'xz'
+
+      if not file_type:
+        output_writer.WriteText(
+            u'Unsupported file type at offset: 0x{0:08x}.'.format(file_offset))
+        return
+
+      if file_type == u'cpio':
+        file_object.seek(file_offset, os.SEEK_SET)
+        cpio_file_object = file_object
+      elif file_type in (u'bzip', u'gzip', u'xz'):
+        compressed_data_file_object = DataRange(file_object)
+        compressed_data_file_object.SetRange(
+            file_offset, file_size - file_offset)
+
+        if file_type == u'bzip':
+          cpio_file_object = bz2.BZ2File(compressed_data_file_object)
+        elif file_type == u'gzip':
+          cpio_file_object = gzip.GzipFile(fileobj=compressed_data_file_object)
+        elif file_type == u'xz':
+          cpio_file_object = lzma.LZMAFile(compressed_data_file_object)
+
+      cpio_archive_file = CPIOArchiveFile(debug=self._debug)
+      cpio_archive_file.OpenFileObject(cpio_file_object)
+
+      for file_entry in sorted(cpio_archive_file.GetFileEntries()):
+        if file_entry.data_size == 0:
+          continue
+
+        sha256_context = hashlib.sha256()
         file_data = file_entry.read(4096)
+        while file_data:
+          sha256_context.update(file_data)
+          file_data = file_entry.read(4096)
 
-      print(u'{0:s}\t{1:s}'.format(
-          sha256_context.hexdigest(), file_entry.path))
+        output_writer.WriteText(u'{0:s}\t{1:s}'.format(
+            sha256_context.hexdigest(), file_entry.path))
 
-    cpio_archive_file.Close()
+      file_offset += cpio_archive_file.size
+
+      padding_size = file_offset %  16
+      if padding_size > 0:
+        file_offset += 16 - padding_size
+
+      cpio_archive_file.Close()
+
+
+class StdoutWriter(object):
+  """Class that defines a stdout output writer."""
+
+  def Close(self):
+    """Closes the output writer object."""
+    return
+
+  def Open(self):
+    """Opens the output writer object.
+
+    Returns:
+      A boolean containing True if successful or False if not.
+    """
+    return True
+
+  def WriteText(self, text):
+    """Writes text to stdout.
+
+    Args:
+      text: the text to write.
+    """
+    print(text)
 
 
 def Main():
@@ -587,26 +822,34 @@ def Main():
   logging.basicConfig(
       level=logging.INFO, format=u'[%(levelname)s] %(message)s')
 
-  # TODO: add output writer.
+  output_writer = StdoutWriter()
+
+  if not output_writer.Open():
+    print(u'Unable to open output writer.')
+    print(u'')
+    return False
 
   if options.hash:
     cpio_archive_file_hasher = CPIOArchiveFileHasher(
         options.source, debug=options.debug)
 
-    cpio_archive_file_hasher.HashFileEntries()
+    cpio_archive_file_hasher.HashFileEntries(output_writer)
 
   else:
     # TODO: move functionality to CPIOArchiveFileInfo.
     cpio_archive_file = CPIOArchiveFile(debug=options.debug)
     cpio_archive_file.Open(options.source)
 
-    print(u'CPIO archive information:')
-    print(u'\tFormat\t\t: {0:s}'.format(cpio_archive_file.file_format))
-    print(u'\tSize\t\t: {0:d} bytes'.format(cpio_archive_file.size))
+    output_writer.WriteText(u'CPIO archive information:')
+    output_writer.WriteText(u'\tFormat\t\t: {0:s}'.format(
+        cpio_archive_file.file_format))
+    output_writer.WriteText(u'\tSize\t\t: {0:d} bytes'.format(
+        cpio_archive_file.size))
 
     cpio_archive_file.Close()
 
-  print(u'')
+  output_writer.WriteText(u'')
+  output_writer.Close()
 
   return True
 

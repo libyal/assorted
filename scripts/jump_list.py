@@ -139,6 +139,11 @@ class DataRange(object):
     """Returns the current offset into the file-like object."""
     return self._current_offset
 
+  # Pythonesque alias for get_offset().
+  def tell(self):
+    """Returns the current offset into the file-like object."""
+    return self.get_offset()
+
   def get_size(self):
     """Returns the size of the file-like object."""
     return self._range_size
