@@ -8,11 +8,11 @@ import bz2
 import gzip
 import hashlib
 import logging
+import lzma
 import os
 import sys
 
 import construct
-import lzma
 
 import hexdump
 
@@ -141,6 +141,10 @@ class DataRange(object):
   def get_size(self):
     """Returns the size of the file-like object."""
     return self._range_size
+
+  def seekable(self):
+    """Determines if a file-like object is seekable."""
+    return True
 
 
 class CPIOArchiveFileEntry(object):
