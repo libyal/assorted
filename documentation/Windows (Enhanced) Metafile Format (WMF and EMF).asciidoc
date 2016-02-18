@@ -204,7 +204,8 @@ An EMF file consists of:
 * Zero or more EMF records
 
 === EMF header record
-The EMF header record (ENHMETAHEADER) is 18 bytes of size and consists of:
+The EMF header record (ENHMETAHEADER) is 84, 96 or 108 bytes of size and 
+consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -219,25 +220,25 @@ Contains the number of bytes
 | 44 | 4 | 0x10000 | Format version
 | 48 | 4 | | File size +
 Contains the number of bytes
-| 48 | 4 | | Number of records
-| 52 | 2 | | Number of handles in the enhanced-metafile handle table +
+| 52 | 4 | | Number of records
+| 56 | 2 | | Number of handles in the enhanced-metafile handle table +
 Index zero in this table is reserved
-| 54 | 2 | 0 | [yellow-background]*Unknown (reserved)*
-| 56 | 4 | | Description string size +
+| 58 | 2 | 0 | [yellow-background]*Unknown (reserved)*
+| 60 | 4 | | Description string size +
 Contains the number of characters
-| 60 | 4 | | Description string offset +
+| 64 | 4 | | Description string offset +
 The offset is relative from the start of the EMF header record
-| 64 | 4 | | Number of entries in the palette
-| 68 | | | Reference device resolution +
+| 68 | 4 | | Number of palette entries
+| 72 | 8 | | Reference device resolution +
 Contains the number of pixels
-| ... | | | Reference device resolution +
+| 76 | 8 | | Reference device resolution +
 Contains the number of millimeters
-4+| _WINVER >= 0x0400_
-| ... | | | Size of the last recorded pixel format descriptor
-| ... | | | Offset of the last recorded pixel format descriptor
-| ... | | | Has OpenGL records
-4+| _WINVER >= 0x0500_
-| ... | | | Reference device resolution +
+4+| _Windows NT 4 or later (WINVER >= 0x0400)_
+| 88 | 4 | | Size of the last recorded pixel format descriptor
+| 92 | 4 | | Offset of the last recorded pixel format descriptor
+| 96 | 4 | | Has OpenGL records
+4+| _Windows 2000 or later (WINVER >= 0x0500)_
+| 100 | 8 | | Reference device resolution +
 Contains the number of micrometers
 |===
 

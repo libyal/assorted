@@ -63,10 +63,10 @@ class JobFile(object):
     """Reads the fixed size data section.
 
     Raises:
-      IOError: if the file header cannot be read.
+      IOError: if the fixed size data section cannot be read.
     """
     if self._debug:
-      print(u'Seeking fixed size data offset: 0x{0:08x}'.format(0))
+      print(u'Seeking fixed size data section offset: 0x{0:08x}'.format(0))
 
     self._file_object.seek(0, os.SEEK_SET)
 
@@ -168,6 +168,30 @@ class JobFile(object):
     self._ReadVariableSizeDataSection()
 
 
+class StdoutWriter(object):
+  """Class that defines a stdout output writer."""
+
+  def Close(self):
+    """Closes the output writer object."""
+    return
+
+  def Open(self):
+    """Opens the output writer object.
+
+    Returns:
+      A boolean containing True if successful or False if not.
+    """
+    return True
+
+  def WriteText(self, text):
+    """Writes text to stdout.
+
+    Args:
+      text: the text to write.
+    """
+    print(text)
+
+
 def Main():
   """The main program function.
 
@@ -194,15 +218,25 @@ def Main():
     print(u'')
     return False
 
+  output_writer = StdoutWriter()
+
+  if not output_writer.Open():
+    print(u'Unable to open output writer.')
+    print(u'')
+    return False
+
   logging.basicConfig(
       level=logging.INFO, format=u'[%(levelname)s] %(message)s')
 
   job_file = JobFile(debug=options.debug)
   job_file.Open(options.source)
 
-  print(u'Windows Task Scheduler Job information:')
+  output_writer.WriteText(u'Windows Task Scheduler Job information:')
+  # TODO: print job information.
 
   job_file.Close()
+
+  output_writer.Close()
 
   return True
 
