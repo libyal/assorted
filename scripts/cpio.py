@@ -573,6 +573,9 @@ class CPIOArchiveFile(object):
   def FileEntryExistsByPath(self, path):
     """Determines if file entry for a specific path exists.
 
+    Args:
+      path: a string containing the file entry path.
+
     Returns:
       A boolean value indicating the file entry exists.
     """
@@ -596,6 +599,9 @@ class CPIOArchiveFile(object):
 
   def GetFileEntryByPath(self, path):
     """Retrieves a file entry for a specific path.
+
+    Args:
+      path: a string containing the file entry path.
 
     Returns:
       A CPIO archive file entry (instance of CPIOArchiveFileEntry) or None.
@@ -713,9 +719,9 @@ class CPIOArchiveFileHasher(object):
             self._CPIO_SIGNATURE_BINARY_BIG_ENDIAN, 
             self._CPIO_SIGNATURE_BINARY_LITTLE_ENDIAN) or
             signature_data in (
-            self._CPIO_SIGNATURE_PORTABLE_ASCII,
-            self._CPIO_SIGNATURE_NEW_ASCII,
-            self._CPIO_SIGNATURE_NEW_ASCII_WITH_CHECKSUM)):
+                self._CPIO_SIGNATURE_PORTABLE_ASCII,
+                self._CPIO_SIGNATURE_NEW_ASCII,
+                self._CPIO_SIGNATURE_NEW_ASCII_WITH_CHECKSUM)):
           file_type = u'cpio'
         elif signature_data[:2] == self._GZIP_SIGNATURE:
           file_type = u'gzip'
