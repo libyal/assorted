@@ -286,6 +286,12 @@ class EMFFile(object):
     data_offset = file_offset + record_header_data_size
     data_size = record_size - record_header_data_size
 
+    if self._debug:
+      record_data = self._file_object.read(data_size)
+
+      print(u'Record data:')
+      print(hexdump.Hexdump(record_data))
+
     return Record(
         emf_record_header_struct.record_type, 
         record_size, data_offset, data_size)
@@ -314,7 +320,7 @@ class EMFFile(object):
     while file_offset < self._file_size:
       record = self._ReadRecord(file_offset)
 
-      file_offset += record.data_size
+      file_offset += record.size
 
 
 class WMFFile(object):
@@ -516,6 +522,12 @@ class WMFFile(object):
     data_offset = file_offset + record_header_data_size
     data_size = record_size - record_header_data_size
 
+    if self._debug:
+      record_data = self._file_object.read(data_size)
+
+      print(u'Record data:')
+      print(hexdump.Hexdump(record_data))
+
     return Record(
         wmf_record_header_struct.record_type, 
         record_size, data_offset, data_size)
@@ -544,7 +556,7 @@ class WMFFile(object):
     while file_offset < self._file_size:
       record = self._ReadRecord(file_offset)
 
-      file_offset += record.data_size
+      file_offset += record.size
 
 
 class StdoutWriter(object):
