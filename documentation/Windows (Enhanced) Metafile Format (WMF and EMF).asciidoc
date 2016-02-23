@@ -72,7 +72,7 @@ The WMF header record (METAHEADER) is 18 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 2 | | File type +
 See section: <<wmf_file_types,WMF file types>>
-| 2 | 2 | | Header size +
+| 2 | 2 | 9 | Header size +
 Contains the number of 16-bit values
 | 4 | 2 | | Format version +
 See section: <<wmf_format_version,WMF format version>>
