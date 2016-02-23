@@ -284,7 +284,7 @@ class EMFFile(object):
       print(u'')
 
     data_offset = file_offset + record_header_data_size
-    data_size = record_size - record_header_data_size
+    data_size = emf_record_header_struct.record_size - record_header_data_size
 
     if self._debug:
       record_data = self._file_object.read(data_size)
@@ -294,7 +294,7 @@ class EMFFile(object):
 
     return Record(
         emf_record_header_struct.record_type, 
-        record_size, data_offset, data_size)
+        emf_record_header_struct.record_size, data_offset, data_size)
 
   def Close(self):
     """Closes the .job file."""
