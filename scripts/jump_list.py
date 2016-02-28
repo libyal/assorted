@@ -11,17 +11,46 @@ TODO:
 
 from __future__ import print_function
 import argparse
+import datetime
 import logging
 import os
 import sys
+import uuid
 
 import construct
 import pyfwsi
 import pylnk
 import pyolecf
 
+import hexdump
+
 
 # pylint: disable=logging-format-interpolation
+
+def FromFiletime(filetime):
+  """Converts a FILETIME timestamp into a Python datetime object.
+
+    The FILETIME is mainly used in Windows file formats and NTFS.
+
+    The FILETIME is a 64-bit value containing:
+      100th nano seconds since 1601-01-01 00:00:00
+
+    Technically FILETIME consists of 2 x 32-bit parts and is presumed
+    to be unsigned.
+
+    Args:
+      filetime: The 64-bit FILETIME timestamp.
+
+  Returns:
+    A datetime object containing the date and time or None.
+  """
+  if filetime < 0:
+    return None
+  timestamp, _ = divmod(filetime, 10)
+
+  return datetime.datetime(1601, 1, 1) + datetime.timedelta(
+      microseconds=timestamp)
+
 
 class DataRange(object):
   """Class that implements an in-file data range file-like object."""
@@ -208,6 +237,50 @@ class AutomaticDestinationsFile(object):
     recovered_entries: list of the recovered LNK file entries.
   """
 
+  _DEST_LIST_STREAM_HEADER = construct.Struct(
+      u'dest_list_stream_header',
+      construct.ULInt32(u'format_version'),
+      construct.ULInt32(u'number_of_entries'),
+      construct.ULInt32(u'number_of_pinned_entries'),
+      construct.ULInt32(u'unknown1'),
+      construct.ULInt32(u'last_entry_number'),
+      construct.ULInt32(u'unknown2'),
+      construct.ULInt32(u'last_revision_number'),
+      construct.ULInt32(u'unknown3'))
+
+  _DEST_LIST_STREAM_ENTRY_V1 = construct.Struct(
+      u'dest_list_stream_entry_v1',
+      construct.ULInt64(u'unknown1'),
+      construct.Bytes(u'droid_volume_identifier', 16),
+      construct.Bytes(u'droid_file_identifier', 16),
+      construct.Bytes(u'birth_droid_volume_identifier', 16),
+      construct.Bytes(u'birth_droid_file_identifier', 16),
+      construct.String(u'hostname', 16),
+      construct.ULInt32(u'entry_number'),
+      construct.ULInt32(u'unknown2'),
+      construct.ULInt32(u'unknown3'),
+      construct.ULInt64(u'last_modification_time'),
+      construct.ULInt32(u'pin_status'),
+      construct.ULInt16(u'path_size'))
+
+  _DEST_LIST_STREAM_ENTRY_V3 = construct.Struct(
+      u'dest_list_stream_entry_v3',
+      construct.ULInt64(u'unknown1'),
+      construct.Bytes(u'droid_volume_identifier', 16),
+      construct.Bytes(u'droid_file_identifier', 16),
+      construct.Bytes(u'birth_droid_volume_identifier', 16),
+      construct.Bytes(u'birth_droid_file_identifier', 16),
+      construct.String(u'hostname', 16),
+      construct.ULInt32(u'entry_number'),
+      construct.ULInt32(u'unknown2'),
+      construct.ULInt32(u'unknown3'),
+      construct.ULInt64(u'last_modification_time'),
+      construct.ULInt32(u'pin_status'),
+      construct.ULInt32(u'unknown4'),
+      construct.ULInt32(u'unknown5'),
+      construct.ULInt64(u'unknown6'),
+      construct.ULInt16(u'path_size'))
+
   def __init__(self, debug=False):
     """Initializes the .automaticDestinations-ms file object.
 
@@ -217,6 +290,7 @@ class AutomaticDestinationsFile(object):
     """
     super(AutomaticDestinationsFile, self).__init__()
     self._debug = debug
+    self._format_version = None
     self._file_object = None
     self._file_object_opened_in_object = False
     self._file_size = 0
@@ -233,8 +307,186 @@ class AutomaticDestinationsFile(object):
     """
     olecf_item = self._olecf_file.root_item.get_sub_item_by_name(u'DestList')
 
-    # TODO: implement
-    _ = olecf_item
+    self._ReadDestListHeader(olecf_item)
+
+    stream_offset = olecf_item.get_offset()
+    while stream_offset < olecf_item.get_size():
+      entry_size = self._ReadDestListEntry(
+          olecf_item, stream_offset, )
+      stream_offset += entry_size
+
+  def _ReadDestListEntry(self, olecf_item, stream_offset):
+    """Reads a DestList stream entry.
+
+    Args:
+      olecf_item: the OLECF item (instance of pyolecf.item).
+      stream_offset: an integer containing the stream offset of the entry.
+
+    Returns:
+      An integer containing the entry data size.
+
+    Raises:
+      IOError: if the DestList stream entry cannot be read.
+    """
+    if self._format_version == 1:
+      dest_list_entry = self._DEST_LIST_STREAM_ENTRY_V1
+    elif self._format_version == 3:
+      dest_list_entry = self._DEST_LIST_STREAM_ENTRY_V3
+
+    if self._debug:
+      print(u'Reading entry at offset: 0x{0:08x}'.format(stream_offset))
+
+    entry_data = olecf_item.read(dest_list_entry.sizeof())
+
+    if self._debug:
+      print(u'Entry data:')
+      print(hexdump.Hexdump(entry_data))
+
+    try:
+      dest_list_entry_struct = dest_list_entry.parse(entry_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse entry with error: {0:s}').format(exception))
+
+    entry_path_size = dest_list_entry_struct.path_size * 2
+
+    if self._debug:
+      print(u'Unknown1\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          dest_list_entry_struct.unknown1))
+
+      try:
+        uuid_object = uuid.UUID(
+            bytes_le=dest_list_entry_struct.droid_volume_identifier)
+        print(u'Droid volume identifier\t\t\t\t\t\t\t: {0:s}'.format(
+            uuid_object))
+      except (TypeError, ValueError):
+        pass
+
+      try:
+        uuid_object = uuid.UUID(
+            bytes_le=dest_list_entry_struct.droid_file_identifier)
+        print(u'Droid file identifier\t\t\t\t\t\t\t: {0:s}'.format(
+            uuid_object))
+      except (TypeError, ValueError):
+        pass
+
+      try:
+        uuid_object = uuid.UUID(
+            bytes_le=dest_list_entry_struct.birth_droid_volume_identifier)
+        print(u'Birth droid volume identifier\t\t\t\t\t\t: {0:s}'.format(
+            uuid_object))
+      except (TypeError, ValueError):
+        pass
+
+      try:
+        uuid_object = uuid.UUID(
+            bytes_le=dest_list_entry_struct.birth_droid_file_identifier)
+        print(u'Birth droid file identifier\t\t\t\t\t\t: {0:s}'.format(
+            uuid_object))
+      except (TypeError, ValueError):
+        pass
+
+      hostname = dest_list_entry_struct.hostname
+      hostname, _, _ = hostname.partition(u'\x00')
+      print(u'Hostname\t\t\t\t\t\t\t\t: {0:s}'.format(hostname))
+
+      print(u'Entry number\t\t\t\t\t\t\t\t: {0:d}'.format(
+          dest_list_entry_struct.entry_number))
+      print(u'Unknown2\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          dest_list_entry_struct.unknown2))
+      print(u'Unknown3\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          dest_list_entry_struct.unknown3))
+      print(u'Last modification time\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(dest_list_entry_struct.last_modification_time)))
+
+      # TODO: debug print pin status.
+      print(u'Pin status\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          dest_list_entry_struct.pin_status))
+
+      if self._format_version == 3:
+        print(u'Unknown4\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+            dest_list_entry_struct.unknown4))
+        print(u'Unknown5\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+            dest_list_entry_struct.unknown5))
+        print(u'Unknown6\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+            dest_list_entry_struct.unknown6))
+
+      print(u'Path size\t\t\t\t\t\t\t\t: {0:d} ({1:d})'.format(
+          dest_list_entry_struct.path_size, entry_path_size))
+      print(u'')
+
+    entry_path_data = olecf_item.read(entry_path_size)
+
+    if self._debug:
+      print(u'Entry path data:')
+      print(hexdump.Hexdump(entry_path_data))
+
+    try:
+      path_string = entry_path_data.decode(u'utf16')
+    except UnicodeDecodeError as exception:
+      path_string = u''
+
+    if self._debug:
+      print(u'Path string\t\t\t\t\t\t\t\t: {0:s}'.format(path_string))
+      print(u'')
+
+    entry_footer_data = b''
+    if self._format_version == 3:
+      entry_footer_data = olecf_item.read(4)
+
+      if self._debug:
+        print(u'Entry footer data:')
+        print(hexdump.Hexdump(entry_footer_data))
+
+    return len(entry_data) + len(entry_path_data) + len(entry_footer_data)
+
+  def _ReadDestListHeader(self, olecf_item):
+    """Reads the DestList stream header.
+
+    Args:
+      olecf_item: the OLECF item (instance of pyolecf.item).
+
+    Raises:
+      IOError: if the DestList stream header cannot be read.
+    """
+    olecf_item.seek(0, os.SEEK_SET)
+
+    if self._debug:
+      print(u'Reading header at offset: 0x{0:08x}'.format(0))
+
+    header_data = olecf_item.read(self._DEST_LIST_STREAM_HEADER.sizeof())
+
+    if self._debug:
+      print(u'Header data:')
+      print(hexdump.Hexdump(header_data))
+
+    try:
+      dest_list_header_struct = self._DEST_LIST_STREAM_HEADER.parse(header_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse header with error: {0:s}').format(exception))
+
+    if self._debug:
+      print(u'Format version\t\t\t\t\t\t\t\t: {0:d}'.format(
+          dest_list_header_struct.format_version))
+      print(u'Number of entries\t\t\t\t\t\t\t: {0:d}'.format(
+          dest_list_header_struct.number_of_entries))
+      print(u'Number of pinned entries\t\t\t\t\t\t: {0:d}'.format(
+          dest_list_header_struct.number_of_pinned_entries))
+      print(u'Unknown1\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          dest_list_header_struct.unknown1))
+      print(u'Last entry number\t\t\t\t\t\t\t: {0:d}'.format(
+          dest_list_header_struct.last_entry_number))
+      print(u'Unknown2\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          dest_list_header_struct.unknown2))
+      print(u'Last revision number\t\t\t\t\t\t\t: {0:d}'.format(
+          dest_list_header_struct.last_revision_number))
+      print(u'Unknown3\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          dest_list_header_struct.unknown3))
+
+      print(u'')
+
+    self._format_version = dest_list_header_struct.format_version
 
   def _ReadLNKFile(self, olecf_item):
     """Reads a LNK file.

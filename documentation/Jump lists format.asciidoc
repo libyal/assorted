@@ -27,7 +27,7 @@ able to process this file type.
 [preface]
 == License
 ....
-Copyright (C) 2014-2015, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2014-2016, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the 
 terms of the GNU Free Documentation License, Version 1.3 or any later version 
 published by the Free Software Foundation; with no Invariant Sections, no 
@@ -43,14 +43,16 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.1 | J.B. Metz | July 2014 | Initial version based on earlier notes.
 | 0.0.2 | J.B. Metz | November 2014 | Switched to asccidoc format.
 | 0.0.3 | J.B. Metz | August 2015 | Additional information about Jump lists stored in the Windows Registry.
+| 0.0.4 | J.B. Metz | February 2016 | Additional information about automatic and custom destinations Jump lists with thanks to E. Zimmerman.
 |===
 
 :numbered:
 == Overview
-Jump lists are a Windows Taskbar feature, introduced in Windows 7, that gives 
-the user quick access to recently accessed application files and actions.
+The automatic and custom destinations Jump lists are a Windows Taskbar feature, 
+introduced in Windows 7, that gives the user quick access to recently accessed 
+application files and actions.
 
-The Jump lists are stored in:
+The automatic and custom destinations Jump lists are stored in:
 ....
 C:\Users\%USERNAME%\AppData\Roaming\Microsoft\Windows\Recent\
 ....
@@ -65,21 +67,6 @@ For more information about the LNK format see: https://github.com/libyal/liblnk/
 Additionally Jump lists can be stored in:
 
 * Explorer ProgramsCache Registry values see: https://github.com/libyal/winreg-kb/blob/master/documentation/Programs%20Cache%20values.asciidoc[[WINREG-KB\]].
-
-=== Test version
-The following version of programs were used to test the information within this document:
-
-* Windows NT4
-* Windows 2000
-* Windows XP
-* Windows 2003
-* Windows Vista
-* Windows 7
-* Windows 2008
-* Windows 8.0
-* Windows 8.1
-* [yellow-background]*TODO: Windows 2012*
-* Windows 10
 
 == Automatic destinations files
 The automatic destinations files are stored in the AutomaticDestinations sub 
@@ -104,12 +91,12 @@ The DestList header is 32 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 1 | [yellow-background]*Version?* +
-[yellow-background]*Also indicated at first entry number*
+| 0 | 4 | 1 | Fomrat version +
+See section: <<destlist_format_versions,Format versions>>
 | 4 | 4 | | Number of entries
 | 8 | 4 | | Number of pinned entries
 | 12 | 4 | | [yellow-background]*Unknown* +
-Contains a 32-bit floating point value
+[yellow-background]*Contains a 32-bit floating point value?*
 | 16 | 4 | | [yellow-background]*Last entry number?*
 | 20 | 4 | | [yellow-background]*Unknown (empty values)*
 | 24 | 4 | | [yellow-background]*Last revision number?*
@@ -121,13 +108,24 @@ Contains a 32-bit floating point value
 00000010  0b 00 00 00 00 00 00 00  0b 00 00 00 00 00 00 00  |................| 
 ....
 
+===== [[destlist_format_versions]]Format versions
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Description
+| 1 | | Used in Windows 7
+| 3 | | Used in Windows 10
+|===
+
 ==== DestList entry
-The DestList entry is variable of size and consists of:
+
+===== DestList entry - version 1
+The DestList entry - version 1 is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | 1 | [yellow-background]*Unknown (checksum or hash)*
+| 0 | 8 | | [yellow-background]*Unknown*
 | 8 | 16 | | Droid volume identifier +
 GUID containing an NTFS object identifier
 | 24 | 16 | | Droid file identifier +
@@ -141,7 +139,7 @@ Contains an ASCII string unused characters are filled with 0-byte values
 | 88 | 4 | | Entry number
 | 92 | 4 | | [yellow-background]*Unknown (empty value)*
 | 96 | 4 | | [yellow-background]*Unknown* +
-[yellow-background]*Contains a 32-bit floating point value*
+[yellow-background]*Contains a 32-bit floating point value?*
 | 100 | 8 | | Last modification time +
 Contains a FILETIME
 | 108 | 4 | | Pin status +
@@ -180,6 +178,43 @@ The path points to:
 
 * a directory [yellow-background]*containing LNK files?*
 * A XML .library-ms file
+
+===== DestList entry - version 3
+The DestList entry - version 3 is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | [yellow-background]*Unknown*
+| 8 | 16 | | Droid volume identifier +
+GUID containing an NTFS object identifier
+| 24 | 16 | | Droid file identifier +
+GUID containing an NTFS object identifier
+| 40 | 16 | | Birth droid volume identifier +
+GUID containing an NTFS object identifier
+| 56 | 16 | | Birth droid file identifier +
+GUID containing an NTFS object identifier
+| 72 | 16 | | Hostname (or NETBIOS name) +
+Contains an ASCII string unused characters are filled with 0-byte values
+| 88 | 4 | | Entry number
+| 92 | 4 | | [yellow-background]*Unknown (empty value)*
+| 96 | 4 | | [yellow-background]*Unknown* +
+[yellow-background]*Contains a 32-bit floating point value?*
+| 100 | 8 | | Last modification time +
+Contains a FILETIME
+| 108 | 4 | | Pin status +
+Where a value of -1 (0xffffffff) indicates unpinned and a value of 0 or greater pinned.
+| *112* | *4* | | [yellow-background]*Unknown (status?)*
+| *116* | *4* | | [yellow-background]*Unknown (access count?)*
+| *120* | *8* | | [yellow-background]*Unknown (empty values)*
+| *128* | 2 | | Path size +
+Contains the number of characters
+| *130* | ... | | Path +
+Contains a UTF-16 little-endian string without an end-of-string character
+| ... | *4* | | [yellow-background]*Unknown (alignment padding?)*
+|===
+
+The differences between the versions have been emphasized in bold.
 
 === Hexadecimal numbered streams
 A hexadecimal numbered streams contains a Windows Shortcut (LNK) file. For more 
