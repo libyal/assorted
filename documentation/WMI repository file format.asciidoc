@@ -130,7 +130,7 @@ The index binary-tree page is 8192 bytes of size and consists of:
 
 * a page header
 * [yellow-background]*Unknown*
-* [yellow-background]*Unknown (sub pages array?)*
+* sub pages
 * page key offsets
 * page key data
 * page value offsets
@@ -145,11 +145,13 @@ The index binary-tree page header is 20 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 4 | | Index page type +
 See section: <<index_binary_tree_page_types,Index binary-tree page types>>
-| 4 | 4 | | Mapped page number
+| 4 | 4 | | Mapped page number +
+The page number is mapped to the in-file page number via the index mappings file
 | 8 | 4 | | [yellow-background]*Unknown (empty values)*
-| 12 | 4 | | Root page number +
-[yellow-background]*Only set in the administrative page and 0 otherwise?*
-| 16 | 4 | | Number of page values
+| 12 | 4 | | Mapped root page number +
+[yellow-background]*Only set in the administrative page and 0 otherwise?* +
+The page number is mapped to the in-file page number via the index mappings file
+| 16 | 4 | | Number of keys
 |===
 
 === [[index_binary_tree_page_types]]Index binary-tree page types
@@ -166,7 +168,7 @@ See section: <<index_binary_tree_page_types,Index binary-tree page types>>
 === Index binary-tree page unknown array
 The index binary-tree page unknown array is variable of size and consists of:
 
-* number of page values x [yellow-background]*Unknown array entry*
+* number of keys x [yellow-background]*Unknown array entry*
 
 The unknown entry is 4 bytes of size and consists of:
 
@@ -176,17 +178,18 @@ The unknown entry is 4 bytes of size and consists of:
 | 0 | 4 | | [yellow-background]*Unknown (empty values)*
 |===
 
-=== Index binary-tree page unknown array
-The index binary-tree page unknown array is variable of size and consists of:
+=== Index binary-tree page sub pages
+The index binary-tree page sub pages are variable of size and consists of:
 
-* (number of page values + 1) x unknown array entry
+* (number of keys + 1) x sub page number
 
 The unknown entry is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | [yellow-background]*Unknown (empty values)*
+| 0 | 4 | | Mapped sub page number +
+The page number is mapped to the in-file page number via the index mappings file
 |===
 
 === Index binary-tree page key offsets
@@ -200,7 +203,7 @@ The offsets are relative to the start of the index binary-tree page key data
 |===
 
 [NOTE]
-The number of offsets equals the number of page values.
+The number of offsets equals the number of keys.
 
 === Index binary-tree page key data
 The index binary-tree page key data is variable of size and consists of:
@@ -208,11 +211,15 @@ The index binary-tree page key data is variable of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | data size +
-Contains the number of words (16-bit values) of the data, where: +
-data size = value x 2
-| 2 | ... | | data
+| 0 | 2 | | The number of page key segment indexes
+| 2 | ... | | Array 16-bit page key segment indexes
 |===
+
+The page key segment indexes refer to page values where a page key consists of
+multiple page values e.g.
+....
+VALUE1 / VALUE2 / VALUE3
+....
 
 === Index binary-tree page value offsets
 The index binary-tree page value offsets are variable of size and consist of:

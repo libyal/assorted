@@ -46,11 +46,15 @@ class IndexBinaryTreePage(object):
   """Class that contains an index binary-tree page.
 
   Attributes:
-    type: an integer containing the page type.
-    values: a dictionary of index binary-tree page keys and values.
+    keys: a list of strings containing index binary-tree keys.
+    page_type: an integer containing the page type.
+    root_page_number: an integer containing the root page number.
+    sub_pages: a list of integers containing the sub page numbers.
   """
 
   PAGE_SIZE = 8192
+
+  _KEY_SEGMENT_SEPARATOR = u'/'
 
   _PAGE_HEADER = construct.Struct(
       u'page_header',
@@ -58,9 +62,9 @@ class IndexBinaryTreePage(object):
       construct.ULInt32(u'mapped_page_number'),
       construct.ULInt32(u'unknown2'),
       construct.ULInt32(u'root_page_number'),
-      construct.ULInt32(u'number_of_page_values'))
+      construct.ULInt32(u'number_of_keys'))
 
-  _PAGE_KEY_DATA_SIZE = construct.ULInt16(u'page_key_data_size')
+  _PAGE_KEY_NUMBER_OF_SEGMENTS = construct.ULInt16(u'number_of_segments')
 
   _PAGE_TYPES = {
       0xaccc: u'Is active',
@@ -78,12 +82,15 @@ class IndexBinaryTreePage(object):
     super(IndexBinaryTreePage, self).__init__()
     self._debug = debug
     self._key_offsets = None
-    self._number_of_page_values = None
-    self._value_offsets = None
+    self._number_of_keys = None
+    self._page_key_segments = []
+    self._page_values = []
+    self._page_value_offsets = None
 
-    self.root_page_number = None
+    self.keys = []
     self.page_type = None
-    self.values = []
+    self.root_page_number = None
+    self.sub_pages = []
 
   def _ReadHeader(self, file_object):
     """Reads a page header.
@@ -109,8 +116,7 @@ class IndexBinaryTreePage(object):
 
     self.page_type = page_header_struct.get(u'page_type')
     self.root_page_number = page_header_struct.get(u'root_page_number')
-    self._number_of_page_values = page_header_struct.get(
-        u'number_of_page_values')
+    self._number_of_keys = page_header_struct.get(u'number_of_keys')
 
     if self._debug:
       print(u'Page header data:')
@@ -125,8 +131,8 @@ class IndexBinaryTreePage(object):
           page_header_struct.get(u'unknown2')))
       print(u'Root page number\t\t\t\t\t\t\t: {0:d}'.format(
           self.root_page_number))
-      print(u'Number of page values\t\t\t\t\t\t\t: {0:d}'.format(
-          self._number_of_page_values))
+      print(u'Number of keys\t\t\t\t\t\t\t\t: {0:d}'.format(
+          self._number_of_keys))
       print(u'')
 
   def _ReadKeyOffsets(self, file_object):
@@ -138,7 +144,7 @@ class IndexBinaryTreePage(object):
     Raises:
       IOError: if the page key offsets cannot be read.
     """
-    if self._number_of_page_values == 0:
+    if self._number_of_keys == 0:
       return
 
     file_offset = file_object.tell()
@@ -146,7 +152,7 @@ class IndexBinaryTreePage(object):
       print(u'Reading page keys offsets at offset: 0x{0:08x}'.format(
           file_offset))
 
-    offsets_data_size = self._number_of_page_values * 2
+    offsets_data_size = self._number_of_keys * 2
     offsets_data = file_object.read(offsets_data_size)
 
     if self._debug:
@@ -155,7 +161,7 @@ class IndexBinaryTreePage(object):
 
     try:
       self._key_offsets = construct.Array(
-          self._number_of_page_values, construct.ULInt16(u'offset')).parse(
+          self._number_of_keys, construct.ULInt16(u'offset')).parse(
               offsets_data)
     except construct.FieldError as exception:
       raise IOError((
@@ -163,7 +169,7 @@ class IndexBinaryTreePage(object):
           u'with error: {1:s}').format(file_offset, exception))
 
     if self._debug:
-      for index in range(self._number_of_page_values):
+      for index in range(self._number_of_keys):
         print(u'Page key: {0:d} offset\t\t\t\t\t\t\t: 0x{1:04x}'.format(
             index, self._key_offsets[index]))
       print(u'')
@@ -208,30 +214,41 @@ class IndexBinaryTreePage(object):
       page_key_size = page_key_offset + 2
 
       try:
-        page_key_data_size = self._PAGE_KEY_DATA_SIZE.parse(
+        number_of_segments = self._PAGE_KEY_NUMBER_OF_SEGMENTS.parse(
             data[page_key_offset:page_key_size])
       except construct.FieldError as exception:
         raise IOError((
-            u'Unable to parse page key data size: {0:d} '
+            u'Unable to parse page key: {0:d} data size '
             u'with error: {1:s}').format(index, exception))
 
-      page_key_size = page_key_offset + (page_key_data_size * 2)
+      page_key_size = page_key_offset + (number_of_segments * 2) + 2
 
       if self._debug:
         print(u'Page key: {0:d} data:'.format(index))
-        print(hexdump.Hexdump(data[page_key_offset:page_key_size + 2]))
+        print(hexdump.Hexdump(data[page_key_offset:page_key_size]))
 
       page_key_offset += 2
-      page_key_size += 2
-      page_key = data[page_key_offset:page_key_size].encode('hex')
+
+      try:
+        page_key_segments = construct.Array(
+            number_of_segments, construct.ULInt16(u'segment_index')).parse(
+                data[page_key_offset:page_key_size])
+      except construct.FieldError as exception:
+        raise IOError((
+            u'Unable to parse page key: {0:d} segments '
+            u'with error: {1:s}').format(index, exception))
+
+      self._page_key_segments.append(page_key_segments)
 
       if self._debug:
-        print((
-            u'Page key: {0:d} data size\t\t\t\t\t\t\t: {1:d} words '
-            u'({2:d} bytes)').format(
-                index, page_key_data_size, page_key_data_size * 2))
-        print(u'Page key: {0:d}\t\t\t\t\t\t\t\t: {1:s}'.format(
-            index, page_key))
+        print(
+            u'Page key: {0:d} number of segments\t\t\t\t\t\t: {1:d}'.format(
+                index, number_of_segments))
+        page_key_segments_string = u', '.join([
+                u'{0:d}'.format(segment_index)
+                for segment_index in page_key_segments])
+        print(u'Page key: {0:d} segments\t\t\t\t\t\t\t: {1:s}'.format(
+            index, page_key_segments_string))
         print(u'')
 
   def _ReadValueOffsets(self, file_object):
@@ -269,7 +286,7 @@ class IndexBinaryTreePage(object):
       print(hexdump.Hexdump(offsets_data))
 
     try:
-      self._value_offsets = construct.Array(
+      offset_array = construct.Array(
           number_of_offsets, construct.ULInt16(u'offset')).parse(offsets_data)
     except construct.FieldError as exception:
       raise IOError((
@@ -279,8 +296,10 @@ class IndexBinaryTreePage(object):
     if self._debug:
       for index in range(number_of_offsets):
         print(u'Page value: {0:d} offset\t\t\t\t\t\t\t: 0x{1:04x}'.format(
-            index, self._value_offsets[index]))
+            index, offset_array[index]))
       print(u'')
+
+    self._page_value_offsets = offset_array
 
   def _ReadValueData(self, file_object):
     """Reads page value data.
@@ -315,8 +334,8 @@ class IndexBinaryTreePage(object):
       print(u'Page value data:')
       print(hexdump.Hexdump(data))
 
-    for index in range(len(self._value_offsets)):
-      page_value_offset = self._value_offsets[index]
+    for index in range(len(self._page_value_offsets)):
+      page_value_offset = self._page_value_offsets[index]
       # TODO: determine size
 
       value_string = construct.CString(u'string').parse(
@@ -324,9 +343,9 @@ class IndexBinaryTreePage(object):
       if self._debug:
         print(u'Page value: {0:d} data: {1:s}'.format(index, value_string))
 
-      self.values.append(value_string)
+      self._page_values.append(value_string)
 
-    if self._debug and self._value_offsets:
+    if self._debug and self._page_value_offsets:
       print(u'')
 
   def _ReadSubPages(self, file_object):
@@ -342,7 +361,7 @@ class IndexBinaryTreePage(object):
     if self._debug:
       print(u'Reading sub pages at offset: 0x{0:08x}'.format(file_offset))
 
-    number_of_entries = self._number_of_page_values + 1
+    number_of_entries = self._number_of_keys + 1
     entries_data_size = number_of_entries * 4
     entries_data = file_object.read(entries_data_size)
 
@@ -359,17 +378,22 @@ class IndexBinaryTreePage(object):
           u'Unable to parse sub pages at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
-    if self._debug:
-      for index in range(number_of_entries):
-        page_number = sub_pages_array[index]
-        if page_number == 0xffffffff:
+    for index in range(number_of_entries):
+      page_number = sub_pages_array[index]
+      if page_number not in (0, 0xffffffff):
+        self.sub_pages.append(page_number)
+
+      if self._debug:
+        if page_number in (0, 0xffffffff):
           print((
               u'Sub page: {0:d} mapped page number\t\t\t\t\t\t: 0x{1:08x} '
               u'(unavailable)').format(index, page_number))
         else:
           print(u'Sub page: {0:d} mapped page number\t\t\t\t\t\t: {1:d}'.format(
               index, page_number))
-      print(u'')
+
+      if self._debug:
+        print(u'')
 
   def ReadPage(self, file_object, file_offset):
     """Reads a page.
@@ -390,8 +414,8 @@ class IndexBinaryTreePage(object):
 
     self._ReadHeader(file_object)
 
-    if self._number_of_page_values > 0:
-      array_data_size = self._number_of_page_values * 4
+    if self._number_of_keys > 0:
+      array_data_size = self._number_of_keys * 4
       array_data = file_object.read(array_data_size)
 
       if self._debug:
@@ -411,6 +435,13 @@ class IndexBinaryTreePage(object):
     if self._debug:
       print(u'Trailing data:')
       print(hexdump.Hexdump(trailing_data))
+
+    self.keys = []
+    for page_key_segments in self._page_key_segments:
+      key_segments = []
+      for segment_index in page_key_segments:
+        key_segments.append(self._page_values[segment_index])
+      self.keys.append(self._KEY_SEGMENT_SEPARATOR.join(key_segments))
 
 
 class IndexBinaryTreeFile(object):
@@ -433,6 +464,22 @@ class IndexBinaryTreeFile(object):
     self._index_mapping_file = index_mapping_file
     self._first_mapped_page = None
     self._root_page = None
+
+  def _GetPage(self, page_number):
+    """Retrieves a specific page.
+
+    Args:
+      page_number: an integer containing the page number.
+
+    Returns:
+      An index binary-tree page (instance of IndexBinaryTreePage) or None.
+    """
+    file_offset = page_number * IndexBinaryTreePage.PAGE_SIZE
+    if file_offset >= self._file_size:
+      return
+
+    # TODO: cache pages.
+    return self._ReadPage(file_offset)
 
   def _ReadPage(self, file_offset):
     """Reads a page.
@@ -466,11 +513,11 @@ class IndexBinaryTreeFile(object):
     if not self._first_mapped_page:
       page_number = self._index_mapping_file.mappings[0]
 
-      index_page = self.GetPage(page_number)
+      index_page = self._GetPage(page_number)
       if not index_page:
-        logging.warning(
-            u'Unable to read first mapped index binary-tree page: {0:d}.'.format(
-                page_number))
+        logging.warning((
+            u'Unable to read first mapped index binary-tree page: '
+            u'{0:d}.').format(page_number))
         return
 
       if index_page.page_type != 0xaddd:
@@ -481,8 +528,8 @@ class IndexBinaryTreeFile(object):
 
     return self._first_mapped_page
 
-  def GetPage(self, page_number):
-    """Retrieves a specific page.
+  def GetMappedPage(self, page_number):
+    """Retrieves a specific mapped page.
 
     Args:
       page_number: an integer containing the page number.
@@ -490,12 +537,16 @@ class IndexBinaryTreeFile(object):
     Returns:
       An index binary-tree page (instance of IndexBinaryTreePage) or None.
     """
-    file_offset = page_number * IndexBinaryTreePage.PAGE_SIZE
-    if file_offset >= self._file_size:
+    mapped_page_number = self._index_mapping_file.mappings[page_number]
+
+    index_page = self._GetPage(mapped_page_number)
+    if not index_page:
+      logging.warning(
+          u'Unable to read index binary-tree mapped page: {0:d}.'.format(
+              page_number))
       return
 
-    # TODO: cache pages.
-    return self._ReadPage(file_offset)
+    return index_page
 
   def GetRootPage(self):
     """Retrieves the root page.
@@ -511,7 +562,7 @@ class IndexBinaryTreeFile(object):
       page_number = self._index_mapping_file.mappings[
           first_mapped_page.root_page_number]
 
-      index_page = self.GetPage(page_number)
+      index_page = self._GetPage(page_number)
       if not index_page:
         logging.warning(
             u'Unable to read index binary-tree root page: {0:d}.'.format(
@@ -1150,6 +1201,20 @@ class CIMRepository(object):
       index_mapping_file.Open(
           mapping_file_path, file_offset=objects_mapping_file.data_size)
 
+  def _GetKeysFromIndexPage(self, index_page):
+    """Retrieves the keys from an index page.
+
+    Yields:
+      A string containing the CIM key.
+    """
+    for key in index_page.keys:
+      yield key
+
+    for sub_page_number in index_page.sub_pages:
+      sub_index_page = self._index_binary_tree_file.GetMappedPage(
+          sub_page_number)
+      for key in self._GetKeysFromIndexPage(sub_index_page):
+        yield key
 
   def Close(self):
     """Closes the CIM repository."""
@@ -1179,6 +1244,8 @@ class CIMRepository(object):
       return
 
     index_page = self._index_binary_tree_file.GetRootPage()
+    for key in self._GetKeysFromIndexPage(index_page):
+      yield key
 
   def Open(self, path):
     """Opens the CIM repository.
@@ -1266,7 +1333,8 @@ def Main():
   cim_repository = CIMRepository(debug=options.debug)
 
   cim_repository.Open(options.source)
-  cim_repository.GetKeys()
+  for key in cim_repository.GetKeys():
+    print(key)
   cim_repository.Close()
 
   return True
