@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 import argparse
+import datetime
 import glob
 import logging
 import os
@@ -16,12 +17,37 @@ import hexdump
 
 # pylint: disable=logging-format-interpolation
 
+def FromFiletime(filetime):
+  """Converts a FILETIME timestamp into a Python datetime object.
+
+    The FILETIME is mainly used in Windows file formats and NTFS.
+
+    The FILETIME is a 64-bit value containing:
+      100th nano seconds since 1601-01-01 00:00:00
+
+    Technically FILETIME consists of 2 x 32-bit parts and is presumed
+    to be unsigned.
+
+    Args:
+      filetime: The 64-bit FILETIME timestamp.
+
+  Returns:
+    A datetime object containing the date and time or None.
+  """
+  if filetime < 0:
+    return None
+  timestamp, _ = divmod(filetime, 10)
+
+  return datetime.datetime(1601, 1, 1) + datetime.timedelta(
+      microseconds=timestamp)
+
+
 class IndexBinaryTreePage(object):
-  """Class that contains a binary-tree index page.
+  """Class that contains an index binary-tree page.
 
   Attributes:
     type: an integer containing the page type.
-    values: a dictionary of binary-tree index page keys and values.
+    values: a dictionary of index binary-tree page keys and values.
   """
 
   PAGE_SIZE = 8192
@@ -43,7 +69,7 @@ class IndexBinaryTreePage(object):
   }
 
   def __init__(self, debug=False):
-    """Initializes the binary-tree index page object.
+    """Initializes the index binary-tree page object.
 
     Args:
       debug: optional boolean value to indicate if debug information should
@@ -64,9 +90,6 @@ class IndexBinaryTreePage(object):
 
     Args:
       file_object: a file-like object.
-
-    Returns:
-      A contains a binary-tree index page.
 
     Raises:
       IOError: if the page header cannot be read.
@@ -120,14 +143,14 @@ class IndexBinaryTreePage(object):
 
     file_offset = file_object.tell()
     if self._debug:
-      print(u'Reading page key offsets at offset: 0x{0:08x}'.format(
+      print(u'Reading page keys offsets at offset: 0x{0:08x}'.format(
           file_offset))
 
     offsets_data_size = self._number_of_page_values * 2
     offsets_data = file_object.read(offsets_data_size)
 
     if self._debug:
-      print(u'Page key offsets:')
+      print(u'Page keys offsets data:')
       print(hexdump.Hexdump(offsets_data))
 
     try:
@@ -136,7 +159,7 @@ class IndexBinaryTreePage(object):
               offsets_data)
     except construct.FieldError as exception:
       raise IOError((
-          u'Unable to parse page key offsets at offset: 0x{0:08x} '
+          u'Unable to parse page keys offsets at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
     if self._debug:
@@ -156,13 +179,13 @@ class IndexBinaryTreePage(object):
     """
     file_offset = file_object.tell()
     if self._debug:
-      print(u'Reading page key data at offset: 0x{0:08x}'.format(file_offset))
+      print(u'Reading page keys data at offset: 0x{0:08x}'.format(file_offset))
 
     try:
       data_size = construct.ULInt16(u'data_size').parse_stream(file_object)
     except construct.FieldError as exception:
       raise IOError((
-          u'Unable to parse page key data size at offset: 0x{0:08x} '
+          u'Unable to parse page keys data size at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
     if data_size == 0:
@@ -177,7 +200,7 @@ class IndexBinaryTreePage(object):
     data = file_object.read(data_size)
 
     if self._debug:
-      print(u'Page key data:')
+      print(u'Page keys data:')
       print(hexdump.Hexdump(data))
 
     for index in range(len(self._key_offsets)):
@@ -296,7 +319,8 @@ class IndexBinaryTreePage(object):
       page_value_offset = self._value_offsets[index]
       # TODO: determine size
 
-      value_string = construct.CString(u'string').parse(data[page_value_offset:])
+      value_string = construct.CString(u'string').parse(
+          data[page_value_offset:])
       if self._debug:
         print(u'Page value: {0:d} data: {1:s}'.format(index, value_string))
 
@@ -314,12 +338,38 @@ class IndexBinaryTreePage(object):
     Raises:
       IOError: if the sub pages data cannot be read.
     """
-    array_data_size = (self._number_of_page_values + 1) * 4
-    array_data = file_object.read(array_data_size)
+    file_offset = file_object.tell()
+    if self._debug:
+      print(u'Reading sub pages at offset: 0x{0:08x}'.format(file_offset))
+
+    number_of_entries = self._number_of_page_values + 1
+    entries_data_size = number_of_entries * 4
+    entries_data = file_object.read(entries_data_size)
 
     if self._debug:
       print(u'Sub pages array data:')
-      print(hexdump.Hexdump(array_data))
+      print(hexdump.Hexdump(entries_data))
+
+    try:
+      sub_pages_array = construct.Array(
+          number_of_entries, construct.ULInt32(u'page_number')).parse(
+              entries_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse sub pages at offset: 0x{0:08x} '
+          u'with error: {1:s}').format(file_offset, exception))
+
+    if self._debug:
+      for index in range(number_of_entries):
+        page_number = sub_pages_array[index]
+        if page_number == 0xffffffff:
+          print((
+              u'Sub page: {0:d} mapped page number\t\t\t\t\t\t: 0x{1:08x} '
+              u'(unavailable)').format(index, page_number))
+        else:
+          print(u'Sub page: {0:d} mapped page number\t\t\t\t\t\t: {1:d}'.format(
+              index, page_number))
+      print(u'')
 
   def ReadPage(self, file_object, file_offset):
     """Reads a page.
@@ -335,7 +385,8 @@ class IndexBinaryTreePage(object):
     file_object.seek(file_offset, os.SEEK_SET)
 
     if self._debug:
-      print(u'Reading page at offset: 0x{0:08x}'.format(file_offset))
+      print(u'Reading index binary-tree page at offset: 0x{0:08x}'.format(
+          file_offset))
 
     self._ReadHeader(file_object)
 
@@ -363,12 +414,13 @@ class IndexBinaryTreePage(object):
 
 
 class IndexBinaryTreeFile(object):
-  """Class that contains a binary-tree index (Index.btr) file."""
+  """Class that contains an index binary-tree (Index.btr) file."""
 
-  def __init__(self, debug=False):
-    """Initializes the binary-tree index file object.
+  def __init__(self, index_mapping_file, debug=False):
+    """Initializes the index binary-tree file object.
 
     Args:
+      index_mapping_file: an index mapping file (instance of MappingFile).
       debug: optional boolean value to indicate if debug information should
              be printed.
     """
@@ -378,7 +430,9 @@ class IndexBinaryTreeFile(object):
     self._file_object_opened_in_object = False
     self._file_size = 0
 
-    self._root_page_number = None
+    self._index_mapping_file = index_mapping_file
+    self._first_mapped_page = None
+    self._root_page = None
 
   def _ReadPage(self, file_offset):
     """Reads a page.
@@ -388,28 +442,44 @@ class IndexBinaryTreeFile(object):
                    from the start of the file.
 
     Return:
-      A binary-tree index page (instance of IndexBinaryTreePage).
+      An index binary-tree page (instance of IndexBinaryTreePage).
 
     Raises:
       IOError: if the page cannot be read.
     """
     index_page = IndexBinaryTreePage(debug=self._debug)
-
     index_page.ReadPage(self._file_object, file_offset)
-
-    if self._root_page_number is None:
-      self._root_page_number = index_page.root_page_number
-    elif self._root_page_number != index_page.root_page_number:
-      logging.warning(u'Root page number mismatch ({0:d} != {1:d})'.format(
-          self._root_page_number, index_page.root_page_number))
-
     return index_page
 
   def Close(self):
-    """Closes the binary-tree index file."""
+    """Closes the index binary-tree file."""
     if self._file_object_opened_in_object:
       self._file_object.close()
     self._file_object = None
+
+  def GetFirstMappedPage(self):
+    """Retrieves the first mapped page.
+
+    Returns:
+      An index binary-tree page (instance of IndexBinaryTreePage) or None.
+    """
+    if not self._first_mapped_page:
+      page_number = self._index_mapping_file.mappings[0]
+
+      index_page = self.GetPage(page_number)
+      if not index_page:
+        logging.warning(
+            u'Unable to read first mapped index binary-tree page: {0:d}.'.format(
+                page_number))
+        return
+
+      if index_page.page_type != 0xaddd:
+        logging.warning(u'First mapped index binary-tree page type mismatch.')
+        return
+
+      self._first_mapped_page = index_page
+
+    return self._first_mapped_page
 
   def GetPage(self, page_number):
     """Retrieves a specific page.
@@ -418,13 +488,42 @@ class IndexBinaryTreeFile(object):
       page_number: an integer containing the page number.
 
     Returns:
-      A binary-tree index page (instance of IndexBinaryTreePage).
+      An index binary-tree page (instance of IndexBinaryTreePage) or None.
     """
+    file_offset = page_number * IndexBinaryTreePage.PAGE_SIZE
+    if file_offset >= self._file_size:
+      return
+
     # TODO: cache pages.
-    return self._ReadPage(page_number)
+    return self._ReadPage(file_offset)
+
+  def GetRootPage(self):
+    """Retrieves the root page.
+
+    Returns:
+      An index binary-tree page (instance of IndexBinaryTreePage) or None.
+    """
+    if not self._root_page:
+      first_mapped_page = self.GetFirstMappedPage()
+      if not first_mapped_page:
+        return
+
+      page_number = self._index_mapping_file.mappings[
+          first_mapped_page.root_page_number]
+
+      index_page = self.GetPage(page_number)
+      if not index_page:
+        logging.warning(
+            u'Unable to read index binary-tree root page: {0:d}.'.format(
+                page_number))
+        return
+
+      self._root_page = index_page
+
+    return self._root_page
 
   def Open(self, filename):
-    """Opens the binary-tree index file.
+    """Opens the index binary-tree file.
 
     Args:
       filename: a string containing the filename.
@@ -446,8 +545,9 @@ class MappingFile(object):
   """Class that contains mappings (*.map) file.
 
   Attributes:
+    data_size: an integer containing the data size of the mappings file.
     mapping: a list of integers containing the mappings to page
-             numbers in the objects data file.
+             numbers in the index binary-tree or objects data file.
   """
 
   _FOOTER_SIGNATURE = 0x0000dcba
@@ -464,7 +564,7 @@ class MappingFile(object):
       construct.ULInt32(u'number_of_pages'))
 
   def __init__(self, debug=False):
-    """Initializes the objects data file object.
+    """Initializes the mappings file object.
 
     Args:
       debug: optional boolean value to indicate if debug information should
@@ -476,7 +576,8 @@ class MappingFile(object):
     self._file_object_opened_in_object = False
     self._file_size = 0
 
-    self.mappings = {}
+    self.data_size = 0
+    self.mappings = []
 
   def _ReadFileFooter(self):
     """Reads the file footer.
@@ -510,13 +611,20 @@ class MappingFile(object):
     if self._debug:
       print(u'')
 
-  def _ReadFileHeader(self):
+  def _ReadFileHeader(self, file_offset=0):
     """Reads the file header.
+
+    Args:
+      file_offset: optional integer containing the offset of the mappings file
+                   relative from the start of the file.
 
     Raises:
       IOError: if the file header cannot be read.
     """
-    self._file_object.seek(0, os.SEEK_SET)
+    self._file_object.seek(file_offset, os.SEEK_SET)
+
+    if self._debug:
+      print(u'Reading file header at offset: 0x{0:08x}'.format(file_offset))
 
     file_header_data = self._file_object.read(self._FILE_HEADER.sizeof())
 
@@ -529,7 +637,7 @@ class MappingFile(object):
     except construct.FieldError as exception:
       raise IOError((
           u'Unable to parse file header at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(0, exception))
+          u'with error: {1:s}').format(file_offset, exception))
 
     signature = file_header_struct.get(u'signature')
     format_version = file_header_struct.get(u'format_version')
@@ -547,11 +655,8 @@ class MappingFile(object):
     if self._debug:
       print(u'')
 
-  def _ReadMappings(self, mappings_reference=u'mappings'):
+  def _ReadMappings(self):
     """Reads the mappings.
-
-    Args:
-      mappings_reference: a string containing the mappings reference.
 
     Raises:
       IOError: if the mappings cannot be read.
@@ -578,7 +683,7 @@ class MappingFile(object):
       print(hexdump.Hexdump(entries_data))
 
     try:
-      mappings = construct.Array(
+      mappings_array = construct.Array(
           number_of_entries, construct.ULInt32(u'page_number')).parse(
               entries_data)
     except construct.FieldError as exception:
@@ -588,7 +693,7 @@ class MappingFile(object):
 
     if self._debug:
       for index in range(number_of_entries):
-        page_number = mappings[index]
+        page_number = mappings_array[index]
         if page_number == 0xffffffff:
           print((
               u'Mapping entry: {0:d} page number\t\t\t\t\t\t: 0x{1:08x} '
@@ -598,7 +703,7 @@ class MappingFile(object):
               index, page_number))
       print(u'')
 
-    self.mappings[mappings_reference] = mappings
+    self.mappings = mappings_array
 
   def _ReadUnknownEntries(self):
     """Reads unknown entries.
@@ -628,7 +733,7 @@ class MappingFile(object):
       print(hexdump.Hexdump(entries_data))
 
     try:
-      unknown_entries = construct.Array(
+      unknown_entries_array = construct.Array(
           number_of_entries, construct.ULInt32(u'page_number')).parse(
               entries_data)
     except construct.FieldError as exception:
@@ -638,7 +743,7 @@ class MappingFile(object):
 
     if self._debug:
       for index in range(number_of_entries):
-        page_number = unknown_entries[index]
+        page_number = unknown_entries_array[index]
         if page_number == 0xffffffff:
           print((
               u'Unknown entry: {0:d} page number\t\t\t\t\t\t: 0x{1:08x} '
@@ -654,11 +759,13 @@ class MappingFile(object):
       self._file_object.close()
     self._file_object = None
 
-  def Open(self, filename):
+  def Open(self, filename, file_offset=0):
     """Opens the mappings file.
 
     Args:
       filename: a string containing the filename.
+      file_offset: optional integer containing the offset of the mappings file
+                   relative from the start of the file.
     """
     stat_object = os.stat(filename)
     self._file_size = stat_object.st_size
@@ -666,21 +773,45 @@ class MappingFile(object):
     self._file_object = open(filename, 'rb')
     self._file_object_opened_in_object = True
 
-    self._ReadFileHeader()
-    self._ReadMappings(mappings_reference=u'data')
+    self._ReadFileHeader(file_offset=file_offset)
+    self._ReadMappings()
     self._ReadUnknownEntries()
     self._ReadFileFooter()
 
-    self._ReadFileHeader()
-    self._ReadMappings(mappings_reference=u'index')
-    self._ReadUnknownEntries()
-    self._ReadFileFooter()
+    self.data_size = self._file_object.tell() - file_offset
 
 
-class ObjectsDataFile(object):
-  """Class that contains an objects data (Objects.data) file."""
+class ObjectDescriptor(object):
+  """Class that contains an object descriptor.
 
-  _PAGE_SIZE = 8192
+  Attributes:
+    object_record_data_offset: an integer containing the data offset of
+                               the object record.
+    object_record_data_size: an integer containing the data size of
+                             the object record.
+  """
+
+  def __init__(self, object_record_data_offset, object_record_data_size):
+    """Initializes the object descriptor object.
+
+    Args:
+      object_record_data_offset: an integer containing the data offset of
+                                 the object record.
+      object_record_data_size: an integer containing the data size of
+                               the object record.
+    """
+    super(ObjectDescriptor, self).__init__()
+    self.object_record_data_offset = object_record_data_offset
+    self.object_record_data_size = object_record_data_size
+
+
+class ObjectsDataPage(object):
+  """Class that contains an objects data page.
+
+  Attributes:
+  """
+
+  PAGE_SIZE = 8192
 
   _OBJECT_DESCRIPTOR = construct.Struct(
       u'object_descriptor',
@@ -691,10 +822,195 @@ class ObjectsDataFile(object):
 
   _EMPTY_OBJECT_DESCRIPTOR = b'\x00' * _OBJECT_DESCRIPTOR.sizeof()
 
+  _OBJECT_RECORD_HEADER = construct.Struct(
+      u'object_record_header',
+      construct.ULInt32(u'number_of_characters'),
+      construct.String(
+          u'utf16_stream', lambda ctx: ctx.number_of_characters * 2),
+      construct.ULInt64(u'filetime'))
+
   def __init__(self, debug=False):
+    """Initializes the objects data page object.
+
+    Args:
+      debug: optional boolean value to indicate if debug information should
+             be printed.
+    """
+    super(ObjectsDataPage, self).__init__()
+    self._debug = debug
+
+    self._object_descriptors = []
+
+  def _ReadObjectDescriptor(self, file_object):
+    """Reads an object descriptor.
+
+    Args:
+      file_object: a file-like object.
+
+    Returns:
+      An object descriptor (instance of ObjectDescriptor) or None.
+
+    Raises:
+      IOError: if the object descriptor cannot be read.
+    """
+    file_offset = file_object.tell()
+    if self._debug:
+      print(u'Reading object descriptor at offset: 0x{0:08x}'.format(
+          file_offset))
+
+    object_descriptor_data = file_object.read(
+        self._OBJECT_DESCRIPTOR.sizeof())
+
+    if self._debug:
+      print(u'Object descriptor data:')
+      print(hexdump.Hexdump(object_descriptor_data))
+
+    # The last object descriptor (terminator) is filled with 0-byte values.
+    if object_descriptor_data == self._EMPTY_OBJECT_DESCRIPTOR:
+      return
+
+    try:
+      object_descriptor_struct = self._OBJECT_DESCRIPTOR.parse(
+          object_descriptor_data)
+    except construct.FieldError as exception:
+      raise IOError(
+          u'Unable to parse object descriptor with error: {0:s}'.format(
+              exception))
+
+    identifier = object_descriptor_struct.get(u'identifier')
+    object_record_data_offset = object_descriptor_struct.get(
+        u'object_record_data_offset')
+    object_record_data_size = object_descriptor_struct.get(
+        u'object_record_data_size')
+    object_record_data_checksum = object_descriptor_struct.get(
+        u'object_record_data_checksum')
+
+    if self._debug:
+      print(u'Identifier\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(identifier))
+      print((
+          u'Objects record data offset\t\t\t\t\t\t: 0x{0:08x} '
+          u'(0x{1:08x})').format(
+              object_record_data_offset,
+              file_offset + object_record_data_offset))
+      print(u'Object record data size\t\t\t\t\t\t\t: {0:d}'.format(
+          object_record_data_size))
+      print(u'Objects record data checksum\t\t\t\t\t\t: 0x{0:08x}'.format(
+          object_record_data_checksum))
+      print(u'')
+
+    return ObjectDescriptor(object_record_data_offset, object_record_data_size)
+
+  def _ReadObjectDescriptors(self, file_object):
+    """Reads object descriptors.
+
+    Args:
+      file_object: a file-like object.
+
+    Raises:
+      IOError: if the object descriptor cannot be read.
+    """
+    file_offset = file_object.tell()
+    while True:
+      object_descriptor = self._ReadObjectDescriptor(file_object)
+      if not object_descriptor:
+        break
+
+      # Make the offset relative to the start of the file.
+      object_descriptor.object_record_data_offset += file_offset
+      self._object_descriptors.append(object_descriptor)
+
+  def _ReadObjectRecord(self, file_object, data_offset, data_size):
+    """Reads an object record.
+
+    Args:
+      file_object: a file-like object.
+      data_offset: the object record data offset.
+      data_size: the object record data size.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    file_object.seek(data_offset, os.SEEK_SET)
+
+    if self._debug:
+      print(u'Reading object record at offset: 0x{0:08x}'.format(data_offset))
+
+    object_record_data = file_object.read(data_size)
+
+    if self._debug:
+      print(u'Object record data:')
+      print(hexdump.Hexdump(object_record_data))
+
+    if object_record_data[2:4] != b'\x00\x00':
+      return
+
+    try:
+      object_record_header = self._OBJECT_RECORD_HEADER.parse(
+          object_record_data)
+    except construct.FieldError as exception:
+      raise IOError(
+          u'Unable to parse object record header with error: {0:s}'.format(
+              exception))
+
+    utf16_stream = object_record_header.get(u'utf16_stream')
+    filetime = object_record_header.get(u'filetime')
+
+    try:
+      value_string = b''.join(utf16_stream).decode(u'utf16')
+    except UnicodeDecodeError as exception:
+      value_string = u''
+
+    if self._debug:
+      print(u'Number of characters\t\t\t\t\t\t\t: {0:d}'.format(
+          object_record_header.get(u'number_of_characters')))
+      print(u'String\t\t\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+      print(u'Date and time\t\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(filetime)))
+      print(u'')
+
+  def _ReadObjectRecords(self, file_object):
+    """Reads the object records.
+
+    Args:
+      file_object: a file-like object.
+
+    Raises:
+      IOError: if the object records cannot be read.
+    """
+    for object_descriptor in self._object_descriptors:
+      self._ReadObjectRecord(
+          file_object, object_descriptor.object_record_data_offset,
+          object_descriptor.object_record_data_size)
+
+  def ReadPage(self, file_object, file_offset):
+    """Reads a page.
+
+    Args:
+      file_object: a file-like object.
+      file_offset: integer containing the offset of the page relative
+                   from the start of the file.
+
+    Raises:
+      IOError: if the page cannot be read.
+    """
+    file_object.seek(file_offset, os.SEEK_SET)
+
+    if self._debug:
+      print(u'Reading objects data page at offset: 0x{0:08x}'.format(
+          file_offset))
+
+    self._ReadObjectDescriptors(file_object)
+    self._ReadObjectRecords(file_object)
+
+
+class ObjectsDataFile(object):
+  """Class that contains an objects data (Objects.data) file."""
+
+  def __init__(self, objects_mapping_file, debug=False):
     """Initializes the objects data file object.
 
     Args:
+      objects_mapping_file: an objects mapping file (instance of MappingFile).
       debug: optional boolean value to indicate if debug information should
              be printed.
     """
@@ -704,7 +1020,7 @@ class ObjectsDataFile(object):
     self._file_object_opened_in_object = False
     self._file_size = 0
 
-    self._object_descriptors = []
+    self._objects_mapping_file = objects_mapping_file
 
   def _ReadPage(self, file_offset):
     """Reads a page.
@@ -713,54 +1029,37 @@ class ObjectsDataFile(object):
       file_offset: integer containing the offset of the page relative
                    from the start of the file.
 
+    Return:
+      An index binary-tree page (instance of ObjectsDataPage).
+
     Raises:
       IOError: if the page cannot be read.
     """
-    # TODO: implement
-
-  def _ReadObjectDescriptors(self, file_offset):
-    """Reads an object descriptor.
-
-    Args:
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
-
-    Raises:
-      IOError: if the object descriptors cannot be read.
-    """
-    page_offset = 0
-
-    while page_offset < self._PAGE_SIZE:
-      object_descriptor_data = self._file_object.read(
-          self._OBJECT_DESCRIPTOR.sizeof())
-
-      if self._debug:
-        print(u'Object descriptor data:')
-        print(hexdump.Hexdump(object_descriptor_data))
-
-      page_offset += self._OBJECT_DESCRIPTOR.sizeof()
-
-      if object_descriptor_data == self._EMPTY_OBJECT_DESCRIPTOR:
-        break
-
-      try:
-        object_descriptor_struct = self._OBJECT_DESCRIPTOR.parse(
-            object_descriptor_data)
-      except construct.FieldError as exception:
-        raise IOError((
-            u'Unable to parse object descriptor at offset: 0x{0:08x} '
-            u'with error: {1:s}').format(file_offset, exception))
-
-      # TODO: add debug print
-
-    # TODO: implement
-    _ = object_descriptor_struct
+    objects_page = ObjectsDataPage(debug=self._debug)
+    objects_page.ReadPage(self._file_object, file_offset)
+    return objects_page
 
   def Close(self):
     """Closes the objects data file."""
     if self._file_object_opened_in_object:
       self._file_object.close()
     self._file_object = None
+
+  def GetPage(self, page_number):
+    """Retrieves a specific page.
+
+    Args:
+      page_number: an integer containing the page number.
+
+    Returns:
+      An objects data page (instance of ObjectsDataPage) or None.
+    """
+    file_offset = page_number * ObjectsDataPage.PAGE_SIZE
+    if file_offset >= self._file_size:
+      return
+
+    # TODO: cache pages.
+    return self._ReadPage(file_offset)
 
   def Open(self, filename):
     """Opens the objects data file.
@@ -774,11 +1073,20 @@ class ObjectsDataFile(object):
     self._file_object = open(filename, 'rb')
     self._file_object_opened_in_object = True
 
-    if self._debug:
-      file_offset = 0
-      while file_offset < self._file_size:
-        self._ReadPage(file_offset)
-        file_offset += self._PAGE_SIZE
+    # TODO: cannot read objects data file sequentially.
+    # if self._debug:
+    #   file_offset = 0
+    #   while file_offset < self._file_size:
+    #     self._ReadPage(file_offset)
+    #     file_offset += ObjectsDataPage.PAGE_SIZE
+
+
+class CIMKey(object):
+  """Class that contains a CIM key."""
+
+  def __init__(self):
+    """Initializes the CIM key object."""
+    super(CIMKey, self).__init__()
 
 
 class CIMRepository(object):
@@ -797,6 +1105,7 @@ class CIMRepository(object):
     self._debug = debug
     self._index_binary_tree_file = None
     self._index_mapping_file = None
+    self._objects_data_file = None
     self._objects_mapping_file = None
 
   def _GetCurrentMappingFile(self, path):
@@ -834,12 +1143,52 @@ class CIMRepository(object):
       if self._debug:
         print(u'Reading: {0:s}'.format(mapping_file_path))
 
-      mapping_file = MappingFile(debug=self._debug)
-      mapping_file.Open(mapping_file_path)
+      objects_mapping_file = MappingFile(debug=self._debug)
+      objects_mapping_file.Open(mapping_file_path)
 
-    self._mapping_file = mapping_file
+      index_mapping_file = MappingFile(debug=self._debug)
+      index_mapping_file.Open(
+          mapping_file_path, file_offset=objects_mapping_file.data_size)
 
-    # TODO: use index and objects map instead?
+
+  def Close(self):
+    """Closes the CIM repository."""
+    if self._index_binary_tree_file:
+      self._index_binary_tree_file.Close()
+      self._index_binary_tree_file = None
+
+    if self._index_mapping_file:
+      self._index_mapping_file.Close()
+      self._index_mapping_file = None
+
+    if self._objects_data_file:
+      self._objects_data_file.Close()
+      self._objects_data_file = None
+
+    if self._objects_mapping_file:
+      self._objects_mapping_file.Close()
+      self._objects_mapping_file = None
+
+  def GetKeys(self):
+    """Retrieves the keys.
+
+    Yields:
+      A string containing the CIM key.
+    """
+    if not self._index_binary_tree_file:
+      return
+
+    index_page = self._index_binary_tree_file.GetRootPage()
+
+  def Open(self, path):
+    """Opens the CIM repository.
+
+    Args:
+      path: a string containing the path to the CIM repository.
+    """
+    # TODO: self._GetCurrentMappingFile(path)
+
+    # Index mappings file.
     index_mapping_file_path = glob.glob(
         os.path.join(path, u'[Ii][Nn][Dd][Ee][Xx].[Mm][Aa][Pp]'))[0]
 
@@ -849,67 +1198,36 @@ class CIMRepository(object):
     self._index_mapping_file = MappingFile(debug=self._debug)
     self._index_mapping_file.Open(index_mapping_file_path)
 
+    # Index binary tree file.
+    index_binary_tree_file_path = glob.glob(
+        os.path.join(path, u'[Ii][Nn][Dd][Ee][Xx].[Bb][Tt][Rr]'))[0]
+
+    if self._debug:
+      print(u'Reading: {0:s}'.format(index_binary_tree_file_path))
+
+    self._index_binary_tree_file = IndexBinaryTreeFile(
+        self._index_mapping_file, debug=self._debug)
+    self._index_binary_tree_file.Open(index_binary_tree_file_path)
+
+    # Objects mappings file.
     objects_mapping_file_path = glob.glob(
         os.path.join(path, u'[Oo][Bb][Jj][Ee][Cc][Tt][Ss].[Mm][Aa][Pp]'))[0]
 
     if self._debug:
       print(u'Reading: {0:s}'.format(objects_mapping_file_path))
 
-    self._index_mapping_file = MappingFile(debug=self._debug)
-    self._index_mapping_file.Open(objects_mapping_file_path)
+    self._objects_mapping_file = MappingFile(debug=self._debug)
+    self._objects_mapping_file.Open(objects_mapping_file_path)
 
-  def Close(self):
-    """Closes the CIM repository."""
-    self._index_mapping_file.Close()
-    self._index_mapping_file = None
-
-    self._index_binary_tree_file.Close()
-    self._index_binary_tree_file = None
-
-    self._objects_mapping_file.Close()
-    self._objects_mapping_file = None
-
-    self._objects_data_file.Close()
-    self._objects_data_file = None
-
-    self._mapping_file.Close()
-    self._mapping_file = None
-
-  def GetKeys(self):
-    """Retrieves the keys.
-
-    Yields:
-      A string containing the CIM key.
-    """
-    if not self._index_binary_tree_file or not self._mapping_file:
-      return
-
-    page_number = self._mapping_file.mappings[u'index'][0]
-    index_page = self._index_binary_tree_file.GetPage(page_number)
-
-  def Open(self, path):
-    """Opens the CIM repository.
-
-    Args:
-      path: a string containing the path to the CIM repository.
-    """
-    self._GetCurrentMappingFile(path)
-
-    index_binary_tree_file_path = glob.glob(
-        os.path.join(path, u'[Ii][Nn][Dd][Ee][Xx].[Bb][Tt][Rr]'))[0]
+    # Objects data file.
     objects_data_file_path = glob.glob(
         os.path.join(path, u'[Oo][Bb][Jj][Ee][Cc][Tt][Ss].[Da][Aa][Tt][Aa]'))[0]
 
     if self._debug:
-      print(u'Reading: {0:s}'.format(index_binary_tree_file_path))
-
-    self._index_binary_tree_file = IndexBinaryTreeFile(debug=self._debug)
-    self._index_binary_tree_file.Open(index_binary_tree_file_path)
-
-    if self._debug:
       print(u'Reading: {0:s}'.format(objects_data_file_path))
 
-    self._objects_data_file = ObjectsDataFile(debug=self._debug)
+    self._objects_data_file = ObjectsDataFile(
+        self._objects_mapping_file, debug=self._debug)
     self._objects_data_file.Open(objects_data_file_path)
 
 

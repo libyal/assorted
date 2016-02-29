@@ -41,7 +41,7 @@ in the section entitled "GNU Free Documentation License".
 |===
 | Version | Author | Date | Comments
 | 0.0.1 | J.B. Metz | May 2015 | Initial version.
-| 0.0.2 | J.B. Metz | November 2015 | Additional information about binary-tree index file format.
+| 0.0.2 | J.B. Metz | November 2015 | Additional information about index binary-tree file format.
 | 0.0.3 | J.B. Metz | November 2015 | Additional information about objects.data file format.
 | 0.0.4 | J.B. Metz | February 2016 | Additional information.
 |===
@@ -90,14 +90,14 @@ In Windows Vista and later the CIM repository can be found in the directory:
 %SystemRoot%\SysWOW64\WBEM\Repository\
 ....
 
-* `Index.btr`; binary-tree index file;
-* `Index.map`; transaction control file;
-* `Objects.data`; repository where managed resource definitions are stored;
-* `Objects.map`; transaction control file.
-* `Mapping#.map`; mapping file where # is:
+* `Index.btr`; index binary-tree file;
+* `Index.map`; index mappings file;
+* `Objects.data`; objects data file;
+* `Objects.map`; objects mappings file;
+* `Mapping#.map`; mappings file where # is:
 ** `[1-2]` in Windows XP and Windows 2003
 ** `[1-3]` in Windows Vista and later
-* `Mapping.ver`; # of the active mapping file
+* `Mapping.ver`; mappings version file contains # of the active mappings file.
 
 [NOTE]
 A copy of the CIM repository is stored in the system restore points.
@@ -120,13 +120,13 @@ information within this document:
 * Windows 8
 * Windows 10
 
-== The binary-tree index file (index.btr)
-The binary-tree index file (index.btr) consists of:
+== The index binary-tree file (index.btr)
+The index binary-tree file (index.btr) consists of:
 
 * an array of pages
 
-=== Binary-tree index page
-The binary-tree index page is 8192 bytes of size and consists of:
+=== Index binary-tree page
+The index binary-tree page is 8192 bytes of size and consists of:
 
 * a page header
 * [yellow-background]*Unknown*
@@ -137,21 +137,22 @@ The binary-tree index page is 8192 bytes of size and consists of:
 * page value data
 * padding (0-byte values)
 
-=== Binary-tree index page header
-The binary-tree index page header is 20 bytes of size and consists of:
+=== Index binary-tree page header
+The index binary-tree page header is 20 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | | Index page type +
-See section: <<btr_index_page_types,Binary-tree index page types>>
+See section: <<index_binary_tree_page_types,Index binary-tree page types>>
 | 4 | 4 | | Mapped page number
 | 8 | 4 | | [yellow-background]*Unknown (empty values)*
-| 12 | 4 | | Root page number
+| 12 | 4 | | Root page number +
+[yellow-background]*Only set in the administrative page and 0 otherwise?*
 | 16 | 4 | | Number of page values
 |===
 
-=== [[btr_index_page_types]]Binary-tree index page types
+=== [[index_binary_tree_page_types]]Index binary-tree page types
 
 [cols="1,1,5",options="header"]
 |===
@@ -162,8 +163,8 @@ See section: <<btr_index_page_types,Binary-tree index page types>>
 | 0xbadd | | [yellow-background]*Unknown (Is deleted)*
 |===
 
-=== Binary-tree index page unknown array
-The binary-tree index page unknown array is variable of size and consists of:
+=== Index binary-tree page unknown array
+The index binary-tree page unknown array is variable of size and consists of:
 
 * number of page values x [yellow-background]*Unknown array entry*
 
@@ -175,8 +176,8 @@ The unknown entry is 4 bytes of size and consists of:
 | 0 | 4 | | [yellow-background]*Unknown (empty values)*
 |===
 
-=== Binary-tree index page unknown array
-The binary-tree index page unknown array is variable of size and consists of:
+=== Index binary-tree page unknown array
+The index binary-tree page unknown array is variable of size and consists of:
 
 * (number of page values + 1) x unknown array entry
 
@@ -188,21 +189,21 @@ The unknown entry is 4 bytes of size and consists of:
 | 0 | 4 | | [yellow-background]*Unknown (empty values)*
 |===
 
-=== Binary-tree index page key offsets
-The binary-tree index page key offsets are variable of size and consist of:
+=== Index binary-tree page key offsets
+The index binary-tree page key offsets are variable of size and consist of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
 | 0 | ... | | array of 16-bit offsets +
-The offsets are relative to the start of the binary-tree index page key data
+The offsets are relative to the start of the index binary-tree page key data
 |===
 
 [NOTE]
 The number of offsets equals the number of page values.
 
-=== Binary-tree index page key data
-The binary-tree index page key data is variable of size and consists of:
+=== Index binary-tree page key data
+The index binary-tree page key data is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -213,19 +214,19 @@ data size = value x 2
 | 2 | ... | | data
 |===
 
-=== Binary-tree index page value offsets
-The binary-tree index page value offsets are variable of size and consist of:
+=== Index binary-tree page value offsets
+The index binary-tree page value offsets are variable of size and consist of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
 | 0 | 2 | | number of offsets
 | 2 | ... | | array of 16-bit offsets +
-The offsets are relative to the start of the binary-tree index page value data
+The offsets are relative to the start of the index binary-tree page value data
 |===
 
-=== Binary-tree index page value data
-The binary-tree index page value data is variable of size and consists of:
+=== Index binary-tree page value data
+The index binary-tree page value data is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -370,7 +371,7 @@ Unicode strings are stored in UTF-16 little-endian without the byte order mark (
 The object descriptors consists of:
 
 * an array of object descriptor entries
-* empty (zero byte filled) table entry (or terminator)
+* empty (zero byte filled) object descriptor (or terminator)
 
 ===== Object descriptor entry
 The object descriptor entry is 16 bytes of size and consists of:
@@ -380,9 +381,9 @@ The object descriptor entry is 16 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 4 | | Object identifier
 | 4 | 4 | | Object record data offset +
-The offset is relative to the start of the table
+The offset is relative to the start of the object descriptors
 | 8 | 4 | | Object record data size
-| 12 | 4 | | Checksum +
+| 12 | 4 | | Object record data checksum +
 Contains a CRC-32 with polynomial 0xedb88320 and initial value 0 of the object record data
 |===
 
@@ -604,10 +605,14 @@ String table entry?
 0093ea40  46 39 34 30 38 42 32 45  37 35 42 37 44 38 42 39  |F9408B2E75B7D8B9|
 ....
 
-== CIM database
+== CIM repository
+=== Notes
+Mapped index page 0 references the administrative page in the index binary-tree
 
-=== Binary-tree index identifier strings
-The page values in the binary-tree index (Index.btr) contain identifier strings
+The root page number of the administrative page in the index binary-tree
+
+=== Index binary-tree identifier strings
+The page values in the index binary-tree (Index.btr) contain identifier strings
 that map to object records. Example of identifier strings are:
 
 ....
@@ -662,12 +667,28 @@ gwmi -namespace root\cimv2 -list
 [appendix]
 == References
 
+`[DMTF]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | CIM Schema: Version 2.45.0
+| URL: | http://www.dmtf.org/standards/cim/cim_schema_v2450
+|===
+
 `[FLAREWMI]`
 
 [cols="1,5",options="header"]
 |===
 | Title: | Flare WMI project
 | URL: | https://github.com/fireeye/flare-wmi
+|===
+
+`[MSDN]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | `[MS-WMIO]`: CimType
+| URL: | https://msdn.microsoft.com/en-us/library/cc250928.aspx
 |===
 
 `[TECHNET]`
