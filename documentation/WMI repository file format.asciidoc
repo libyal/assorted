@@ -43,7 +43,8 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.1 | J.B. Metz | May 2015 | Initial version.
 | 0.0.2 | J.B. Metz | November 2015 | Additional information about index binary-tree file format.
 | 0.0.3 | J.B. Metz | November 2015 | Additional information about objects.data file format.
-| 0.0.4 | J.B. Metz | February 2016 | Additional information.
+| 0.0.4 | J.B. Metz | February 2016 | Additional information about format used in Windows XP.
+| 0.0.5 | J.B. Metz | March 2016 | Additional information about format used in Windows XP.
 |===
 
 :numbered:
@@ -218,7 +219,7 @@ The index binary-tree page key data is variable of size and consists of:
 The page key segment indexes refer to page values where a page key consists of
 multiple page values e.g.
 ....
-VALUE1 / VALUE2 / VALUE3
+\ VALUE1 \ VALUE2 \ VALUE3
 ....
 
 === Index binary-tree page value offsets
@@ -377,239 +378,127 @@ Unicode strings are stored in UTF-16 little-endian without the byte order mark (
 ==== Object descriptors
 The object descriptors consists of:
 
-* an array of object descriptor entries
+* an array of object descriptor
 * empty (zero byte filled) object descriptor (or terminator)
 
-===== Object descriptor entry
-The object descriptor entry is 16 bytes of size and consists of:
+===== Object descriptor
+The object descriptor is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | Object identifier
-| 4 | 4 | | Object record data offset +
+| 0 | 4 | | Identifier
+| 4 | 4 | | Data offset +
 The offset is relative to the start of the object descriptors
-| 8 | 4 | | Object record data size
-| 12 | 4 | | Object record data checksum +
+| 8 | 4 | | Data size
+| 12 | 4 | | Data checksum +
 Contains a CRC-32 with polynomial 0xedb88320 and initial value 0 of the object record data
 |===
 
-==== Object record
-The object record is variable of size and consists of:
+==== Object records
+The object record is defined by the object descripto and its structure depends 
+on the data type.
+
+===== Class definition (CD)
+The class definition is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | [yellow-background]*Unknown string size* +
-Contains the number of characters
-| 4 | ... | | [yellow-background]*Unknown string* +
-UTF-16 little-endian string without end-of-string character.
-| ... | 8 | | [yellow-background]*Unknown data and time* +
-Contains a FILETIME +
-4+| _Unknown data_
-| ... | 2 | | [yellow-background]*Unknown size* +
-The size of the unknown data that includes the size of size value +
-[yellow-background]*Assumed to be 16-bit*
-| ... | 7 | 0x00 | [yellow-background]*Unknown (empty values?)*
-4+| _Unknown value_
-| ... | 4 | | [yellow-background]*Unknown (value type?)*
-| ... | 4 | | [yellow-background]*Unknown (value size?)*
-| ... | 1 | 0x00 | [yellow-background]*Unknown (string flags?)*
-| ... | ... | | [yellow-background]*Unknown (value string?)* +
-ASCII string terminated by an end-of-string character
-4+| _Unknown data_
-| ... | 2 | | [yellow-background]*Unknown (data size?)*
-| ... | ... | | [yellow-background]*Unknown data*
-4+| _Unknown_
-| ... | 2 | | [yellow-background]*Unknown (string data size?)*
-| ... | 2 | 0x8000 | [yellow-background]*Unknown*
-4+| _String data_
-| ... | 1 | 0x00 | [yellow-background]*Unknown (string flags?)*
-| ... | ... | | [yellow-background]*Unknown (string?)* +
-ASCII string terminated by an end-of-string character
-4+| _Unknown data_
-| ... | 2 | 0x000c | [yellow-background]*Unknown size* +
-The size of the unknown data that includes the size of size value +
-[yellow-background]*Assumed to be 16-bit*
-| ... | 9 | 0x00 | [yellow-background]*Unknown (empty values?)*
+| 0 | 4 | | Class name string size +
+Contains the number of UTF-16 characters (16-bit values)
+| 4 | ... | | Class name string +
+Contains an UTF-16 little-endian string without end-of-string character.
+| ... | 8 | | [yellow-background]*Unknown (date and time)* +
+Contains a FILETIME
+4+| _Data block_
+| ... | 4 | | Data size +
+Including the 4 bytes of the data
+| ... | ... | | Data
+4+| _Data block_
+| ... | 4 | | Data size +
+| ... | 7 | 0x00 | [yellow-background]*Unknown* +
+[yellow-background]*Filled with 0-byte values most of the time*
 | ... | 1 | 0x80 | [yellow-background]*Unknown (sentinal?)*
 |===
 
-....
-00000210                                             67 00  |e.n.t.^]4.....g.|
-00000220  00 00 00 00 00 00 00 11  00 00 00 23 00 00 00 00  |...........#....|
-00000230  5f 5f 4e 61 6d 65 73 70  61 63 65 4f 70 65 72 61  |__NamespaceOpera|
-00000240  74 69 6f 6e 45 76 65 6e  74 00                    |tionEvent.......|
+[yellow-background]*TODO: if the class name is empty it refers to __SystemClass?*
 
-00000240                                 1b 00              |tionEvent.......|
-00000240                                       00 00 04 00  |tionEvent.......|
-00000250  00 00 00 00 00 00 3f ff  ff ff ff ff ff ff ff ff  |......?.........|
-00000260  ff ff ff ff ff ff ff                              |............__Na|
+[yellow-background]*TODO: define data*
 
-00000260                       1a  00 00 80                 |............__Na|
-
-00000260                                    00 5f 5f 4e 61  |............__Na|
-00000270  6d 65 73 70 61 63 65 43  72 65 61 74 69 6f 6e 45  |mespaceCreationE|
-00000280  76 65 6e 74 00                                    |vent............|
-
-00000280                 0c 00 00  00 00 00 00 00 00 00 00  |vent............|
-00000290  80                                                |.               |
-....
-
-....
-Another record type? or is the record header omitted?
-0x00000000  37 00 31 00 31 00 34 00  30 00 43 00 43 00 44 00  7.1.1.4.0.C.C.D.
-0x00000010  36 00 36 00 45 00 44 00  43 00 32 00 30 00 42 00  6.6.E.D.C.2.0.B.
-0x00000020  39 00 43 00 32 00 43 00  44 00 46 00 35 00 32 00  9.C.2.C.D.F.5.2.
-0x00000030  46 00 33 00 43 00 38 00  33 00 37 00 33 00 41 00  F.3.C.8.3.7.3.A.
-0x00000040  43 00 41 00 39 00 46 00  39 00 36 00 36 00 44 00  C.A.9.F.9.6.6.D.
-0x00000050  38 00 30 00 41 00 34 00  33 00 41 00 44 00 36 00  8.0.A.4.3.A.D.6.
-0x00000060  39 00 38 00 41 00 35 00  42 00 46 00 43 00 44 00  9.8.A.5.B.F.C.D.
-0x00000070  46 00 35 00 31 00 35 00  34 00 39 00 44 00 44 00  F.5.1.5.4.9.D.D.
-0x00000080  fb 86 91 4f 27 04 ca 01  a3 86 91 4f 27 04 ca 01  ...O'......O'...
-0x00000090  66 00 00 00 00 00 00 00  00 00 1e 00 00 00 04 00  f...............
-0x000000a0  00 00 01 4f 00 00 80 00  5f 5f 4d 65 74 68 6f 64  ...O....__Method
-0x000000b0  50 72 6f 76 69 64 65 72  52 65 67 69 73 74 72 61  ProviderRegistra
-0x000000c0  74 69 6f 6e 00 00 5c 5c  2e 5c 52 6f 6f 74 5c 43  tion..\\.\Root\C
-0x000000d0  49 4d 56 32 3a 5f 5f 57  69 6e 33 32 50 72 6f 76  IMV2:__Win32Prov
-0x000000e0  69 64 65 72 2e 4e 61 6d  65 3d 22 43 69 6d 77 69  ider.Name="Cimwi
-0x000000f0  6e 33 32 41 22 00                                 n32A".
-....
-
-==== [yellow-background]*Unknown*
+=== Interface (I and IL)
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
+| 0 | 64 | | GUID string +
+Contains an UTF-16 little-endian string without end-of-string character.
+| 64 | 8 | | [yellow-background]*Unknown (date and time)* +
+Contains a FILETIME
+| 72 | 8 | | [yellow-background]*Unknown (date and time)* +
+Contains a FILETIME
+4+| _Data block_
+| ... | 4 | | Data size +
+Including the 4 bytes of the data
+| ... | ... | | Data
 |===
 
-....
-*
-00002000  00 00 00 00 00 00 00 00  00 00 00 0c 00 00 00 00  |................|
-00002010  00 5f 5f 00 00 00 80 00  43 6f 6d 70 72 65 73 73  |.__.....Compress|
-00002020  00 29 00 00 00 10 12 00  00 00 0b 00 00 00 ff ff  |.)..............|
-00002030  1d 12 00 00 01 08 00 00  00 25 12 00 00 2c 12 00  |.........%...,..|
-00002040  00 02 08 20 00 00 36 12  00 00 00 49 6d 70 6c 65  |... ..6....Imple|
-00002050  6d 65 6e 74 65 64 00 00  53 63 68 65 6d 61 00 00  |mented..Schema..|
-00002060  57 69 6e 33 32 00 00 56  61 6c 75 65 4d 61 70 00  |Win32..ValueMap.|
-00002070  0d 00 00 00 6e 12 00 00  71 12 00 00 74 12 00 00  |....n...q...t...|
-00002080  77 12 00 00 7a 12 00 00  7e 12 00 00 82 12 00 00  |w...z...~.......|
-00002090  86 12 00 00 8a 12 00 00  8e 12 00 00 92 12 00 00  |................|
-000020a0  96 12 00 00 9a 12 00 00  00 30 00 00 32 00 00 38  |.........0..2..8|
-000020b0  00 00 39 00 00 31 30 00  00 31 31 00 00 31 32 00  |..9..10..11..12.|
-000020c0  00 31 33 00 00 31 34 00  00 31 35 00 00 31 36 00  |.13..14..15..16.|
-000020d0  00 31 37 00 00 32 31 00  00 00 00 00 6e 01 00 00  |.17..21.....n...|
-000020e0  05 00 54 45 53 54 00 00  52 4f 4f 54 5c 43 49 4d  |..TEST..ROOT\CIM|
-000020f0  56 32 00 1d 00 00 00 00  ff ff ff ff 00 00 00 00  |V2..............|
-00002100  04 00 00 00 04 00 00 00  00 00 00 00 00 00 00 80  |................|
-00002110  0c 00 00 00 00 00 00 00  00 00 00 80 26 01 00 00  |............&...|
-00002120  00 00 00 00 00 05 00 00  00 04 00 00 00 0f 00 00  |................|
-00002130  00 0e 00 00 00 00 0b 00  00 00 ff ff 01 00 00 00  |................|
-00002140  2a 00 00 00 6b 00 00 00  19 ff ff ff ff 95 00 00  |*...k...........|
-00002150  80 00 5f 5f 50 41 52 41  4d 45 54 45 52 53 00 00  |..__PARAMETERS..|
-00002160  61 62 73 74 72 61 63 74  00 13 00 00 00 00 00 00  |abstract........|
-00002170  00 00 00 00 00 00 00 04  00 00 00 00 52 65 74 75  |............Retu|
-00002180  72 6e 56 61 6c 75 65 00  00 75 69 6e 74 33 32 00  |rnValue..uint32.|
-00002190  13 00 00 00 00 00 00 00  00 00 00 00 00 00 11 00  |................|
-000021a0  00 00 0a 00 00 80 03 08  00 00 00 5e 00 00 00 00  |...........^....|
-000021b0  75 69 6e 74 33 32 00 00  6f 75 74 00 13 00 00 00  |uint32..out.....|
-000021c0  00 00 00 00 00 00 00 00  00 00 1c 00 00 00 0a 00  |................|
-000021d0  00 80 03 08 00 00 00 5e  00 00 00 66 00 00 00 00  |.......^...f....|
-000021e0  0b 00 00 00 ff ff 00 0c  00 00 00 00 00 5f 5f 00  |.............__.|
-000021f0  00 00 80 43 3a 00 00 00  00 00 00 00 00 00 00 00  |...C:...........|
-00002200  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-....
+=== Registration (R)
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Name space string size +
+Contains the number of UTF-16 characters (16-bit values)
+| 4 | ... | | Name space string +
+Contains an UTF-16 little-endian string without end-of-string character.
+| ... | 4 | | Class string size +
+Contains the number of UTF-16 characters (16-bit values)
+| ... | ... | | Class string +
+Contains an UTF-16 little-endian string without end-of-string character.
+| ... | 4 | | Attribute name string size +
+Contains the number of UTF-16 characters (16-bit values)
+| ... | ... | | Attribute name string +
+Contains an UTF-16 little-endian string without end-of-string character.
+| ... | 4 | | Attribute value string size +
+Contains the number of UTF-16 characters (16-bit values)
+| ... | ... | | Attribute value string +
+Contains an UTF-16 little-endian string without end-of-string character.
+| ... | 8 | | [yellow-background]*Unknown (empty values or unused strings?)*
+|===
+
+[NOTE]
+The attribute value contians a CIM key
 
 ....
-Empty?
-*
-00003100  00 00 00 00 00 00 00 00  0c 00 00 00 00 00 5f 5f  |..............__|
-00003110  0c 00 00 00 00 00 5f 5f  00 00 00 80 00 00 00 00  |......__........|
-00003120  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-....
+0x00000000  09 00 00 00 52 00 4f 00  4f 00 54 00 5c 00 52 00  ....R.O.O.T.\.R.
+0x00000010  53 00 4f 00 50 00                                 S.O.P....._._.M.
 
-....
-*
-00003df0  00 0c 00 00 00 00 00 5f  5f 0c 00 00 00 00 00 5f  |.......__......_|
-00003e00  5f 00 00 00 80 00 00 00  00 00 00 00 00 00 00 00  |_...............|
-00003e10  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-00003e20  00 00 00 00 00 00 00 00  00 00 00 00 00 0c 00 00  |................|
-00003e30  00 00 00 5f 5f 00 00 00  80 4f 57 53 00 00 00 00  |...__....OWS....|
-00003e40  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-....
+0x00000010                    1c 00  00 00 5f 00 5f 00 4d 00  S.O.P....._._.M.
+0x00000020  65 00 74 00 68 00 6f 00  64 00 50 00 72 00 6f 00  e.t.h.o.d.P.r.o.
+0x00000030  76 00 69 00 64 00 65 00  72 00 52 00 65 00 67 00  v.i.d.e.r.R.e.g.
+0x00000040  69 00 73 00 74 00 72 00  61 00 74 00 69 00 6f 00  i.s.t.r.a.t.i.o.
+0x00000050  6e 00                                             n.....p.r.o.v.i.
 
-....
-00004160  09 00 00 c6 09 00 00 de  09 00 00 a3 0a 00 00 b8  |................|
-00004170  0a 00 00 7a 0b 00 00 95  0b 00 00                 |...z............|
+0x00000050        08 00 00 00 70 00  72 00 6f 00 76 00 69 00  n.....p.r.o.v.i.
+0x00000060  64 00 65 00 72 00                                 d.e.r.k...\.N.S.
 
-Bitmap?
-00004170                                    ff ff ff ff 7f  |...z............|
-00004180  55 55 57 d5 ff ff ff ff  ff ff ff ff ff ff ff ff  |UUW.............|
-00004190  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-*
-00004200  ff ff ff ff                                       |....]....CIM_Vol|
+0x00000060                    6b 00  00 00 5c 00 4e 00 53 00  d.e.r.k...\.N.S.
+0x00000070  5f 00 31 00 45 00 36 00  41 00 33 00 38 00 41 00  _.1.E.6.A.3.8.A.
+0x00000080  30 00 36 00 45 00 37 00  36 00 39 00 39 00 32 00  0.6.E.7.6.9.9.2.
+0x00000090  37 00 43 00 37 00 43 00  32 00 31 00 30 00 42 00  7.C.7.C.2.1.0.B.
+0x000000a0  45 00 45 00 46 00 34 00  37 00 32 00 43 00 46 00  E.E.F.4.7.2.C.F.
+0x000000b0  38 00 5c 00 4b 00 49 00  5f 00 46 00 34 00 30 00  8.\.K.I._.F.4.0.
+0x000000c0  32 00 37 00 35 00 33 00  43 00 34 00 42 00 37 00  2.7.5.3.C.4.B.7.
+0x000000d0  38 00 43 00 37 00 46 00  33 00 36 00 33 00 42 00  8.C.7.F.3.6.3.B.
+0x000000e0  34 00 35 00 42 00 36 00  32 00 43 00 38 00 43 00  4.5.B.6.2.C.8.C.
+0x000000f0  42 00 33 00 31 00 33 00  46 00 5c 00 49 00 5f 00  B.3.1.3.F.\.I._.
+0x00000100  38 00 37 00 32 00 33 00  30 00 37 00 38 00 46 00  8.7.2.3.0.7.8.F.
+0x00000110  45 00 43 00 39 00 33 00  41 00 46 00 33 00 39 00  E.C.9.3.A.F.3.9.
+0x00000120  36 00 38 00 32 00 41 00  34 00 30 00 35 00 35 00  6.8.2.A.4.0.5.5.
+0x00000130  42 00 30 00 37 00 31 00  30 00 45 00 46 00 43 00  B.0.7.1.0.E.F.C.
 
-Unknown
-00004200              5d 0c 00 80  00 43 49 4d 5f 56 6f 6c  |....]....CIM_Vol|
-00004210  74 61 67 65 53 65 6e 73  6f 72 00 00 4c 6f 63 61  |tageSensor..Loca|
-00004220  6c 65 00 00 55 55 49 44  00 00 7b 41 39 39 38 46  |le..UUID..{A998F|
-00004230  39 42 34 2d 45 33 44 34  2d 31 31 64 32 2d 38 36  |9B4-E3D4-11d2-86|
-00004240  30 31 2d 30 30 30 30 46  38 31 30 32 45 35 46 7d  |01-0000F8102E5F}|
-00004250  00 00 41 62 73 74 72 61  63 74 00 00 41 63 63 75  |..Abstract..Accu|
-00004260  72 61 63 79 00 03 40 00  00 1b 00 62 00 00 00 04  |racy..@....b....|
-00004270  00 00 00 36 00 00 00 0a  00 00 80 03 08 00 00 00  |...6............|
-00004280  a1 00 00 00 03 00 00 80  02 0b 00 00 00 ff ff a9  |................|
-00004290  00 00 00 00 08 00 00 00  b3 00 00 00 bd 00 00 00  |................|
-000042a0  02 08 20 00 00 cd 00 00  00 00 73 69 6e 74 33 32  |.. .......sint32|
-000042b0  00 00 4f 76 65 72 72 69  64 65 00 00 41 63 63 75  |..Override..Accu|
-....
-
-....
-00006190  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-*
-000061f0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff bb     |................|
-
-String:
-000061f0                                                0c  |................|
-00006200  00 80 00 43 49 4d 5f 55  6e 69 6e 74 65 72 72 75  |...CIM_Uninterru|
-00006210  70 74 69 62 6c 65 50 6f  77 65 72 53 75 70 70 6c  |ptiblePowerSuppl|
-00006220  79 00 00 44 65 73 63 72  69 70 74 69 6f 6e 00 00  |y..Description..|
-....
-
-....
-String table header?
-
-0093bff0                                       00 00 00 00  |................|
-0093c000  01 00 00 00 5f 03 00 00  ff 01 00 00              |...._...........|
-
-String table entry?
-* index
-* size
-* checksum/hash?
-* unknown?
-0093c000                                       01 00 00 00  |...._...........|
-0093c010  0d 00 00 00 cf 74 84 50  00 00 00 00              |.....t.P........|
-
-0093c010                                       02 00 00 00  |.....t.P........|
-0093c020  4c 00 00 00 96 5d d8 98  00 00 00 00 05 00 00 00  |L....]..........|
-...
-0093c2f0  03 00 00 00 69 37 33 fa  00 00 00 00 41 00 00 00  |....i73.....A...|
-0093c300  33 00 00 00 a5 0c ef 93  00 00 00 00 42 00 00 00  |3...........B...|
-...
-0093e9e0  7e 00 00 00 0c 58 ba ac  00 00 00 00 73 04 00 00  |~....X......s...|
-0093e9f0  da 19 00 00 19 ee 9d b2  00 00 00 00              |............CD_3|
-
-0093e9f0                                       43 44 5f 33  |............CD_3|
-0093ea00  43 41 41 45 30 37 44 30  36 42 36 31 33 43 45 38  |CAAE07D06B613CE8|
-0093ea10  39 41 39 44 33 31 44 31  36 46 38 33 42 39 35 2e  |9A9D31D16F83B95.|
-0093ea20  33 31 34 2e 39 30 32 39  35 39 2e 38 34 37 00     |314.902959.847.C|
-
-0093ea20                                                43  |314.902959.847.C|
-0093ea30  44 5f 34 36 43 41 36 42  34 45 41 36 41 46 46 45  |D_46CA6B4EA6AFFE|
-0093ea40  46 39 34 30 38 42 32 45  37 35 42 37 44 38 42 39  |F9408B2E75B7D8B9|
+0x00000140  00 00 00 00 00 00 00 00                           ........
 ....
 
 == CIM repository
@@ -620,43 +509,42 @@ The root page number of the administrative page in the index binary-tree
 
 === Index binary-tree identifier strings
 The page values in the index binary-tree (Index.btr) contain identifier strings
-that map to object records. Example of identifier strings are:
-
+that map to object records. An example of an identifier strings is:
 ....
 R_7F02F51F97C31228F1ADE773040492C4
-R_889E073E24E009B2E955B1E9560E641E.625.860151.342
 ....
-
-The values in the identifier string can contain segments seperated by '.'
-
-[cols="1,5",options="header"]
-|===
-| Segment index | Usage
-| 0 | Type prefix and MD5 hash
-2+| _Optional values_
-| 1 | Objects data mappings index number
-| 2 | Object identifier
-| 3 | Object record data size
-|===
 
 The following the prefixes are known:
 
 [cols="1,5",options="header"]
 |===
 | Prefix | Usage
+| C | 
 | CD | Class definition
 | CI | 
 | CR | 
 | I | 
+| IL | 
 | KI | 
 | KL | 
 | NS | Name space
 | R | 
 |===
 
-=== Class definition (CD)
+The values in the identifier string can contain segments seperated by '.' e.g.
+....
+R_889E073E24E009B2E955B1E9560E641E.625.860151.342
+....
 
-[yellow-background]*TODO: add descriptions*
+[cols="1,5",options="header"]
+|===
+| Segment index | Usage
+| 0 | Type prefix and MD5 hash
+2+| _Optional values_
+| 1 | Objects data mappings page number
+| 2 | Object record identifier
+| 3 | Object record data size
+|===
 
 == Notes
 

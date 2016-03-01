@@ -54,7 +54,7 @@ class IndexBinaryTreePage(object):
 
   PAGE_SIZE = 8192
 
-  _KEY_SEGMENT_SEPARATOR = u'/'
+  _KEY_SEGMENT_SEPARATOR = u'\\'
 
   _PAGE_HEADER = construct.Struct(
       u'page_header',
@@ -245,8 +245,8 @@ class IndexBinaryTreePage(object):
             u'Page key: {0:d} number of segments\t\t\t\t\t\t: {1:d}'.format(
                 index, number_of_segments))
         page_key_segments_string = u', '.join([
-                u'{0:d}'.format(segment_index)
-                for segment_index in page_key_segments])
+            u'{0:d}'.format(segment_index)
+            for segment_index in page_key_segments])
         print(u'Page key: {0:d} segments\t\t\t\t\t\t\t: {1:s}'.format(
             index, page_key_segments_string))
         print(u'')
@@ -441,7 +441,12 @@ class IndexBinaryTreePage(object):
       key_segments = []
       for segment_index in page_key_segments:
         key_segments.append(self._page_values[segment_index])
-      self.keys.append(self._KEY_SEGMENT_SEPARATOR.join(key_segments))
+
+      key_path = u'{0:s}{1:s}'.format(
+          self._KEY_SEGMENT_SEPARATOR,
+          self._KEY_SEGMENT_SEPARATOR.join(key_segments))
+
+      self.keys.append(key_path)
 
 
 class IndexBinaryTreeFile(object):
@@ -836,24 +841,27 @@ class ObjectDescriptor(object):
   """Class that contains an object descriptor.
 
   Attributes:
-    object_record_data_offset: an integer containing the data offset of
-                               the object record.
-    object_record_data_size: an integer containing the data size of
-                             the object record.
+    data_checksum: an integer containing the checksum of the object record data.
+    data_offset: an integer containing the data offset of the object record.
+    data_size: an integer containing the data size of the object record.
+    identifier: an integer containing the identifier of the object record.
   """
 
-  def __init__(self, object_record_data_offset, object_record_data_size):
+  def __init__(self, identifier, data_offset, data_size, data_checksum):
     """Initializes the object descriptor object.
 
     Args:
-      object_record_data_offset: an integer containing the data offset of
-                                 the object record.
-      object_record_data_size: an integer containing the data size of
-                               the object record.
+      identifier: an integer containing the identifier of the object record.
+      data_offset: an integer containing the data offset of the object record.
+      data_size: an integer containing the data size of the object record.
+      data_checksum: an integer containing the checksum of the object record
+                     data.
     """
     super(ObjectDescriptor, self).__init__()
-    self.object_record_data_offset = object_record_data_offset
-    self.object_record_data_size = object_record_data_size
+    self.data_checksum = data_checksum
+    self.data_offset = data_offset
+    self.data_size = data_size
+    self.identifier = identifier
 
 
 class ObjectsDataPage(object):
@@ -867,18 +875,11 @@ class ObjectsDataPage(object):
   _OBJECT_DESCRIPTOR = construct.Struct(
       u'object_descriptor',
       construct.ULInt32(u'identifier'),
-      construct.ULInt32(u'object_record_data_offset'),
-      construct.ULInt32(u'object_record_data_size'),
-      construct.ULInt32(u'object_record_data_checksum'))
+      construct.ULInt32(u'data_offset'),
+      construct.ULInt32(u'data_size'),
+      construct.ULInt32(u'data_checksum'))
 
   _EMPTY_OBJECT_DESCRIPTOR = b'\x00' * _OBJECT_DESCRIPTOR.sizeof()
-
-  _OBJECT_RECORD_HEADER = construct.Struct(
-      u'object_record_header',
-      construct.ULInt32(u'number_of_characters'),
-      construct.String(
-          u'utf16_stream', lambda ctx: ctx.number_of_characters * 2),
-      construct.ULInt64(u'filetime'))
 
   def __init__(self, debug=False):
     """Initializes the objects data page object.
@@ -929,27 +930,20 @@ class ObjectsDataPage(object):
               exception))
 
     identifier = object_descriptor_struct.get(u'identifier')
-    object_record_data_offset = object_descriptor_struct.get(
-        u'object_record_data_offset')
-    object_record_data_size = object_descriptor_struct.get(
-        u'object_record_data_size')
-    object_record_data_checksum = object_descriptor_struct.get(
-        u'object_record_data_checksum')
+    data_offset = object_descriptor_struct.get(u'data_offset')
+    data_size = object_descriptor_struct.get(u'data_size')
+    data_checksum = object_descriptor_struct.get(u'data_checksum')
 
     if self._debug:
-      print(u'Identifier\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(identifier))
-      print((
-          u'Objects record data offset\t\t\t\t\t\t: 0x{0:08x} '
-          u'(0x{1:08x})').format(
-              object_record_data_offset,
-              file_offset + object_record_data_offset))
-      print(u'Object record data size\t\t\t\t\t\t\t: {0:d}'.format(
-          object_record_data_size))
-      print(u'Objects record data checksum\t\t\t\t\t\t: 0x{0:08x}'.format(
-          object_record_data_checksum))
+      print(u'Identifier\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          identifier))
+      print(u'Data offset\t\t\t\t\t\t\t\t: 0x{0:08x} (0x{1:08x})'.format(
+          data_offset, file_offset + data_offset))
+      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(data_size))
+      print(u'Checksum\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(data_checksum))
       print(u'')
 
-    return ObjectDescriptor(object_record_data_offset, object_record_data_size)
+    return ObjectDescriptor(identifier, data_offset, data_size, data_checksum)
 
   def _ReadObjectDescriptors(self, file_object):
     """Reads object descriptors.
@@ -967,71 +961,8 @@ class ObjectsDataPage(object):
         break
 
       # Make the offset relative to the start of the file.
-      object_descriptor.object_record_data_offset += file_offset
+      object_descriptor.data_offset += file_offset
       self._object_descriptors.append(object_descriptor)
-
-  def _ReadObjectRecord(self, file_object, data_offset, data_size):
-    """Reads an object record.
-
-    Args:
-      file_object: a file-like object.
-      data_offset: the object record data offset.
-      data_size: the object record data size.
-
-    Raises:
-      IOError: if the object record cannot be read.
-    """
-    file_object.seek(data_offset, os.SEEK_SET)
-
-    if self._debug:
-      print(u'Reading object record at offset: 0x{0:08x}'.format(data_offset))
-
-    object_record_data = file_object.read(data_size)
-
-    if self._debug:
-      print(u'Object record data:')
-      print(hexdump.Hexdump(object_record_data))
-
-    if object_record_data[2:4] != b'\x00\x00':
-      return
-
-    try:
-      object_record_header = self._OBJECT_RECORD_HEADER.parse(
-          object_record_data)
-    except construct.FieldError as exception:
-      raise IOError(
-          u'Unable to parse object record header with error: {0:s}'.format(
-              exception))
-
-    utf16_stream = object_record_header.get(u'utf16_stream')
-    filetime = object_record_header.get(u'filetime')
-
-    try:
-      value_string = b''.join(utf16_stream).decode(u'utf16')
-    except UnicodeDecodeError as exception:
-      value_string = u''
-
-    if self._debug:
-      print(u'Number of characters\t\t\t\t\t\t\t: {0:d}'.format(
-          object_record_header.get(u'number_of_characters')))
-      print(u'String\t\t\t\t\t\t\t\t\t: {0:s}'.format(value_string))
-      print(u'Date and time\t\t\t\t\t\t\t\t: {0!s}'.format(
-          FromFiletime(filetime)))
-      print(u'')
-
-  def _ReadObjectRecords(self, file_object):
-    """Reads the object records.
-
-    Args:
-      file_object: a file-like object.
-
-    Raises:
-      IOError: if the object records cannot be read.
-    """
-    for object_descriptor in self._object_descriptors:
-      self._ReadObjectRecord(
-          file_object, object_descriptor.object_record_data_offset,
-          object_descriptor.object_record_data_size)
 
   def ReadPage(self, file_object, file_offset):
     """Reads a page.
@@ -1051,11 +982,96 @@ class ObjectsDataPage(object):
           file_offset))
 
     self._ReadObjectDescriptors(file_object)
-    self._ReadObjectRecords(file_object)
+
+  def ReadObjectRecord(self, file_object, record_identifier, data_size):
+    """Reads an object record.
+
+    Args:
+      file_object: a file-like object.
+      record_identifier: an integer containing the object record identifier.
+      data_size: an integer containing the object record data size.
+
+    Returns:
+      A binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    object_descriptor_match = None
+    for object_descriptor in self._object_descriptors:
+      if object_descriptor.identifier == record_identifier:
+        object_descriptor_match = object_descriptor
+        break
+
+    if not object_descriptor_match:
+      logging.warning(u'Object record data not found.')
+      return
+
+    if object_descriptor_match.data_size != data_size:
+      logging.warning(u'Object record data size mismatch.')
+      return
+
+    file_object.seek(object_descriptor_match.data_offset, os.SEEK_SET)
+
+    if self._debug:
+      print(u'Reading object record at offset: 0x{0:08x}'.format(
+          object_descriptor_match.data_offset))
+
+    object_record_data = file_object.read(data_size)
+
+    if self._debug:
+      print(u'Object record data:')
+      print(hexdump.Hexdump(object_record_data))
+
+    return object_record_data
 
 
 class ObjectsDataFile(object):
   """Class that contains an objects data (Objects.data) file."""
+
+  _KEY_SEGMENT_SEPARATOR = u'\\'
+  _KEY_VALUE_SEPARATOR = u'.'
+
+  _KEY_VALUE_PAGE_NUMBER_INDEX = 1
+  _KEY_VALUE_RECORD_IDENTIFIER_INDEX = 2
+  _KEY_VALUE_DATA_SIZE_INDEX = 3
+
+  _CLASS_DEFINITION_OBJECT_RECORD = construct.Struct(
+      u'class_definition_object_record',
+      construct.ULInt32(u'class_name_string_size'),
+      construct.Bytes(
+          u'class_name_string', lambda ctx: ctx.class_name_string_size * 2),
+      construct.ULInt64(u'date_time'),
+      construct.ULInt32(u'data1_size'),
+      construct.Bytes(u'data1', lambda ctx: ctx.data1_size - 4),
+      construct.ULInt32(u'data2_size'),
+      construct.Bytes(u'data2', lambda ctx: ctx.data2_size - 4))
+
+  _INTERFACE_OBJECT_RECORD = construct.Struct(
+      u'interface_object_record',
+      construct.Bytes(u'guid_string', 64),
+      construct.ULInt64(u'date_time1'),
+      construct.ULInt64(u'date_time2'),
+      construct.ULInt32(u'data_size'),
+      construct.Bytes(u'data', lambda ctx: ctx.data_size - 4))
+
+  _REGISTRATION_OBJECT_RECORD = construct.Struct(
+      u'registration_object_record',
+      construct.ULInt32(u'name_space_string_size'),
+      construct.Bytes(
+          u'name_space_string', lambda ctx: ctx.name_space_string_size * 2),
+      construct.ULInt32(u'class_name_string_size'),
+      construct.Bytes(
+          u'class_name_string', lambda ctx: ctx.class_name_string_size * 2),
+      construct.ULInt32(u'attribute_name_string_size'),
+      construct.Bytes(
+          u'attribute_name_string',
+          lambda ctx: ctx.attribute_name_string_size * 2),
+      construct.ULInt32(u'attribute_value_string_size'),
+      construct.Bytes(
+          u'attribute_value_string',
+          lambda ctx: ctx.attribute_value_string_size * 2),
+      construct.Bytes(u'unknown1', 8))
 
   def __init__(self, objects_mapping_file, debug=False):
     """Initializes the objects data file object.
@@ -1073,30 +1089,7 @@ class ObjectsDataFile(object):
 
     self._objects_mapping_file = objects_mapping_file
 
-  def _ReadPage(self, file_offset):
-    """Reads a page.
-
-    Args:
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
-
-    Return:
-      An index binary-tree page (instance of ObjectsDataPage).
-
-    Raises:
-      IOError: if the page cannot be read.
-    """
-    objects_page = ObjectsDataPage(debug=self._debug)
-    objects_page.ReadPage(self._file_object, file_offset)
-    return objects_page
-
-  def Close(self):
-    """Closes the objects data file."""
-    if self._file_object_opened_in_object:
-      self._file_object.close()
-    self._file_object = None
-
-  def GetPage(self, page_number):
+  def _GetPage(self, page_number):
     """Retrieves a specific page.
 
     Args:
@@ -1112,6 +1105,272 @@ class ObjectsDataFile(object):
     # TODO: cache pages.
     return self._ReadPage(file_offset)
 
+  def _ReadClassDescriptor(self, object_record_data):
+    """Reads a class descriptor object record.
+
+    Args:
+      object_record_data: a binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    if self._debug:
+      print(u'Reading class definition object record.')
+
+    try:
+      class_definition_struct = self._CLASS_DEFINITION_OBJECT_RECORD.parse(
+          object_record_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse class definition object record with '
+          u'error: {0:s}').format(exception))
+
+    try:
+      utf16_stream = class_definition_struct.get(u'class_name_string')
+      class_name_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      class_name_string = u''
+
+    date_time = class_definition_struct.get(u'date_time')
+
+    if self._debug:
+      print(u'Class name string size\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_struct.get(u'class_name_string_size')))
+      print(u'Class name string\t\t\t\t\t\t\t: {0:s}'.format(
+          class_name_string))
+      print(u'Unknown date and time\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(date_time)))
+
+      print(u'Data1 size\t\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_struct.get(u'data1_size')))
+
+      print(u'')
+
+      print(u'Data1:')
+      print(hexdump.Hexdump(class_definition_struct.data1))
+
+      print(u'Data2 size\t\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_struct.get(u'data2_size')))
+
+      print(u'')
+
+      print(u'Data2:')
+      print(hexdump.Hexdump(class_definition_struct.data2))
+
+  def _ReadInterface(self, object_record_data):
+    """Reads an interface object record.
+
+    Args:
+      object_record_data: a binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    if self._debug:
+      print(u'Reading interface object record.')
+
+    try:
+      interface_struct = self._INTERFACE_OBJECT_RECORD.parse(object_record_data)
+    except construct.FieldError as exception:
+      raise IOError(
+          u'Unable to parse interace object record with error: {0:s}'.format(
+              exception))
+
+    try:
+      utf16_stream = interface_struct.get(u'guid_string')
+      guid_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      guid_string = u''
+
+    date_time1 = interface_struct.get(u'date_time1')
+    date_time2 = interface_struct.get(u'date_time2')
+
+    if self._debug:
+      print(u'GUID string\t\t\t\t\t\t\t\t: {0:s}'.format(guid_string))
+      print(u'Unknown data and time1\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(date_time1)))
+      print(u'Unknown data and time2\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(date_time2)))
+
+      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(
+          interface_struct.get(u'data_size')))
+
+      print(u'')
+
+      print(u'Data:')
+      print(hexdump.Hexdump(interface_struct.data))
+
+  def _ReadPage(self, file_offset):
+    """Reads a page.
+
+    Args:
+      file_offset: integer containing the offset of the page relative
+                   from the start of the file.
+
+    Return:
+      An objects data page (instance of ObjectsDataPage).
+
+    Raises:
+      IOError: if the page cannot be read.
+    """
+    objects_page = ObjectsDataPage(debug=self._debug)
+    objects_page.ReadPage(self._file_object, file_offset)
+    return objects_page
+
+  def _ReadRegistration(self, object_record_data):
+    """Reads a registration object record.
+
+    Args:
+      object_record_data: a binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    if self._debug:
+      print(u'Reading registration object record.')
+
+    try:
+      registration_struct = self._REGISTRATION_OBJECT_RECORD.parse(
+          object_record_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse registration object record with '
+          u'error: {0:s}').format(exception))
+
+    try:
+      utf16_stream = registration_struct.get(u'name_space_string')
+      name_space_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      name_space_string = u''
+
+    try:
+      utf16_stream = registration_struct.get(u'class_name_string')
+      class_name_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      class_name_string = u''
+
+    try:
+      utf16_stream = registration_struct.get(u'attribute_name_string')
+      attribute_name_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      attribute_name_string = u''
+
+    try:
+      utf16_stream = registration_struct.get(u'attribute_value_string')
+      attribute_value_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      attribute_value_string = u''
+
+    if self._debug:
+      print(u'Name space string size\t\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'name_space_string_size')))
+      print(u'Name space string\t\t\t\t\t\t\t: {0:s}'.format(
+          name_space_string))
+
+      print(u'Class name string size\t\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'class_name_string_size')))
+      print(u'Class name string\t\t\t\t\t\t\t: {0:s}'.format(
+          class_name_string))
+
+      print(u'Attribute name string size\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'attribute_name_string_size')))
+      print(u'Attribute name string\t\t\t\t\t\t\t: {0:s}'.format(
+          attribute_name_string))
+
+      print(u'Attribute value string size\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'attribute_value_string_size')))
+      print(u'Attribute value string\t\t\t\t\t\t\t: {0:s}'.format(
+          attribute_value_string))
+
+      print(u'')
+
+  def Close(self):
+    """Closes the objects data file."""
+    if self._file_object_opened_in_object:
+      self._file_object.close()
+    self._file_object = None
+
+  def GetMappedPage(self, page_number):
+    """Retrieves a specific mapped page.
+
+    Args:
+      page_number: an integer containing the page number.
+
+    Returns:
+      An objects data page (instance of ObjectsDataPage) or None.
+    """
+    mapped_page_number = self._objects_mapping_file.mappings[page_number]
+
+    objects_page = self._GetPage(mapped_page_number)
+    if not objects_page:
+      logging.warning(
+          u'Unable to read objects data mapped page: {0:d}.'.format(
+              page_number))
+      return
+
+    return objects_page
+
+  def GetObjectRecordByKey(self, key):
+    """Retrieves a specific object record.
+
+    Args:
+      key: a string containing the CIM key.
+
+    Returns:
+      An objects data page (instance of ObjectsDataPage) or None.
+    """
+    _, _, key = key.rpartition(self._KEY_SEGMENT_SEPARATOR)
+
+    if self._KEY_VALUE_SEPARATOR not in key:
+      return
+
+    key_values = key.split(self._KEY_VALUE_SEPARATOR)
+    if not len(key_values) == 4:
+      logging.warning(u'Unsupported number of key values.')
+      return
+
+    try:
+      page_number = int(key_values[self._KEY_VALUE_PAGE_NUMBER_INDEX], 10)
+    except ValueError:
+      logging.warning(u'Unsupported key value page number.')
+      return
+
+    object_page = self.GetMappedPage(page_number)
+    if not object_page:
+      return
+
+    try:
+      record_identifier = int(
+          key_values[self._KEY_VALUE_RECORD_IDENTIFIER_INDEX], 10)
+    except ValueError:
+      logging.warning(u'Unsupported key value record identifier.')
+      return
+
+    try:
+      data_size = int(key_values[self._KEY_VALUE_DATA_SIZE_INDEX], 10)
+    except ValueError:
+      logging.warning(u'Unsupported key value data size.')
+      return
+
+    # TODO: add support for multi page spanning record data?
+    object_record_data = object_page.ReadObjectRecord(
+        self._file_object, record_identifier, data_size)
+    if not object_record_data:
+      logging.warning(u'Unable to read objects record: {0:d}.'.format(
+          record_identifier))
+      return
+
+    if self._debug:
+      data_type, _, _ = key_values[0].partition(u'_')
+      if data_type == u'CD':
+        self._ReadClassDescriptor(object_record_data)
+      elif data_type in (u'I', u'IL'):
+        self._ReadInterface(object_record_data)
+      elif data_type == u'R':
+        self._ReadRegistration(object_record_data)
+
+    return object_record_data
+
   def Open(self, filename):
     """Opens the objects data file.
 
@@ -1123,21 +1382,6 @@ class ObjectsDataFile(object):
 
     self._file_object = open(filename, 'rb')
     self._file_object_opened_in_object = True
-
-    # TODO: cannot read objects data file sequentially.
-    # if self._debug:
-    #   file_offset = 0
-    #   while file_offset < self._file_size:
-    #     self._ReadPage(file_offset)
-    #     file_offset += ObjectsDataPage.PAGE_SIZE
-
-
-class CIMKey(object):
-  """Class that contains a CIM key."""
-
-  def __init__(self):
-    """Initializes the CIM key object."""
-    super(CIMKey, self).__init__()
 
 
 class CIMRepository(object):
@@ -1247,6 +1491,20 @@ class CIMRepository(object):
     for key in self._GetKeysFromIndexPage(index_page):
       yield key
 
+  def GetObjectRecordByKey(self, key):
+    """Retrieves a specific object record.
+
+    Args:
+      key: a string containing the CIM key.
+
+    Returns:
+      An objects data page (instance of ObjectsDataPage) or None.
+    """
+    if not self._objects_data_file:
+      return
+
+    return self._objects_data_file.GetObjectRecordByKey(key)
+
   def Open(self, path):
     """Opens the CIM repository.
 
@@ -1335,6 +1593,10 @@ def Main():
   cim_repository.Open(options.source)
   for key in cim_repository.GetKeys():
     print(key)
+
+    if u'.' in key:
+      cim_repository.GetObjectRecordByKey(key)
+
   cim_repository.Close()
 
   return True
