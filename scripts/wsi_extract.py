@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Script to extract Windows Shell items from an LNK file."""
+"""Script to extract Windows Shell items."""
 
 from __future__ import print_function
 import argparse
@@ -14,6 +14,12 @@ import hexdump
 
 # pylint: disable=logging-format-interpolation
 
+# TODO: add dfvfs collector support.
+# TODO: extract WSI from LNK.
+# TODO: extract WSI from BagsMRU.
+# TODO: extract WSI from MRU.
+# TODO: extract WSI from JumpLists.
+
 def Main():
   """The main program function.
 
@@ -21,7 +27,7 @@ def Main():
     A boolean containing True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
-      u'Extracts Windows Shell items from LNK files.'))
+      u'Extracts Windows Shell items from the source.'))
 
   argument_parser.add_argument(
       u'-o', u'--output-file', u'--output_file', dest=u'output_file',
@@ -30,7 +36,8 @@ def Main():
 
   argument_parser.add_argument(
       u'source', nargs=u'?', action=u'store', metavar=u'PATH',
-      default=None, help=u'path of the Windows Jump List file.')
+      default=None, help=(
+          u'path of the source to extract Windows Shell items from.'))
 
   options = argument_parser.parse_args()
 
