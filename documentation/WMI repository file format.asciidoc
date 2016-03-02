@@ -405,33 +405,79 @@ The class definition is variable of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | Class name string size +
+| 0 | 4 | | Super class name string size +
 Contains the number of UTF-16 characters (16-bit values)
-| 4 | ... | | Class name string +
+| 4 | ... | | Super class name string +
 Contains an UTF-16 little-endian string without end-of-string character.
 | ... | 8 | | [yellow-background]*Unknown (date and time)* +
 Contains a FILETIME
 4+| _Data block_
 | ... | 4 | | Data size +
-Including the 4 bytes of the data
+Including the 4 bytes of the size
 | ... | ... | | Data
-4+| _Data block_
-| ... | 4 | | Data size +
-| ... | 7 | 0x00 | [yellow-background]*Unknown* +
-[yellow-background]*Filled with 0-byte values most of the time*
-| ... | 1 | 0x80 | [yellow-background]*Unknown (sentinal?)*
+4+| _Remaining data_
+| ... | ... | | [yellow-background]*Unknown (remnant data?)*
 |===
 
 [yellow-background]*TODO: if the class name is empty it refers to __SystemClass?*
 
 [yellow-background]*TODO: define data*
 
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | [yellow-background]*Unknown (empty values?)*
+| 1 | 4 | | [yellow-background]*Unknown (Class name offset?)*
+| 5 | 4 | | [yellow-background]*Unknown (Default values size?)*
+4+| _Data block_
+| 9 | 4 | | Super class name block size +
+Including the 4 bytes of the size
+| 14 | ... | | Super class name block
+4+| _Data block_
+| ... | 4 | | Qualifiers block size
+Including the 4 bytes of the size
+| ... | ... | | Qualifiers block
+4+| _Array_
+| ... | 4 | | Number of property references
+| ... | ... | | Property references array
+4+|
+| ... | ... | |  [yellow-background]*Unknown (Default values data?)*
+4+| _Data block_
+| ... | 4 | | Properties block size
+Including the 4 bytes of the size +
+[yellow-background]*TODO: What is the MSB used for?*
+| ... | ... | | Properties block
+4+| _Data block_
+| ... | 4 | | Methods block size
+Including the 4 bytes of the size
+| ... | ... | | Methods block
+|===
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | [yellow-background]*Unknown (string type/flags?)* +
+[yellow-background]*0x00 => ASCII string*
+| 1 | ... | | Super class name string +
+Contains a string with end-of-string character
+| ... | 4 | | Super class name string size +
+[yellow-background]*Contains a value in bytes?*
+|===
+
+....
+0x00000000  00 00 00 00 00 00 00 00  00 04 00 00 00           ................
+0x00000000                                          0f 00 00  ................
+0x00000010  00 0e 00 00 00 00 0b 00  00 00 ff ff 00 00 00 00  ................
+0x00000020  18 00 00 80 00 4d 53 54  61 70 65 44 72 69 76 65  .....MSTapeDrive
+0x00000030  72 00 00 61 62 73 74 72  61 63 74 00              r..abstract.
+....
+
 === Interface (I and IL)
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 64 | | GUID string +
+| 0 | 64 | | String digest hash +
 Contains an UTF-16 little-endian string without end-of-string character.
 | 64 | 8 | | [yellow-background]*Unknown (date and time)* +
 Contains a FILETIME
@@ -439,7 +485,7 @@ Contains a FILETIME
 Contains a FILETIME
 4+| _Data block_
 | ... | 4 | | Data size +
-Including the 4 bytes of the data
+Including the 4 bytes of the size
 | ... | ... | | Data
 |===
 
@@ -507,6 +553,16 @@ Mapped index page 0 references the administrative page in the index binary-tree
 
 The root page number of the administrative page in the index binary-tree
 
+....
+Name space: ROOT\WMI
+Class name: MSTapeDriver
+....
+
+....
+Name space: NS_8DFCCA0B7FAB09C32755407485035A60
+Class name: CD_29C96FE3708DDF22ABBE770FCB770099
+....
+
 === Index binary-tree identifier strings
 The page values in the index binary-tree (Index.btr) contain identifier strings
 that map to object records. An example of an identifier strings is:
@@ -521,14 +577,14 @@ The following the prefixes are known:
 | Prefix | Usage
 | C | 
 | CD | Class definition
-| CI | 
-| CR | 
-| I | 
-| IL | 
+| CI | Class instance?
+| CR | Class reference?
+| I | Interface?
+| IL | Interface?
 | KI | 
 | KL | 
 | NS | Name space
-| R | 
+| R | Registration? Reference?
 |===
 
 The values in the identifier string can contain segments seperated by '.' e.g.
@@ -557,6 +613,34 @@ Listing classes:
 ....
 gwmi -namespace root\cimv2 -list
 ....
+
+=== CIM OOO
+http://www.wbemsolutions.com/tutorials/DMTF/cim-ooo.html
+
+=== CIM data types
+http://www.wbemsolutions.com/tutorials/DMTF/meta-property.html
+
+INTRINSIC DATA TYPE
+
+INTERPRETATION
+
+uint8	Unsigned 8-bit integer
+sint8	Signed 8-bit integer
+uint16	Unsigned 16-bit integer
+sint16	Signed 16-bit integer
+uint32	Unsigned 32-bit integer
+sint32	Signed 32-bit integer
+uint64	Unsigned 64-bit integer
+sint64	Signed 64-bit integer
+string	UCS-2 string
+boolean	Boolean
+real32	IEEE 4-byte floating-point
+real64	IEEE 8-byte floating-point
+datetime	A string containing a date-time
+<classname> ref
+
+Strongly typed reference
+char16	16-bit UCS-2 character
 
 :numbered!:
 [appendix]

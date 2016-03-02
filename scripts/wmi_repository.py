@@ -1038,18 +1038,40 @@ class ObjectsDataFile(object):
 
   _CLASS_DEFINITION_OBJECT_RECORD = construct.Struct(
       u'class_definition_object_record',
-      construct.ULInt32(u'class_name_string_size'),
+      construct.ULInt32(u'super_class_name_string_size'),
       construct.Bytes(
-          u'class_name_string', lambda ctx: ctx.class_name_string_size * 2),
+          u'super_class_name_string',
+          lambda ctx: ctx.super_class_name_string_size * 2),
       construct.ULInt64(u'date_time'),
-      construct.ULInt32(u'data1_size'),
-      construct.Bytes(u'data1', lambda ctx: ctx.data1_size - 4),
-      construct.ULInt32(u'data2_size'),
-      construct.Bytes(u'data2', lambda ctx: ctx.data2_size - 4))
+      construct.ULInt32(u'data_size'),
+      construct.Bytes(u'data', lambda ctx: ctx.data_size - 4))
+
+  _CLASS_DEFINITION_HEADER = construct.Struct(
+      u'class_definition_header',
+      construct.Byte(u'unknown1'),
+      construct.ULInt32(u'class_name_offset'),
+      construct.ULInt32(u'default_value_size'),
+      construct.ULInt32(u'super_class_name_block_size'),
+      construct.Bytes(
+          u'super_class_name_block_data',
+          lambda ctx: ctx.super_class_name_block_size - 4),
+      construct.ULInt32(u'qualifiers_block_size'),
+      construct.Bytes(
+          u'qualifiers_block_data',
+          lambda ctx: ctx.qualifiers_block_size - 4),
+      construct.ULInt32(u'number_of_propery_references'))
+
+  # TODO: add more values.
+
+  _SUPER_CLASS_NAME_BLOCK = construct.Struct(
+      u'super_class_name_block',
+          construct.Byte(u'super_class_name_string_flags'),
+          construct.CString(u'super_class_name_string'),
+          construct.ULInt32(u'super_class_name_string_size'))
 
   _INTERFACE_OBJECT_RECORD = construct.Struct(
       u'interface_object_record',
-      construct.Bytes(u'guid_string', 64),
+      construct.Bytes(u'string_digest_hash', 64),
       construct.ULInt64(u'date_time1'),
       construct.ULInt64(u'date_time2'),
       construct.ULInt32(u'data_size'),
@@ -1126,36 +1148,93 @@ class ObjectsDataFile(object):
           u'error: {0:s}').format(exception))
 
     try:
-      utf16_stream = class_definition_struct.get(u'class_name_string')
-      class_name_string = utf16_stream.decode(u'utf-16-le')
+      utf16_stream = class_definition_struct.get(u'super_class_name_string')
+      super_class_name_string = utf16_stream.decode(u'utf-16-le')
     except UnicodeDecodeError as exception:
-      class_name_string = u''
+      super_class_name_string = u''
 
     date_time = class_definition_struct.get(u'date_time')
 
     if self._debug:
-      print(u'Class name string size\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_struct.get(u'class_name_string_size')))
-      print(u'Class name string\t\t\t\t\t\t\t: {0:s}'.format(
-          class_name_string))
+      print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_struct.get(u'super_class_name_string_size')))
+      print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
+          super_class_name_string))
       print(u'Unknown date and time\t\t\t\t\t\t\t: {0!s}'.format(
           FromFiletime(date_time)))
 
-      print(u'Data1 size\t\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_struct.get(u'data1_size')))
+      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_struct.get(u'data_size')))
 
       print(u'')
 
-      print(u'Data1:')
-      print(hexdump.Hexdump(class_definition_struct.data1))
+      print(u'Data:')
+      print(hexdump.Hexdump(class_definition_struct.data))
 
-      print(u'Data2 size\t\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_struct.get(u'data2_size')))
+      self._ReadClassDefinitionHeader(class_definition_struct.data)
 
-      print(u'')
+  def _ReadClassDefinitionHeader(self, class_definition_data):
+    """Reads a class definition header.
 
-      print(u'Data2:')
-      print(hexdump.Hexdump(class_definition_struct.data2))
+    Args:
+      class_definition_data: a binary string containing the class
+                             definition data.
+
+    Raises:
+      IOError: if the class definition cannot be read.
+    """
+    if self._debug:
+      print(u'Reading class definition header.')
+
+    try:
+      class_definition_header_struct = self._CLASS_DEFINITION_HEADER.parse(
+          class_definition_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse class definition header with error: {0:s}').format(
+              exception))
+
+    if self._debug:
+      print(u'Unknown1\t\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'unknown1')))
+
+      print(u'Class name offset\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          class_definition_header_struct.get(u'class_name_offset')))
+      print(u'Default value size\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'default_value_size')))
+
+      print(u'Super class name block size\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'super_class_name_block_size')))
+      print(u'Super class name block data:')
+      print(hexdump.Hexdump(class_definition_header_struct.get(
+          u'super_class_name_block_data')))
+
+      print(u'Qualifiers block size\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'qualifiers_block_size')))
+      print(u'Qualifiers block data:')
+      print(hexdump.Hexdump(class_definition_header_struct.get(
+          u'qualifiers_block_data')))
+
+      print(u'Property references block size\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'property_references_block_size')))
+      print(u'Property references block data:')
+      print(hexdump.Hexdump(class_definition_header_struct.get(
+          u'property_references_block_data')))
+
+      print(u'Number of property references\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'number_of_propery_references')))
+
+      # if class_definition_header_struct.super_class_name_block_size > 4:
+      #   super_class_name_block_struct = class_definition_header_struct.get(
+      #       u'super_class_name_block')
+      #   print(u'Super class name string flags\t\t\t\t\t\t: 0x{0:02x}'.format(
+      #       super_class_name_block_struct.get(u'super_class_name_string_flags')))
+      #   print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
+      #       super_class_name_block_struct.get(u'super_class_name_string')))
+      #   print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
+      #       super_class_name_block_struct.get(u'super_class_name_string_size')))
+
+      # print(u'')
 
   def _ReadInterface(self, object_record_data):
     """Reads an interface object record.
@@ -1177,16 +1256,17 @@ class ObjectsDataFile(object):
               exception))
 
     try:
-      utf16_stream = interface_struct.get(u'guid_string')
-      guid_string = utf16_stream.decode(u'utf-16-le')
+      utf16_stream = interface_struct.get(u'string_digest_hash')
+      string_digest_hash = utf16_stream.decode(u'utf-16-le')
     except UnicodeDecodeError as exception:
-      guid_string = u''
+      string_digest_hash = u''
 
     date_time1 = interface_struct.get(u'date_time1')
     date_time2 = interface_struct.get(u'date_time2')
 
     if self._debug:
-      print(u'GUID string\t\t\t\t\t\t\t\t: {0:s}'.format(guid_string))
+      print(u'String digest hash\t\t\t\t\t\t\t: {0:s}'.format(
+          string_digest_hash))
       print(u'Unknown data and time1\t\t\t\t\t\t\t: {0!s}'.format(
           FromFiletime(date_time1)))
       print(u'Unknown data and time2\t\t\t\t\t\t\t: {0!s}'.format(
