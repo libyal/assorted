@@ -399,6 +399,8 @@ Contains a CRC-32 with polynomial 0xedb88320 and initial value 0 of the object r
 The object record is defined by the object descripto and its structure depends 
 on the data type.
 
+[yellow-background]*TODO: describe object records spanning multiple pages.*
+
 ===== Class definition (CD)
 The class definition is variable of size and consists of:
 
@@ -411,12 +413,13 @@ Contains the number of UTF-16 characters (16-bit values)
 Contains an UTF-16 little-endian string without end-of-string character.
 | ... | 8 | | [yellow-background]*Unknown (date and time)* +
 Contains a FILETIME
-4+| _Data block_
 | ... | 4 | | Data size +
-Including the 4 bytes of the size
+Includes the 4 bytes of the size
 | ... | ... | | Data
-4+| _Remaining data_
-| ... | ... | | [yellow-background]*Unknown (remnant data?)*
+4+| _If remaining data size > 0_
+| ... | 4 | | Methods block size
+Includes the 4 bytes of the size
+| ... | ... | | Methods block
 |===
 
 [yellow-background]*TODO: if the class name is empty it refers to __SystemClass?*
@@ -429,28 +432,20 @@ Including the 4 bytes of the size
 | 0 | 1 | | [yellow-background]*Unknown (empty values?)*
 | 1 | 4 | | [yellow-background]*Unknown (Class name offset?)*
 | 5 | 4 | | [yellow-background]*Unknown (Default values size?)*
-4+| _Data block_
 | 9 | 4 | | Super class name block size +
-Including the 4 bytes of the size
+Includes the 4 bytes of the size
 | 14 | ... | | Super class name block
-4+| _Data block_
 | ... | 4 | | Qualifiers block size
-Including the 4 bytes of the size
+Includes the 4 bytes of the size
 | ... | ... | | Qualifiers block
-4+| _Array_
-| ... | 4 | | Number of property references
-| ... | ... | | Property references array
-4+|
-| ... | ... | |  [yellow-background]*Unknown (Default values data?)*
-4+| _Data block_
+| ... | 4 | | Number of property descriptors
+| ... | ... | | Property descriptors array +
+See section: <<property_descriptor,Property descriptor>>
+| ... | ... | |  [yellow-background]*Unknown (Default values data? bitmap?)*
 | ... | 4 | | Properties block size
-Including the 4 bytes of the size +
+Does not include the 4 bytes of the size +
 [yellow-background]*TODO: What is the MSB used for?*
 | ... | ... | | Properties block
-4+| _Data block_
-| ... | 4 | | Methods block size
-Including the 4 bytes of the size
-| ... | ... | | Methods block
 |===
 
 [cols="1,1,1,5",options="header"]
@@ -472,6 +467,15 @@ Contains a string with end-of-string character
 0x00000030  72 00 00 61 62 73 74 72  61 63 74 00              r..abstract.
 ....
 
+==== [[property_descriptor]]Property descriptor
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Property name offset
+| 4 | 8 | | Property data offset
+|===
+
 === Interface (I and IL)
 
 [cols="1,1,1,5",options="header"]
@@ -485,7 +489,7 @@ Contains a FILETIME
 Contains a FILETIME
 4+| _Data block_
 | ... | 4 | | Data size +
-Including the 4 bytes of the size
+Includes the 4 bytes of the size
 | ... | ... | | Data
 |===
 

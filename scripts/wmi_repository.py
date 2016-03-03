@@ -1059,7 +1059,27 @@ class ObjectsDataFile(object):
       construct.Bytes(
           u'qualifiers_block_data',
           lambda ctx: ctx.qualifiers_block_size - 4),
-      construct.ULInt32(u'number_of_propery_references'))
+      construct.ULInt32(u'number_of_property_descriptors'),
+      construct.Array(
+          lambda ctx: ctx.number_of_property_descriptors,
+          construct.Struct(
+              u'property_descriptors',
+              construct.ULInt32(u'name_offset'),
+              construct.ULInt32(u'data_offset'))),
+      construct.Bytes(
+          u'default_value_data',
+          lambda ctx: ctx.default_value_size),
+      construct.ULInt32(u'properties_block_size'),
+      construct.Bytes(
+          u'properties_block_data',
+          lambda ctx: ctx.properties_block_size & 0x7ffffff))
+
+  _CLASS_DEFINITION_METHODS = construct.Struct(
+      u'class_definition_methods',
+      construct.ULInt32(u'methods_block_size'),
+      construct.Bytes(
+          u'methods_block_data',
+          lambda ctx: ctx.methods_block_size - 4))
 
   # TODO: add more values.
 
@@ -1153,25 +1173,32 @@ class ObjectsDataFile(object):
     except UnicodeDecodeError as exception:
       super_class_name_string = u''
 
+    super_class_name_string_size = class_definition_struct.get(
+        u'super_class_name_string_size')
     date_time = class_definition_struct.get(u'date_time')
+    data_size = class_definition_struct.get(u'data_size')
 
     if self._debug:
       print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_struct.get(u'super_class_name_string_size')))
+          super_class_name_string_size))
       print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
           super_class_name_string))
       print(u'Unknown date and time\t\t\t\t\t\t\t: {0!s}'.format(
           FromFiletime(date_time)))
 
-      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_struct.get(u'data_size')))
-
-      print(u'')
-
+      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(data_size))
       print(u'Data:')
       print(hexdump.Hexdump(class_definition_struct.data))
 
-      self._ReadClassDefinitionHeader(class_definition_struct.data)
+    self._ReadClassDefinitionHeader(class_definition_struct.data)
+
+    data_offset = 12 + (super_class_name_string_size * 2) + data_size
+    if data_offset < len(object_record_data):
+      if self._debug:
+        print(u'Methods data:')
+        print(hexdump.Hexdump(object_record_data[data_offset:]))
+
+      self._ReadClassDefinitionMethods(object_record_data[data_offset:])
 
   def _ReadClassDefinitionHeader(self, class_definition_data):
     """Reads a class definition header.
@@ -1215,14 +1242,32 @@ class ObjectsDataFile(object):
       print(hexdump.Hexdump(class_definition_header_struct.get(
           u'qualifiers_block_data')))
 
-      print(u'Property references block size\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'property_references_block_size')))
-      print(u'Property references block data:')
-      print(hexdump.Hexdump(class_definition_header_struct.get(
-          u'property_references_block_data')))
+      number_of_property_descriptors = class_definition_header_struct.get(
+          u'number_of_property_descriptors')
+      print(u'Number of property descriptors\t\t\t\t\t\t: {0:d}'.format(
+          number_of_property_descriptors))
 
-      print(u'Number of property references\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'number_of_propery_references')))
+      property_descriptors = class_definition_header_struct.get(
+          u'property_descriptors')
+      for index in range(number_of_property_descriptors):
+        print((u'Property descriptor: {0:d} name offset\t\t\t\t\t: '
+               u'0x{1:08x}').format(
+            index, property_descriptors[index].get(u'name_offset')))
+        print((u'Property descriptor: {0:d} data offset\t\t\t\t\t: '
+               u'0x{1:08x}').format(
+            index, property_descriptors[index].get(u'data_offset')))
+
+      print(u'Default value data:')
+      print(hexdump.Hexdump(class_definition_header_struct.get(
+          u'default_value_data')))
+
+      properties_block_size = class_definition_header_struct.get(
+          u'properties_block_size')
+      print(u'Properties block size\t\t\t\t\t\t\t: {0:d} (0x{1:08x})'.format(
+          properties_block_size & 0x7fffffff, properties_block_size))
+      print(u'Properties block data:')
+      print(hexdump.Hexdump(class_definition_header_struct.get(
+          u'properties_block_data')))
 
       # if class_definition_header_struct.super_class_name_block_size > 4:
       #   super_class_name_block_struct = class_definition_header_struct.get(
@@ -1234,7 +1279,38 @@ class ObjectsDataFile(object):
       #   print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
       #       super_class_name_block_struct.get(u'super_class_name_string_size')))
 
-      # print(u'')
+      print(u'')
+
+  def _ReadClassDefinitionMethods(self, class_definition_data):
+    """Reads a class definition methods.
+
+    Args:
+      class_definition_data: a binary string containing the class
+                             definition data.
+
+    Raises:
+      IOError: if the class definition cannot be read.
+    """
+    if self._debug:
+      print(u'Reading class definition methods.')
+
+    try:
+      class_definition_methods_struct = self._CLASS_DEFINITION_METHODS.parse(
+          class_definition_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse class definition methods with error: {0:s}').format(
+              exception))
+
+    methods_block_size = class_definition_methods_struct.get(
+        u'methods_block_size')
+
+    if self._debug:
+      print(u'Methods block size\t\t\t\t\t\t\t: {0:d} (0x{1:08x})'.format(
+          methods_block_size & 0x7fffffff, methods_block_size))
+      print(u'Methods block data:')
+      print(hexdump.Hexdump(class_definition_methods_struct.get(
+          u'methods_block_data')))
 
   def _ReadInterface(self, object_record_data):
     """Reads an interface object record.
