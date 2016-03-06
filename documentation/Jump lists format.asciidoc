@@ -43,7 +43,8 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.1 | J.B. Metz | July 2014 | Initial version based on earlier notes.
 | 0.0.2 | J.B. Metz | November 2014 | Switched to asccidoc format.
 | 0.0.3 | J.B. Metz | August 2015 | Additional information about Jump lists stored in the Windows Registry.
-| 0.0.4 | J.B. Metz | February 2016 | Additional information about automatic and custom destinations Jump lists with thanks to E. Zimmerman.
+| 0.0.4 | J.B. Metz | February 2016 | Additional information about version 3 automatic destinations jump lists with thanks to E. Zimmerman.
+| 0.0.5 | J.B. Metz | March 2016 | Additional information about version 4 automatic destinations jump lists with thanks to E. Zimmerman.
 |===
 
 :numbered:
@@ -103,11 +104,6 @@ See section: <<destlist_format_versions,Format versions>>
 | 28 | 4 | | [yellow-background]*Unknown (empty values)*
 |===
 
-....
-00000000  01 00 00 00 0b 00 00 00  00 00 00 00 33 33 b3 41  |............33.A| 
-00000010  0b 00 00 00 00 00 00 00  0b 00 00 00 00 00 00 00  |................| 
-....
-
 ===== [[destlist_format_versions]]Format versions
 
 [cols="1,1,5",options="header"]
@@ -115,6 +111,8 @@ See section: <<destlist_format_versions,Format versions>>
 | Value | Description
 | 1 | | Used in Windows 7
 | 3 | | Used in Windows 10
+| 4 | | Used in Windows 10 +
+[yellow-background]*Seen in combination with Edit Pad Pro*
 |===
 
 ==== DestList entry
@@ -149,30 +147,6 @@ Contains the number of characters
 | 114 | ... | | Path +
 Contains a UTF-16 little-endian string without an end-of-string character
 |===
-
-....
-00000020  35 33 e3 c9 c8 84 d3 5a  c2 19 66 cf a8 66 a6 44  |53.....Z..f..f.D| 
-00000030  88 49 15 82 fc d3 a3 38  67 a8 ee 63 85 7b e1 11  |.I.....8g..c.{..| 
-00000040  89 50 00 50 56 a5 0b 40  c2 19 66 cf a8 66 a6 44  |.P.PV..@..f..f.D| 
-00000050  88 49 15 82 fc d3 a3 38  67 a8 ee 63 85 7b e1 11  |.I.....8g..c.{..| 
-00000060  89 50 00 50 56 a5 0b 40  77 6b 73 2d 77 69 6e 37  |.P.PV..@wks-win7| 
-00000070  36 34 62 69 74 62 00 00  0b 00 00 00 00 00 00 00  |64bitb..........| 
-00000080  00 00 00 40 56 cd 74 b3  0e 10 cd 01 ff ff ff ff  |...@V.t.........| 
-00000090  22 00 43 00 3a 00 5c 00  55 00 73 00 65 00 72 00  |".C.:.\.U.s.e.r.| 
-000000a0  73 00 5c 00 6e 00 66 00  75 00 72 00 79 00 5c 00  |s.\.n.f.u.r.y.\.| 
-000000b0  50 00 69 00 63 00 74 00  75 00 72 00 65 00 73 00  |P.i.c.t.u.r.e.s.| 
-000000c0  5c 00 54 00 68 00 65 00  20 00 53 00 48 00 49 00  |\.T.h.e. .S.H.I.| 
-000000d0  45 00 4c 00 44 00 c5 8a  32 66 1e 02 bc 1a c2 19  |E.L.D...2f......| 
-000000e0  66 cf a8 66 a6 44 88 49  15 82 fc d3 a3 38 5f a8  |f..f.D.I.....8_.| 
-000000f0  ee 63 85 7b e1 11 89 50  00 50 56 a5 0b 40 c2 19  |.c.{...P.PV..@..| 
-00000100  66 cf a8 66 a6 44 88 49  15 82 fc d3 a3 38 5f a8  |f..f.D.I.....8_.| 
-00000110  ee 63 85 7b e1 11 89 50  00 50 56 a5 0b 40 77 6b  |.c.{...P.PV..@wk| 
-00000120  73 2d 77 69 6e 37 36 34  62 69 74 62 00 00 09 00  |s-win764bitb....| 
-00000130  00 00 00 00 00 00 00 00  80 40 e0 dc 46 20 0e 10  |.........@..F ..| 
-00000140  cd 01 ff ff ff ff 23 00  43 00 3a 00 5c 00 55 00  |......#.C.:.\.U.| 
-00000150  73 00 65 00 72 00 73 00  5c 00 6e 00 66 00 75 00  |s.e.r.s.\.n.f.u.| 
-00000160  72 00 79 00 5c 00 44 00  6f 00 63 00 75 00 6d 00  |r.y.\.D.o.c.u.m.| 
-....
 
 The path points to:
 
@@ -214,7 +188,7 @@ Contains a UTF-16 little-endian string without an end-of-string character
 | ... | *4* | | [yellow-background]*Unknown (alignment padding?)*
 |===
 
-The differences between the versions have been emphasized in bold.
+The differences between the version 1 and 3 have been highlighted in bold.
 
 === Hexadecimal numbered streams
 A hexadecimal numbered streams contains a Windows Shortcut (LNK) file. For more 
@@ -237,7 +211,7 @@ The custom destinations file header is variable of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 2 | [yellow-background]*Unknown*
+| 0 | 4 | 2 | [yellow-background]*Unknown (format version?)*
 | 4 | 4 | | [yellow-background]*Unknown (Number of header values?)* +
 [yellow-background]*Seen: 1, 2*
 | 8 | 4 | | [yellow-background]*Unknown (empty values)*

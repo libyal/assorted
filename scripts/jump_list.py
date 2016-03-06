@@ -242,7 +242,7 @@ class AutomaticDestinationsFile(object):
       construct.ULInt32(u'format_version'),
       construct.ULInt32(u'number_of_entries'),
       construct.ULInt32(u'number_of_pinned_entries'),
-      construct.ULInt32(u'unknown1'),
+      construct.LFloat32(u'unknown1'),
       construct.ULInt32(u'last_entry_number'),
       construct.ULInt32(u'unknown2'),
       construct.ULInt32(u'last_revision_number'),
@@ -258,7 +258,7 @@ class AutomaticDestinationsFile(object):
       construct.String(u'hostname', 16),
       construct.ULInt32(u'entry_number'),
       construct.ULInt32(u'unknown2'),
-      construct.ULInt32(u'unknown3'),
+      construct.LFloat32(u'unknown3'),
       construct.ULInt64(u'last_modification_time'),
       construct.ULInt32(u'pin_status'),
       construct.ULInt16(u'path_size'))
@@ -273,7 +273,7 @@ class AutomaticDestinationsFile(object):
       construct.String(u'hostname', 16),
       construct.ULInt32(u'entry_number'),
       construct.ULInt32(u'unknown2'),
-      construct.ULInt32(u'unknown3'),
+      construct.LFloat32(u'unknown3'),
       construct.ULInt64(u'last_modification_time'),
       construct.ULInt32(u'pin_status'),
       construct.ULInt32(u'unknown4'),
@@ -330,7 +330,7 @@ class AutomaticDestinationsFile(object):
     """
     if self._format_version == 1:
       dest_list_entry = self._DEST_LIST_STREAM_ENTRY_V1
-    elif self._format_version == 3:
+    elif self._format_version >= 3:
       dest_list_entry = self._DEST_LIST_STREAM_ENTRY_V3
 
     if self._debug:
@@ -394,7 +394,7 @@ class AutomaticDestinationsFile(object):
           dest_list_entry_struct.entry_number))
       print(u'Unknown2\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
           dest_list_entry_struct.unknown2))
-      print(u'Unknown3\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+      print(u'Unknown3\t\t\t\t\t\t\t\t: {0:f}'.format(
           dest_list_entry_struct.unknown3))
       print(u'Last modification time\t\t\t\t\t\t\t: {0!s}'.format(
           FromFiletime(dest_list_entry_struct.last_modification_time)))
@@ -403,7 +403,7 @@ class AutomaticDestinationsFile(object):
       print(u'Pin status\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
           dest_list_entry_struct.pin_status))
 
-      if self._format_version == 3:
+      if self._format_version >= 3:
         print(u'Unknown4\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
             dest_list_entry_struct.unknown4))
         print(u'Unknown5\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
@@ -413,6 +413,7 @@ class AutomaticDestinationsFile(object):
 
       print(u'Path size\t\t\t\t\t\t\t\t: {0:d} ({1:d})'.format(
           dest_list_entry_struct.path_size, entry_path_size))
+
       print(u'')
 
     entry_path_data = olecf_item.read(entry_path_size)
@@ -431,7 +432,7 @@ class AutomaticDestinationsFile(object):
       print(u'')
 
     entry_footer_data = b''
-    if self._format_version == 3:
+    if self._format_version >= 3:
       entry_footer_data = olecf_item.read(4)
 
       if self._debug:
@@ -473,7 +474,7 @@ class AutomaticDestinationsFile(object):
           dest_list_header_struct.number_of_entries))
       print(u'Number of pinned entries\t\t\t\t\t\t: {0:d}'.format(
           dest_list_header_struct.number_of_pinned_entries))
-      print(u'Unknown1\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+      print(u'Unknown1\t\t\t\t\t\t\t\t: {0:f}'.format(
           dest_list_header_struct.unknown1))
       print(u'Last entry number\t\t\t\t\t\t\t: {0:d}'.format(
           dest_list_header_struct.last_entry_number))
@@ -485,6 +486,11 @@ class AutomaticDestinationsFile(object):
           dest_list_header_struct.unknown3))
 
       print(u'')
+
+    if dest_list_header_struct.format_version not in (1, 3, 4):
+      raise IOError(
+          u'Unsupported format version: {0:d}'.format(
+              dest_list_header_struct.format_version))
 
     self._format_version = dest_list_header_struct.format_version
 
