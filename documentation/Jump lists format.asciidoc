@@ -311,7 +311,8 @@ Contains a Windows Shortcut (LNK) file. For more information about the LNK forma
 | ... | ... | | 0xbabffbab | Footer signature
 |===
 
-== .library-ms
+== Notes
+=== .library-ms
 ....
 <?xml version="1.0" encoding="UTF-8"?> 
 <libraryDescription xmlns="http://schemas.microsoft.com/windows/2009/library"> 
@@ -343,6 +344,20 @@ Contains a Windows Shortcut (LNK) file. For more information about the LNK forma
   </searchConnectorDescriptionList> 
 </libraryDescription> 
 ....
+
+=== Application identifiers
+http://www.hexacorn.com/blog/2013/04/30/jumplists-file-names-and-appid-calculator/
+
+Where the filename starts with the identifier of the corresponding application e.g.
+....
+%ID%.customDestinations-ms
+....
+
+Where %ID% a 64-bit CRC of full path of executable file of the corresponding application.
+
+* convert path to upper case UTF-16 little-endian
+* path normalization using KNOWNFOLDERIDs
+* polinomial 0x92c64265d32139a4
 
 :numbered!:
 [appendix]
