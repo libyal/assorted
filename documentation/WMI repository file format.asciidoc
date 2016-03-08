@@ -396,10 +396,12 @@ Contains a CRC-32 with polynomial 0xedb88320 and initial value 0 of the object r
 |===
 
 ==== Object records
-The object record is defined by the object descripto and its structure depends 
+The object record is defined by the object descriptor and its structure depends 
 on the data type.
 
-[yellow-background]*TODO: describe object records spanning multiple pages.*
+If the object record data is larger than the page size of 8196 the remaining 
+data is stored spanning multiple pages. Successive pages do not contain object 
+descriptors and must resolved using mapped page numbers. 
 
 ===== Class definition (CD)
 The class definition is variable of size and consists of:

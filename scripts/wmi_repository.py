@@ -868,6 +868,7 @@ class ObjectsDataPage(object):
   """Class that contains an objects data page.
 
   Attributes:
+    page_offset: an integer containing the page offset or None.
   """
 
   PAGE_SIZE = 8192
@@ -892,6 +893,8 @@ class ObjectsDataPage(object):
     self._debug = debug
 
     self._object_descriptors = []
+
+    self.page_offset = None
 
   def _ReadObjectDescriptor(self, file_object):
     """Reads an object descriptor.
@@ -960,42 +963,17 @@ class ObjectsDataPage(object):
       if not object_descriptor:
         break
 
-      # Make the offset relative to the start of the file.
-      object_descriptor.data_offset += file_offset
       self._object_descriptors.append(object_descriptor)
 
-  def ReadPage(self, file_object, file_offset):
-    """Reads a page.
+  def GetObjectDescriptor(self, record_identifier, data_size):
+    """Retrieves a specific object descriptor.
 
     Args:
-      file_object: a file-like object.
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
-
-    Raises:
-      IOError: if the page cannot be read.
-    """
-    file_object.seek(file_offset, os.SEEK_SET)
-
-    if self._debug:
-      print(u'Reading objects data page at offset: 0x{0:08x}'.format(
-          file_offset))
-
-    self._ReadObjectDescriptors(file_object)
-
-  def ReadObjectRecord(self, file_object, record_identifier, data_size):
-    """Reads an object record.
-
-    Args:
-      file_object: a file-like object.
       record_identifier: an integer containing the object record identifier.
       data_size: an integer containing the object record data size.
 
     Returns:
-      A binary string containing the object record data.
-
-    Raises:
-      IOError: if the object record cannot be read.
+      An object descriptor (instance of ObjectDescriptor) or None.
     """
     object_descriptor_match = None
     for object_descriptor in self._object_descriptors:
@@ -1011,19 +989,62 @@ class ObjectsDataPage(object):
       logging.warning(u'Object record data size mismatch.')
       return
 
-    file_object.seek(object_descriptor_match.data_offset, os.SEEK_SET)
+    return object_descriptor_match
+
+  def ReadPage(self, file_object, file_offset, data_page=False):
+    """Reads a page.
+
+    Args:
+      file_object: a file-like object.
+      file_offset: integer containing the offset of the page relative
+                   from the start of the file.
+      data_page: optional boolean value to indicate the page is a data page.
+
+    Raises:
+      IOError: if the page cannot be read.
+    """
+    file_object.seek(file_offset, os.SEEK_SET)
 
     if self._debug:
-      print(u'Reading object record at offset: 0x{0:08x}'.format(
-          object_descriptor_match.data_offset))
+      print(u'Reading objects data page at offset: 0x{0:08x}'.format(
+          file_offset))
 
-    object_record_data = file_object.read(data_size)
+    self.page_offset = file_offset
+
+    if not data_page:
+      self._ReadObjectDescriptors(file_object)
+
+  def ReadObjectRecordData(self, file_object, data_offset, data_size):
+    """Reads the data of an object record.
+
+    Args:
+      file_object: a file-like object.
+      data_offset: integer containing the offset of the object record data
+                   relative from the start of the page.
+      data_size: an integer containing the object record data size.
+
+    Returns:
+      A binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    # Make the offset relative to the start of the file.
+    file_offset = self.page_offset + data_offset
+
+    file_object.seek(file_offset, os.SEEK_SET)
 
     if self._debug:
-      print(u'Object record data:')
-      print(hexdump.Hexdump(object_record_data))
+      print(u'Reading object record at offset: 0x{0:08x}'.format(file_offset))
 
-    return object_record_data
+    available_page_size = self.PAGE_SIZE - data_offset
+
+    if data_size > available_page_size:
+      read_size = available_page_size
+    else:
+      read_size = data_size
+
+    return file_object.read(read_size)
 
 
 class ObjectsDataFile(object):
@@ -1131,11 +1152,12 @@ class ObjectsDataFile(object):
 
     self._objects_mapping_file = objects_mapping_file
 
-  def _GetPage(self, page_number):
+  def _GetPage(self, page_number, data_page=False):
     """Retrieves a specific page.
 
     Args:
       page_number: an integer containing the page number.
+      data_page: optional boolean value to indicate the page is a data page.
 
     Returns:
       An objects data page (instance of ObjectsDataPage) or None.
@@ -1145,10 +1167,10 @@ class ObjectsDataFile(object):
       return
 
     # TODO: cache pages.
-    return self._ReadPage(file_offset)
+    return self._ReadPage(file_offset, data_page=data_page)
 
-  def _ReadClassDescriptor(self, object_record_data):
-    """Reads a class descriptor object record.
+  def _ReadClassDefinition(self, object_record_data):
+    """Reads a class definition object record.
 
     Args:
       object_record_data: a binary string containing the object record data.
@@ -1356,12 +1378,13 @@ class ObjectsDataFile(object):
       print(u'Data:')
       print(hexdump.Hexdump(interface_struct.data))
 
-  def _ReadPage(self, file_offset):
+  def _ReadPage(self, file_offset, data_page=False):
     """Reads a page.
 
     Args:
       file_offset: integer containing the offset of the page relative
                    from the start of the file.
+      data_page: optional boolean value to indicate the page is a data page.
 
     Return:
       An objects data page (instance of ObjectsDataPage).
@@ -1370,7 +1393,7 @@ class ObjectsDataFile(object):
       IOError: if the page cannot be read.
     """
     objects_page = ObjectsDataPage(debug=self._debug)
-    objects_page.ReadPage(self._file_object, file_offset)
+    objects_page.ReadPage(self._file_object, file_offset, data_page=data_page)
     return objects_page
 
   def _ReadRegistration(self, object_record_data):
@@ -1446,18 +1469,19 @@ class ObjectsDataFile(object):
       self._file_object.close()
     self._file_object = None
 
-  def GetMappedPage(self, page_number):
+  def GetMappedPage(self, page_number, data_page=False):
     """Retrieves a specific mapped page.
 
     Args:
       page_number: an integer containing the page number.
+      data_page: optional boolean value to indicate the page is a data page.
 
     Returns:
       An objects data page (instance of ObjectsDataPage) or None.
     """
     mapped_page_number = self._objects_mapping_file.mappings[page_number]
 
-    objects_page = self._GetPage(mapped_page_number)
+    objects_page = self._GetPage(mapped_page_number, data_page=data_page)
     if not objects_page:
       logging.warning(
           u'Unable to read objects data mapped page: {0:d}.'.format(
@@ -1466,14 +1490,15 @@ class ObjectsDataFile(object):
 
     return objects_page
 
-  def GetObjectRecordByKey(self, key):
-    """Retrieves a specific object record.
+  def _GetKeyValues(self, key):
+    """Retrieves the key values from the key.
 
     Args:
       key: a string containing the CIM key.
 
     Returns:
-      An objects data page (instance of ObjectsDataPage) or None.
+      An tuple containing the string of the key name, and integers
+      containing the page number, record identififer and data size or None.
     """
     _, _, key = key.rpartition(self._KEY_SEGMENT_SEPARATOR)
 
@@ -1491,10 +1516,6 @@ class ObjectsDataFile(object):
       logging.warning(u'Unsupported key value page number.')
       return
 
-    object_page = self.GetMappedPage(page_number)
-    if not object_page:
-      return
-
     try:
       record_identifier = int(
           key_values[self._KEY_VALUE_RECORD_IDENTIFIER_INDEX], 10)
@@ -1508,18 +1529,62 @@ class ObjectsDataFile(object):
       logging.warning(u'Unsupported key value data size.')
       return
 
-    # TODO: add support for multi page spanning record data?
-    object_record_data = object_page.ReadObjectRecord(
-        self._file_object, record_identifier, data_size)
-    if not object_record_data:
-      logging.warning(u'Unable to read objects record: {0:d}.'.format(
-          record_identifier))
-      return
+    return key_values[0], page_number, record_identifier, data_size
+
+  def GetObjectRecordByKey(self, key):
+    """Retrieves a specific object record.
+
+    Args:
+      key: a string containing the CIM key.
+
+    Returns:
+      An objects data page (instance of ObjectsDataPage) or None.
+    """
+    key, page_number, record_identifier, data_size = self._GetKeyValues(key)
+
+    data_segments = []
+    data_page = False
+    data_segment_index = 0
+    while data_size > 0:
+      object_page = self.GetMappedPage(page_number, data_page=data_page)
+      if not object_page:
+        logging.warning(
+            u'Unable to read objects record: {0:d} data segment: {1:d}.'.format(
+                record_identifier, data_segment_index))
+        return
+
+      if not data_page:
+        object_descriptor = object_page.GetObjectDescriptor(
+            record_identifier, data_size)
+
+        data_offset = object_descriptor.data_offset
+        data_page = True
+      else:
+        data_offset = 0
+
+      data_segment = object_page.ReadObjectRecordData(
+          self._file_object, data_offset, data_size)
+      if not data_segment:
+        logging.warning(
+            u'Unable to read objects record: {0:d} data segment: {1:d}.'.format(
+                record_identifier, data_segment_index))
+        return
+
+      data_segments.append(data_segment)
+      data_size -= len(data_segment)
+      data_segment_index += 1
+      page_number += 1
+
+    object_record_data = b''.join(data_segments)
 
     if self._debug:
-      data_type, _, _ = key_values[0].partition(u'_')
+      print(u'Object record data:')
+      print(hexdump.Hexdump(object_record_data))
+
+    if self._debug:
+      data_type, _, _ = key.partition(u'_')
       if data_type == u'CD':
-        self._ReadClassDescriptor(object_record_data)
+        self._ReadClassDefinition(object_record_data)
       elif data_type in (u'I', u'IL'):
         self._ReadInterface(object_record_data)
       elif data_type == u'R':
@@ -1747,10 +1812,23 @@ def Main():
   cim_repository = CIMRepository(debug=options.debug)
 
   cim_repository.Open(options.source)
-  for key in cim_repository.GetKeys():
-    print(key)
 
-    if u'.' in key:
+  object_record_keys = {}
+  for key in cim_repository.GetKeys():
+    if u'.' not in key:
+      continue
+
+    _, _, key_name = key.rpartition(u'\\')
+    key_name, _, _ = key_name.partition(u'.')
+
+    if key_name not in object_record_keys:
+      object_record_keys[key_name] = []
+
+    object_record_keys[key_name].append(key)
+
+  for key_name, keys in iter(object_record_keys.items()):
+    for key in keys:
+      print(key)
       cim_repository.GetObjectRecordByKey(key)
 
   cim_repository.Close()
