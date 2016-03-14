@@ -841,19 +841,21 @@ class PropertyDescriptor(object):
   """Class that contains a property descriptor.
 
   Attributes:
-    data_offset: an integer containing the data offset of the property.
+    definition_offset: an integer containing the definiton offset of
+                       the property.
     name_offset: an integer containing the name offset of the property.
   """
 
-  def __init__(self, name_offset, data_offset):
+  def __init__(self, name_offset, definition_offset):
     """Initializes a property descriptor object.
 
     Args:
       name_offset: an integer containing the name offset of the property.
-      data_offset: an integer containing the data offset of the property.
+      definition_offset: an integer containing the definition offset of
+                         the property.
     """
     super(PropertyDescriptor, self).__init__()
-    self.data_offset = data_offset
+    self.definition_offset = definition_offset
     self.name_offset = name_offset
 
 
@@ -941,9 +943,81 @@ class ObjectRecord(object):
 
   _SUPER_CLASS_NAME_BLOCK = construct.Struct(
       u'super_class_name_block',
-          construct.Byte(u'super_class_name_string_flags'),
-          construct.CString(u'super_class_name_string'),
-          construct.ULInt32(u'super_class_name_string_size'))
+      construct.Byte(u'super_class_name_string_flags'),
+      construct.CString(u'super_class_name_string'),
+      construct.ULInt32(u'super_class_name_string_size'))
+
+  _PROPERTY_NAME = construct.Struct(
+      u'property_name',
+      construct.Byte(u'string_flags'),
+      construct.CString(u'string'))
+
+  _PROPERTY_DEFINITION = construct.Struct(
+      u'property_definition',
+      construct.ULInt32(u'type'),
+      construct.ULInt16(u'index'),
+      construct.ULInt32(u'offset'),
+      construct.ULInt32(u'level'),
+      construct.ULInt32(u'qualifiers_block_size'),
+      construct.Bytes(
+          u'qualifiers_block_data',
+          lambda ctx: ctx.qualifiers_block_size - 4))
+
+  _PROPERTY_TYPES = {
+      0x00000002: u'CIM-TYPE-SINT16',
+      0x00000003: u'CIM-TYPE-SINT32',
+      0x00000004: u'CIM-TYPE-REAL32',
+      0x00000005: u'CIM-TYPE-REAL64',
+      0x00000008: u'CIM-TYPE-STRING',
+      0x0000000b: u'CIM-TYPE-BOOLEAN',
+      0x0000000d: u'CIM-TYPE-OBJECT',
+      0x00000010: u'CIM-TYPE-SINT8',
+      0x00000011: u'CIM-TYPE-UINT8',
+      0x00000012: u'CIM-TYPE-UINT16',
+      0x00000013: u'CIM-TYPE-UINT32',
+      0x00000014: u'CIM-TYPE-SINT64',
+      0x00000015: u'CIM-TYPE-UINT64',
+      0x00000065: u'CIM-TYPE-DATETIME',
+      0x00000066: u'CIM-TYPE-REFERENCE',
+      0x00000067: u'CIM-TYPE-CHAR16',
+
+      0x00002002: u'CIM-ARRAY-SINT16',
+      0x00002003: u'CIM-ARRAY-SINT32',
+      0x00002004: u'CIM-ARRAY-REAL32',
+      0x00002005: u'CIM-ARRAY-REAL64',
+      0x00002008: u'CIM-ARRAY-STRING',
+      0x0000200b: u'CIM-ARRAY-BOOLEAN',
+      0x0000200d: u'CIM-ARRAY-OBJECT',
+      0x00002010: u'CIM-ARRAY-SINT8',
+      0x00002011: u'CIM-ARRAY-UINT8',
+      0x00002012: u'CIM-ARRAY-UINT16',
+      0x00002013: u'CIM-ARRAY-UINT32',
+      0x00002014: u'CIM-ARRAY-SINT64',
+      0x00002015: u'CIM-ARRAY-UINT64',
+      0x00002065: u'CIM-ARRAY-DATETIME',
+      0x00002066: u'CIM-ARRAY-REFERENCE',
+      0x00002067: u'CIM-ARRAY-CHAR16',
+  }
+
+  # A size of 0 indicates variable of size.
+  _PROPERTY_TYPE_VALUE_SIZES = {
+      0x00000002: 2,
+      0x00000003: 4,
+      0x00000004: 4,
+      0x00000005: 8,
+      0x00000008: 0,
+      0x0000000b: 2,
+      0x0000000d: 0,
+      0x00000010: 1,
+      0x00000011: 1,
+      0x00000012: 2,
+      0x00000013: 4,
+      0x00000014: 8,
+      0x00000015: 8,
+      0x00000065: 0,
+      0x00000066: 2,
+      0x00000067: 2,
+  }
 
   _INTERFACE_OBJECT_RECORD = construct.Struct(
       u'interface_object_record',
@@ -1102,8 +1176,9 @@ class ObjectRecord(object):
       for index, property_descriptor in enumerate(property_descriptors):
         print((u'Property descriptor: {0:d} name offset\t\t\t\t\t: '
                u'0x{1:08x}').format(index, property_descriptor.name_offset))
-        print((u'Property descriptor: {0:d} data offset\t\t\t\t\t: '
-               u'0x{1:08x}').format(index, property_descriptor.data_offset))
+        print((u'Property descriptor: {0:d} definition offset\t\t\t\t: '
+               u'0x{1:08x}').format(
+                   index, property_descriptor.definition_offset))
 
       print(u'Default value data:')
       default_value_data = class_definition_header_struct.get(
@@ -1183,10 +1258,70 @@ class ObjectRecord(object):
       print(u'Properties data:')
       print(hexdump.Hexdump(properties_data))
 
-    # for index, property_descriptor in enumerate(property_descriptors):
-    #   property_name_data = properties_data[property_descriptor.name_offset]
+    for index, property_descriptor in enumerate(property_descriptors):
+      name_offset = property_descriptor.name_offset & 0x7fffffff
+      property_name_data = properties_data[name_offset:]
 
-    #   property_data = properties_data[property_descriptor.data_offset]
+      try:
+        property_name_struct = self._PROPERTY_NAME.parse(property_name_data)
+      except construct.FieldError as exception:
+        raise IOError((
+            u'Unable to parse property name with error: {0:s}').format(
+                exception))
+
+      if self._debug:
+        print(u'Property: {0:d} name string flags\t\t\t\t\t\t: 0x{1:02x}'.format(
+            index, property_name_struct.get(u'string_flags')))
+        print(u'Property: {0:d} name string\t\t\t\t\t\t\t: {1:s}'.format(
+            index, property_name_struct.get(u'string')))
+        print(u'')
+
+      definition_offset = property_descriptor.definition_offset & 0x7fffffff
+      property_definition_data = properties_data[definition_offset:]
+
+      try:
+        property_definition_struct = self._PROPERTY_DEFINITION.parse(
+            property_definition_data)
+      except construct.FieldError as exception:
+        raise IOError((
+            u'Unable to parse property definition with error: {0:s}').format(
+                exception))
+
+      property_type = property_definition_struct.get(u'type')
+
+      if self._debug:
+        property_type_string = self._PROPERTY_TYPES.get(
+            property_type, u'UNKNOWN')
+        print(u'Property: {0:d} type\t\t\t\t\t\t\t: 0x{1:08x} ({2:s})'.format(
+            index, property_type, property_type_string))
+        print(u'Property: {0:d} index\t\t\t\t\t\t\t: {1:d}'.format(
+            index, property_definition_struct.get(u'index')))
+        print(u'Property: {0:d} offset\t\t\t\t\t\t\t: 0x{1:08x}'.format(
+            index, property_definition_struct.get(u'offset')))
+        print(u'Property: {0:d} level\t\t\t\t\t\t\t: {1:d}'.format(
+            index, property_definition_struct.get(u'level')))
+
+        print(u'Property: {0:d} qualifiers block size\t\t\t\t\t: {0:d}'.format(
+            index, property_definition_struct.get(u'qualifiers_block_size')))
+        print(u'Property: {0:d} qualifiers block data:'.format(index))
+        qualifiers_block_data = property_definition_struct.get(
+            u'qualifiers_block_data')
+        print(hexdump.Hexdump(qualifiers_block_data))
+
+      property_value_size = self._PROPERTY_TYPE_VALUE_SIZES.get(
+          property_type & 0x00001fff, None)
+      # TODO: handle property value data.
+      property_value_data = b''
+
+      if property_value_size is not None:
+        if self._debug:
+          print(u'Property: {0:d} value size\t\t\t\t\t\t\t: {1:d}'.format(
+              index, property_value_size))
+
+          # TODO: handle variable size value data.
+          # TODO: handle array.
+          print(u'Property: {0:d} value data:'.format(index))
+          print(hexdump.Hexdump(property_value_data[:property_value_size]))
 
   def _ReadInterface(self, object_record_data):
     """Reads an interface object record.
