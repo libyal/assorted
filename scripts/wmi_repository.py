@@ -73,7 +73,7 @@ class IndexBinaryTreePage(object):
   }
 
   def __init__(self, debug=False):
-    """Initializes the index binary-tree page object.
+    """Initializes an index binary-tree page object.
 
     Args:
       debug: optional boolean value to indicate if debug information should
@@ -392,8 +392,8 @@ class IndexBinaryTreePage(object):
           print(u'Sub page: {0:d} mapped page number\t\t\t\t\t\t: {1:d}'.format(
               index, page_number))
 
-      if self._debug:
-        print(u'')
+    if self._debug:
+      print(u'')
 
   def ReadPage(self, file_object, file_offset):
     """Reads a page.
@@ -453,7 +453,7 @@ class IndexBinaryTreeFile(object):
   """Class that contains an index binary-tree (Index.btr) file."""
 
   def __init__(self, index_mapping_file, debug=False):
-    """Initializes the index binary-tree file object.
+    """Initializes an index binary-tree file object.
 
     Args:
       index_mapping_file: an index mapping file (instance of MappingFile).
@@ -620,7 +620,7 @@ class MappingFile(object):
       construct.ULInt32(u'number_of_pages'))
 
   def __init__(self, debug=False):
-    """Initializes the mappings file object.
+    """Initializes a mappings file object.
 
     Args:
       debug: optional boolean value to indicate if debug information should
@@ -837,6 +837,26 @@ class MappingFile(object):
     self.data_size = self._file_object.tell() - file_offset
 
 
+class PropertyDescriptor(object):
+  """Class that contains a property descriptor.
+
+  Attributes:
+    data_offset: an integer containing the data offset of the property.
+    name_offset: an integer containing the name offset of the property.
+  """
+
+  def __init__(self, name_offset, data_offset):
+    """Initializes a property descriptor object.
+
+    Args:
+      name_offset: an integer containing the name offset of the property.
+      data_offset: an integer containing the data offset of the property.
+    """
+    super(PropertyDescriptor, self).__init__()
+    self.data_offset = data_offset
+    self.name_offset = name_offset
+
+
 class ObjectDescriptor(object):
   """Class that contains an object descriptor.
 
@@ -848,7 +868,7 @@ class ObjectDescriptor(object):
   """
 
   def __init__(self, identifier, data_offset, data_size, data_checksum):
-    """Initializes the object descriptor object.
+    """Initializes an object descriptor object.
 
     Args:
       identifier: an integer containing the identifier of the object record.
@@ -862,6 +882,436 @@ class ObjectDescriptor(object):
     self.data_offset = data_offset
     self.data_size = data_size
     self.identifier = identifier
+
+
+class ObjectRecord(object):
+  """Class that contains an object record.
+
+  Attributes:
+    data_type: a string containg the object record data type.
+    data: a byte string containg the object record data.
+  """
+
+  _CLASS_DEFINITION_OBJECT_RECORD = construct.Struct(
+      u'class_definition_object_record',
+      construct.ULInt32(u'super_class_name_string_size'),
+      construct.Bytes(
+          u'super_class_name_string',
+          lambda ctx: ctx.super_class_name_string_size * 2),
+      construct.ULInt64(u'date_time'),
+      construct.ULInt32(u'data_size'),
+      construct.Bytes(u'data', lambda ctx: ctx.data_size - 4))
+
+  _CLASS_DEFINITION_HEADER = construct.Struct(
+      u'class_definition_header',
+      construct.Byte(u'unknown1'),
+      construct.ULInt32(u'class_name_offset'),
+      construct.ULInt32(u'default_value_size'),
+      construct.ULInt32(u'super_class_name_block_size'),
+      construct.Bytes(
+          u'super_class_name_block_data',
+          lambda ctx: ctx.super_class_name_block_size - 4),
+      construct.ULInt32(u'qualifiers_block_size'),
+      construct.Bytes(
+          u'qualifiers_block_data',
+          lambda ctx: ctx.qualifiers_block_size - 4),
+      construct.ULInt32(u'number_of_property_descriptors'),
+      construct.Array(
+          lambda ctx: ctx.number_of_property_descriptors,
+          construct.Struct(
+              u'property_descriptors',
+              construct.ULInt32(u'name_offset'),
+              construct.ULInt32(u'data_offset'))),
+      construct.Bytes(
+          u'default_value_data',
+          lambda ctx: ctx.default_value_size),
+      construct.ULInt32(u'properties_block_size'),
+      construct.Bytes(
+          u'properties_block_data',
+          lambda ctx: ctx.properties_block_size & 0x7ffffff))
+
+  _CLASS_DEFINITION_METHODS = construct.Struct(
+      u'class_definition_methods',
+      construct.ULInt32(u'methods_block_size'),
+      construct.Bytes(
+          u'methods_block_data',
+          lambda ctx: ctx.methods_block_size - 4))
+
+  # TODO: add more values.
+
+  _SUPER_CLASS_NAME_BLOCK = construct.Struct(
+      u'super_class_name_block',
+          construct.Byte(u'super_class_name_string_flags'),
+          construct.CString(u'super_class_name_string'),
+          construct.ULInt32(u'super_class_name_string_size'))
+
+  _INTERFACE_OBJECT_RECORD = construct.Struct(
+      u'interface_object_record',
+      construct.Bytes(u'string_digest_hash', 64),
+      construct.ULInt64(u'date_time1'),
+      construct.ULInt64(u'date_time2'),
+      construct.ULInt32(u'data_size'),
+      construct.Bytes(u'data', lambda ctx: ctx.data_size - 4))
+
+  _REGISTRATION_OBJECT_RECORD = construct.Struct(
+      u'registration_object_record',
+      construct.ULInt32(u'name_space_string_size'),
+      construct.Bytes(
+          u'name_space_string', lambda ctx: ctx.name_space_string_size * 2),
+      construct.ULInt32(u'class_name_string_size'),
+      construct.Bytes(
+          u'class_name_string', lambda ctx: ctx.class_name_string_size * 2),
+      construct.ULInt32(u'attribute_name_string_size'),
+      construct.Bytes(
+          u'attribute_name_string',
+          lambda ctx: ctx.attribute_name_string_size * 2),
+      construct.ULInt32(u'attribute_value_string_size'),
+      construct.Bytes(
+          u'attribute_value_string',
+          lambda ctx: ctx.attribute_value_string_size * 2),
+      construct.Bytes(u'unknown1', 8))
+
+  DATA_TYPE_CLASS_DEFINITION = u'CD'
+
+  def __init__(self, data_type, data, debug=False):
+    """Initializes an object record object.
+
+    Args:
+      data_type: a string containg the object record data type.
+      data: a byte string containg the object record data.
+    """
+    super(ObjectRecord, self).__init__()
+    self._debug = debug
+    self.data_type = data_type
+    self.data = data
+
+  def _ReadClassDefinition(self, object_record_data):
+    """Reads a class definition object record.
+
+    Args:
+      object_record_data: a binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    if self._debug:
+      print(u'Reading class definition object record.')
+
+    try:
+      class_definition_struct = self._CLASS_DEFINITION_OBJECT_RECORD.parse(
+          object_record_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse class definition object record with '
+          u'error: {0:s}').format(exception))
+
+    try:
+      utf16_stream = class_definition_struct.get(u'super_class_name_string')
+      super_class_name_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      super_class_name_string = u''
+
+    super_class_name_string_size = class_definition_struct.get(
+        u'super_class_name_string_size')
+    date_time = class_definition_struct.get(u'date_time')
+    data_size = class_definition_struct.get(u'data_size')
+
+    if self._debug:
+      print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
+          super_class_name_string_size))
+      print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
+          super_class_name_string))
+      print(u'Unknown date and time\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(date_time)))
+
+      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(data_size))
+      print(u'Data:')
+      print(hexdump.Hexdump(class_definition_struct.data))
+
+    self._ReadClassDefinitionHeader(class_definition_struct.data)
+
+    data_offset = 12 + (super_class_name_string_size * 2) + data_size
+    if data_offset < len(object_record_data):
+      if self._debug:
+        print(u'Methods data:')
+        print(hexdump.Hexdump(object_record_data[data_offset:]))
+
+      self._ReadClassDefinitionMethods(object_record_data[data_offset:])
+
+  def _ReadClassDefinitionHeader(self, class_definition_data):
+    """Reads a class definition header.
+
+    Args:
+      class_definition_data: a binary string containing the class
+                             definition data.
+
+    Raises:
+      IOError: if the class definition cannot be read.
+    """
+    if self._debug:
+      print(u'Reading class definition header.')
+
+    try:
+      class_definition_header_struct = self._CLASS_DEFINITION_HEADER.parse(
+          class_definition_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse class definition header with error: {0:s}').format(
+              exception))
+
+    number_of_property_descriptors = class_definition_header_struct.get(
+        u'number_of_property_descriptors')
+    property_descriptors_array = class_definition_header_struct.get(
+        u'property_descriptors')
+
+    property_descriptors = []
+    for index in range(number_of_property_descriptors):
+      property_name_offset = property_descriptors_array[index].get(u'name_offset')
+      property_data_offset = property_descriptors_array[index].get(u'data_offset')
+
+      property_descriptor = PropertyDescriptor(
+          property_name_offset, property_data_offset)
+      property_descriptors.append(property_descriptor)
+
+    if self._debug:
+      print(u'Unknown1\t\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'unknown1')))
+
+      print(u'Class name offset\t\t\t\t\t\t\t: 0x{0:08x}'.format(
+          class_definition_header_struct.get(u'class_name_offset')))
+      print(u'Default value size\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'default_value_size')))
+
+      print(u'Super class name block size\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'super_class_name_block_size')))
+      print(u'Super class name block data:')
+      super_class_name_block_data = class_definition_header_struct.get(
+          u'super_class_name_block_data')
+      print(hexdump.Hexdump(super_class_name_block_data))
+
+      print(u'Qualifiers block size\t\t\t\t\t\t\t: {0:d}'.format(
+          class_definition_header_struct.get(u'qualifiers_block_size')))
+      print(u'Qualifiers block data:')
+      qualifiers_block_data = class_definition_header_struct.get(
+          u'qualifiers_block_data')
+      print(hexdump.Hexdump(qualifiers_block_data))
+
+      print(u'Number of property descriptors\t\t\t\t\t\t: {0:d}'.format(
+          number_of_property_descriptors))
+
+      for index, property_descriptor in enumerate(property_descriptors):
+        print((u'Property descriptor: {0:d} name offset\t\t\t\t\t: '
+               u'0x{1:08x}').format(index, property_descriptor.name_offset))
+        print((u'Property descriptor: {0:d} data offset\t\t\t\t\t: '
+               u'0x{1:08x}').format(index, property_descriptor.data_offset))
+
+      print(u'Default value data:')
+      default_value_data = class_definition_header_struct.get(
+          u'default_value_data')
+      print(hexdump.Hexdump(default_value_data))
+
+      properties_block_size = class_definition_header_struct.get(
+          u'properties_block_size')
+      print(u'Properties block size\t\t\t\t\t\t\t: {0:d} (0x{1:08x})'.format(
+          properties_block_size & 0x7fffffff, properties_block_size))
+
+      # if class_definition_header_struct.super_class_name_block_size > 4:
+      #   super_class_name_block_struct = class_definition_header_struct.get(
+      #       u'super_class_name_block')
+      #   print(u'Super class name string flags\t\t\t\t\t\t: 0x{0:02x}'.format(
+      #       super_class_name_block_struct.get(u'super_class_name_string_flags')))
+      #   print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
+      #       super_class_name_block_struct.get(u'super_class_name_string')))
+      #   print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
+      #       super_class_name_block_struct.get(u'super_class_name_string_size')))
+
+      print(u'')
+
+    properties_block_data = class_definition_header_struct.get(
+        u'properties_block_data')
+    self._ReadClassDefinitionProperties(
+        properties_block_data, property_descriptors)
+
+  def _ReadClassDefinitionMethods(self, class_definition_data):
+    """Reads a class definition methods.
+
+    Args:
+      class_definition_data: a binary string containing the class
+                             definition data.
+
+    Raises:
+      IOError: if the class definition cannot be read.
+    """
+    if self._debug:
+      print(u'Reading class definition methods.')
+
+    try:
+      class_definition_methods_struct = self._CLASS_DEFINITION_METHODS.parse(
+          class_definition_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse class definition methods with error: {0:s}').format(
+              exception))
+
+    methods_block_size = class_definition_methods_struct.get(
+        u'methods_block_size')
+
+    if self._debug:
+      print(u'Methods block size\t\t\t\t\t\t\t: {0:d} (0x{1:08x})'.format(
+          methods_block_size & 0x7fffffff, methods_block_size))
+      print(u'Methods block data:')
+      print(hexdump.Hexdump(class_definition_methods_struct.get(
+          u'methods_block_data')))
+
+  def _ReadClassDefinitionProperties(
+      self, properties_data, property_descriptors):
+    """Reads class definition properties.
+
+    Args:
+      properties_data: a binary string containing the class
+                       definition properties data.
+      property_descriptors: a list of property descriptors (instance of
+                            PropertyDescriptor).
+
+    Raises:
+      IOError: if the class definition properties cannot be read.
+    """
+    if self._debug:
+      print(u'Reading class definition properties.')
+
+    if self._debug:
+      print(u'Properties data:')
+      print(hexdump.Hexdump(properties_data))
+
+    # for index, property_descriptor in enumerate(property_descriptors):
+    #   property_name_data = properties_data[property_descriptor.name_offset]
+
+    #   property_data = properties_data[property_descriptor.data_offset]
+
+  def _ReadInterface(self, object_record_data):
+    """Reads an interface object record.
+
+    Args:
+      object_record_data: a binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    if self._debug:
+      print(u'Reading interface object record.')
+
+    try:
+      interface_struct = self._INTERFACE_OBJECT_RECORD.parse(object_record_data)
+    except construct.FieldError as exception:
+      raise IOError(
+          u'Unable to parse interace object record with error: {0:s}'.format(
+              exception))
+
+    try:
+      utf16_stream = interface_struct.get(u'string_digest_hash')
+      string_digest_hash = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      string_digest_hash = u''
+
+    date_time1 = interface_struct.get(u'date_time1')
+    date_time2 = interface_struct.get(u'date_time2')
+
+    if self._debug:
+      print(u'String digest hash\t\t\t\t\t\t\t: {0:s}'.format(
+          string_digest_hash))
+      print(u'Unknown data and time1\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(date_time1)))
+      print(u'Unknown data and time2\t\t\t\t\t\t\t: {0!s}'.format(
+          FromFiletime(date_time2)))
+
+      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(
+          interface_struct.get(u'data_size')))
+
+      print(u'')
+
+      print(u'Data:')
+      print(hexdump.Hexdump(interface_struct.data))
+
+  def _ReadRegistration(self, object_record_data):
+    """Reads a registration object record.
+
+    Args:
+      object_record_data: a binary string containing the object record data.
+
+    Raises:
+      IOError: if the object record cannot be read.
+    """
+    if self._debug:
+      print(u'Reading registration object record.')
+
+    try:
+      registration_struct = self._REGISTRATION_OBJECT_RECORD.parse(
+          object_record_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse registration object record with '
+          u'error: {0:s}').format(exception))
+
+    try:
+      utf16_stream = registration_struct.get(u'name_space_string')
+      name_space_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      name_space_string = u''
+
+    try:
+      utf16_stream = registration_struct.get(u'class_name_string')
+      class_name_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      class_name_string = u''
+
+    try:
+      utf16_stream = registration_struct.get(u'attribute_name_string')
+      attribute_name_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      attribute_name_string = u''
+
+    try:
+      utf16_stream = registration_struct.get(u'attribute_value_string')
+      attribute_value_string = utf16_stream.decode(u'utf-16-le')
+    except UnicodeDecodeError as exception:
+      attribute_value_string = u''
+
+    if self._debug:
+      print(u'Name space string size\t\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'name_space_string_size')))
+      print(u'Name space string\t\t\t\t\t\t\t: {0:s}'.format(
+          name_space_string))
+
+      print(u'Class name string size\t\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'class_name_string_size')))
+      print(u'Class name string\t\t\t\t\t\t\t: {0:s}'.format(
+          class_name_string))
+
+      print(u'Attribute name string size\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'attribute_name_string_size')))
+      print(u'Attribute name string\t\t\t\t\t\t\t: {0:s}'.format(
+          attribute_name_string))
+
+      print(u'Attribute value string size\t\t\t\t\t\t: {0:d}'.format(
+          registration_struct.get(u'attribute_value_string_size')))
+      print(u'Attribute value string\t\t\t\t\t\t\t: {0:s}'.format(
+          attribute_value_string))
+
+      print(u'')
+
+  def Read(self):
+    """Reads an object record."""
+    if self._debug:
+      print(u'Object record data:')
+      print(hexdump.Hexdump(self.data))
+
+    if self._debug:
+      if self.data_type == self.DATA_TYPE_CLASS_DEFINITION:
+        self._ReadClassDefinition(self.data)
+      elif self.data_type in (u'I', u'IL'):
+        self._ReadInterface(self.data)
+      elif self.data_type == u'R':
+        self._ReadRegistration(self.data)
 
 
 class ObjectsDataPage(object):
@@ -883,7 +1333,7 @@ class ObjectsDataPage(object):
   _EMPTY_OBJECT_DESCRIPTOR = b'\x00' * _OBJECT_DESCRIPTOR.sizeof()
 
   def __init__(self, debug=False):
-    """Initializes the objects data page object.
+    """Initializes an objects data page object.
 
     Args:
       debug: optional boolean value to indicate if debug information should
@@ -891,7 +1341,6 @@ class ObjectsDataPage(object):
     """
     super(ObjectsDataPage, self).__init__()
     self._debug = debug
-
     self._object_descriptors = []
 
     self.page_offset = None
@@ -1057,87 +1506,8 @@ class ObjectsDataFile(object):
   _KEY_VALUE_RECORD_IDENTIFIER_INDEX = 2
   _KEY_VALUE_DATA_SIZE_INDEX = 3
 
-  _CLASS_DEFINITION_OBJECT_RECORD = construct.Struct(
-      u'class_definition_object_record',
-      construct.ULInt32(u'super_class_name_string_size'),
-      construct.Bytes(
-          u'super_class_name_string',
-          lambda ctx: ctx.super_class_name_string_size * 2),
-      construct.ULInt64(u'date_time'),
-      construct.ULInt32(u'data_size'),
-      construct.Bytes(u'data', lambda ctx: ctx.data_size - 4))
-
-  _CLASS_DEFINITION_HEADER = construct.Struct(
-      u'class_definition_header',
-      construct.Byte(u'unknown1'),
-      construct.ULInt32(u'class_name_offset'),
-      construct.ULInt32(u'default_value_size'),
-      construct.ULInt32(u'super_class_name_block_size'),
-      construct.Bytes(
-          u'super_class_name_block_data',
-          lambda ctx: ctx.super_class_name_block_size - 4),
-      construct.ULInt32(u'qualifiers_block_size'),
-      construct.Bytes(
-          u'qualifiers_block_data',
-          lambda ctx: ctx.qualifiers_block_size - 4),
-      construct.ULInt32(u'number_of_property_descriptors'),
-      construct.Array(
-          lambda ctx: ctx.number_of_property_descriptors,
-          construct.Struct(
-              u'property_descriptors',
-              construct.ULInt32(u'name_offset'),
-              construct.ULInt32(u'data_offset'))),
-      construct.Bytes(
-          u'default_value_data',
-          lambda ctx: ctx.default_value_size),
-      construct.ULInt32(u'properties_block_size'),
-      construct.Bytes(
-          u'properties_block_data',
-          lambda ctx: ctx.properties_block_size & 0x7ffffff))
-
-  _CLASS_DEFINITION_METHODS = construct.Struct(
-      u'class_definition_methods',
-      construct.ULInt32(u'methods_block_size'),
-      construct.Bytes(
-          u'methods_block_data',
-          lambda ctx: ctx.methods_block_size - 4))
-
-  # TODO: add more values.
-
-  _SUPER_CLASS_NAME_BLOCK = construct.Struct(
-      u'super_class_name_block',
-          construct.Byte(u'super_class_name_string_flags'),
-          construct.CString(u'super_class_name_string'),
-          construct.ULInt32(u'super_class_name_string_size'))
-
-  _INTERFACE_OBJECT_RECORD = construct.Struct(
-      u'interface_object_record',
-      construct.Bytes(u'string_digest_hash', 64),
-      construct.ULInt64(u'date_time1'),
-      construct.ULInt64(u'date_time2'),
-      construct.ULInt32(u'data_size'),
-      construct.Bytes(u'data', lambda ctx: ctx.data_size - 4))
-
-  _REGISTRATION_OBJECT_RECORD = construct.Struct(
-      u'registration_object_record',
-      construct.ULInt32(u'name_space_string_size'),
-      construct.Bytes(
-          u'name_space_string', lambda ctx: ctx.name_space_string_size * 2),
-      construct.ULInt32(u'class_name_string_size'),
-      construct.Bytes(
-          u'class_name_string', lambda ctx: ctx.class_name_string_size * 2),
-      construct.ULInt32(u'attribute_name_string_size'),
-      construct.Bytes(
-          u'attribute_name_string',
-          lambda ctx: ctx.attribute_name_string_size * 2),
-      construct.ULInt32(u'attribute_value_string_size'),
-      construct.Bytes(
-          u'attribute_value_string',
-          lambda ctx: ctx.attribute_value_string_size * 2),
-      construct.Bytes(u'unknown1', 8))
-
   def __init__(self, objects_mapping_file, debug=False):
-    """Initializes the objects data file object.
+    """Initializes an objects data file object.
 
     Args:
       objects_mapping_file: an objects mapping file (instance of MappingFile).
@@ -1151,344 +1521,6 @@ class ObjectsDataFile(object):
     self._file_size = 0
 
     self._objects_mapping_file = objects_mapping_file
-
-  def _GetPage(self, page_number, data_page=False):
-    """Retrieves a specific page.
-
-    Args:
-      page_number: an integer containing the page number.
-      data_page: optional boolean value to indicate the page is a data page.
-
-    Returns:
-      An objects data page (instance of ObjectsDataPage) or None.
-    """
-    file_offset = page_number * ObjectsDataPage.PAGE_SIZE
-    if file_offset >= self._file_size:
-      return
-
-    # TODO: cache pages.
-    return self._ReadPage(file_offset, data_page=data_page)
-
-  def _ReadClassDefinition(self, object_record_data):
-    """Reads a class definition object record.
-
-    Args:
-      object_record_data: a binary string containing the object record data.
-
-    Raises:
-      IOError: if the object record cannot be read.
-    """
-    if self._debug:
-      print(u'Reading class definition object record.')
-
-    try:
-      class_definition_struct = self._CLASS_DEFINITION_OBJECT_RECORD.parse(
-          object_record_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse class definition object record with '
-          u'error: {0:s}').format(exception))
-
-    try:
-      utf16_stream = class_definition_struct.get(u'super_class_name_string')
-      super_class_name_string = utf16_stream.decode(u'utf-16-le')
-    except UnicodeDecodeError as exception:
-      super_class_name_string = u''
-
-    super_class_name_string_size = class_definition_struct.get(
-        u'super_class_name_string_size')
-    date_time = class_definition_struct.get(u'date_time')
-    data_size = class_definition_struct.get(u'data_size')
-
-    if self._debug:
-      print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
-          super_class_name_string_size))
-      print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
-          super_class_name_string))
-      print(u'Unknown date and time\t\t\t\t\t\t\t: {0!s}'.format(
-          FromFiletime(date_time)))
-
-      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(data_size))
-      print(u'Data:')
-      print(hexdump.Hexdump(class_definition_struct.data))
-
-    self._ReadClassDefinitionHeader(class_definition_struct.data)
-
-    data_offset = 12 + (super_class_name_string_size * 2) + data_size
-    if data_offset < len(object_record_data):
-      if self._debug:
-        print(u'Methods data:')
-        print(hexdump.Hexdump(object_record_data[data_offset:]))
-
-      self._ReadClassDefinitionMethods(object_record_data[data_offset:])
-
-  def _ReadClassDefinitionHeader(self, class_definition_data):
-    """Reads a class definition header.
-
-    Args:
-      class_definition_data: a binary string containing the class
-                             definition data.
-
-    Raises:
-      IOError: if the class definition cannot be read.
-    """
-    if self._debug:
-      print(u'Reading class definition header.')
-
-    try:
-      class_definition_header_struct = self._CLASS_DEFINITION_HEADER.parse(
-          class_definition_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse class definition header with error: {0:s}').format(
-              exception))
-
-    if self._debug:
-      print(u'Unknown1\t\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'unknown1')))
-
-      print(u'Class name offset\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          class_definition_header_struct.get(u'class_name_offset')))
-      print(u'Default value size\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'default_value_size')))
-
-      print(u'Super class name block size\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'super_class_name_block_size')))
-      print(u'Super class name block data:')
-      print(hexdump.Hexdump(class_definition_header_struct.get(
-          u'super_class_name_block_data')))
-
-      print(u'Qualifiers block size\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'qualifiers_block_size')))
-      print(u'Qualifiers block data:')
-      print(hexdump.Hexdump(class_definition_header_struct.get(
-          u'qualifiers_block_data')))
-
-      number_of_property_descriptors = class_definition_header_struct.get(
-          u'number_of_property_descriptors')
-      print(u'Number of property descriptors\t\t\t\t\t\t: {0:d}'.format(
-          number_of_property_descriptors))
-
-      property_descriptors = class_definition_header_struct.get(
-          u'property_descriptors')
-      for index in range(number_of_property_descriptors):
-        print((u'Property descriptor: {0:d} name offset\t\t\t\t\t: '
-               u'0x{1:08x}').format(
-            index, property_descriptors[index].get(u'name_offset')))
-        print((u'Property descriptor: {0:d} data offset\t\t\t\t\t: '
-               u'0x{1:08x}').format(
-            index, property_descriptors[index].get(u'data_offset')))
-
-      print(u'Default value data:')
-      print(hexdump.Hexdump(class_definition_header_struct.get(
-          u'default_value_data')))
-
-      properties_block_size = class_definition_header_struct.get(
-          u'properties_block_size')
-      print(u'Properties block size\t\t\t\t\t\t\t: {0:d} (0x{1:08x})'.format(
-          properties_block_size & 0x7fffffff, properties_block_size))
-      print(u'Properties block data:')
-      print(hexdump.Hexdump(class_definition_header_struct.get(
-          u'properties_block_data')))
-
-      # if class_definition_header_struct.super_class_name_block_size > 4:
-      #   super_class_name_block_struct = class_definition_header_struct.get(
-      #       u'super_class_name_block')
-      #   print(u'Super class name string flags\t\t\t\t\t\t: 0x{0:02x}'.format(
-      #       super_class_name_block_struct.get(u'super_class_name_string_flags')))
-      #   print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
-      #       super_class_name_block_struct.get(u'super_class_name_string')))
-      #   print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
-      #       super_class_name_block_struct.get(u'super_class_name_string_size')))
-
-      print(u'')
-
-  def _ReadClassDefinitionMethods(self, class_definition_data):
-    """Reads a class definition methods.
-
-    Args:
-      class_definition_data: a binary string containing the class
-                             definition data.
-
-    Raises:
-      IOError: if the class definition cannot be read.
-    """
-    if self._debug:
-      print(u'Reading class definition methods.')
-
-    try:
-      class_definition_methods_struct = self._CLASS_DEFINITION_METHODS.parse(
-          class_definition_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse class definition methods with error: {0:s}').format(
-              exception))
-
-    methods_block_size = class_definition_methods_struct.get(
-        u'methods_block_size')
-
-    if self._debug:
-      print(u'Methods block size\t\t\t\t\t\t\t: {0:d} (0x{1:08x})'.format(
-          methods_block_size & 0x7fffffff, methods_block_size))
-      print(u'Methods block data:')
-      print(hexdump.Hexdump(class_definition_methods_struct.get(
-          u'methods_block_data')))
-
-  def _ReadInterface(self, object_record_data):
-    """Reads an interface object record.
-
-    Args:
-      object_record_data: a binary string containing the object record data.
-
-    Raises:
-      IOError: if the object record cannot be read.
-    """
-    if self._debug:
-      print(u'Reading interface object record.')
-
-    try:
-      interface_struct = self._INTERFACE_OBJECT_RECORD.parse(object_record_data)
-    except construct.FieldError as exception:
-      raise IOError(
-          u'Unable to parse interace object record with error: {0:s}'.format(
-              exception))
-
-    try:
-      utf16_stream = interface_struct.get(u'string_digest_hash')
-      string_digest_hash = utf16_stream.decode(u'utf-16-le')
-    except UnicodeDecodeError as exception:
-      string_digest_hash = u''
-
-    date_time1 = interface_struct.get(u'date_time1')
-    date_time2 = interface_struct.get(u'date_time2')
-
-    if self._debug:
-      print(u'String digest hash\t\t\t\t\t\t\t: {0:s}'.format(
-          string_digest_hash))
-      print(u'Unknown data and time1\t\t\t\t\t\t\t: {0!s}'.format(
-          FromFiletime(date_time1)))
-      print(u'Unknown data and time2\t\t\t\t\t\t\t: {0!s}'.format(
-          FromFiletime(date_time2)))
-
-      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(
-          interface_struct.get(u'data_size')))
-
-      print(u'')
-
-      print(u'Data:')
-      print(hexdump.Hexdump(interface_struct.data))
-
-  def _ReadPage(self, file_offset, data_page=False):
-    """Reads a page.
-
-    Args:
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
-      data_page: optional boolean value to indicate the page is a data page.
-
-    Return:
-      An objects data page (instance of ObjectsDataPage).
-
-    Raises:
-      IOError: if the page cannot be read.
-    """
-    objects_page = ObjectsDataPage(debug=self._debug)
-    objects_page.ReadPage(self._file_object, file_offset, data_page=data_page)
-    return objects_page
-
-  def _ReadRegistration(self, object_record_data):
-    """Reads a registration object record.
-
-    Args:
-      object_record_data: a binary string containing the object record data.
-
-    Raises:
-      IOError: if the object record cannot be read.
-    """
-    if self._debug:
-      print(u'Reading registration object record.')
-
-    try:
-      registration_struct = self._REGISTRATION_OBJECT_RECORD.parse(
-          object_record_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse registration object record with '
-          u'error: {0:s}').format(exception))
-
-    try:
-      utf16_stream = registration_struct.get(u'name_space_string')
-      name_space_string = utf16_stream.decode(u'utf-16-le')
-    except UnicodeDecodeError as exception:
-      name_space_string = u''
-
-    try:
-      utf16_stream = registration_struct.get(u'class_name_string')
-      class_name_string = utf16_stream.decode(u'utf-16-le')
-    except UnicodeDecodeError as exception:
-      class_name_string = u''
-
-    try:
-      utf16_stream = registration_struct.get(u'attribute_name_string')
-      attribute_name_string = utf16_stream.decode(u'utf-16-le')
-    except UnicodeDecodeError as exception:
-      attribute_name_string = u''
-
-    try:
-      utf16_stream = registration_struct.get(u'attribute_value_string')
-      attribute_value_string = utf16_stream.decode(u'utf-16-le')
-    except UnicodeDecodeError as exception:
-      attribute_value_string = u''
-
-    if self._debug:
-      print(u'Name space string size\t\t\t\t\t\t\t: {0:d}'.format(
-          registration_struct.get(u'name_space_string_size')))
-      print(u'Name space string\t\t\t\t\t\t\t: {0:s}'.format(
-          name_space_string))
-
-      print(u'Class name string size\t\t\t\t\t\t\t: {0:d}'.format(
-          registration_struct.get(u'class_name_string_size')))
-      print(u'Class name string\t\t\t\t\t\t\t: {0:s}'.format(
-          class_name_string))
-
-      print(u'Attribute name string size\t\t\t\t\t\t: {0:d}'.format(
-          registration_struct.get(u'attribute_name_string_size')))
-      print(u'Attribute name string\t\t\t\t\t\t\t: {0:s}'.format(
-          attribute_name_string))
-
-      print(u'Attribute value string size\t\t\t\t\t\t: {0:d}'.format(
-          registration_struct.get(u'attribute_value_string_size')))
-      print(u'Attribute value string\t\t\t\t\t\t\t: {0:s}'.format(
-          attribute_value_string))
-
-      print(u'')
-
-  def Close(self):
-    """Closes the objects data file."""
-    if self._file_object_opened_in_object:
-      self._file_object.close()
-    self._file_object = None
-
-  def GetMappedPage(self, page_number, data_page=False):
-    """Retrieves a specific mapped page.
-
-    Args:
-      page_number: an integer containing the page number.
-      data_page: optional boolean value to indicate the page is a data page.
-
-    Returns:
-      An objects data page (instance of ObjectsDataPage) or None.
-    """
-    mapped_page_number = self._objects_mapping_file.mappings[page_number]
-
-    objects_page = self._GetPage(mapped_page_number, data_page=data_page)
-    if not objects_page:
-      logging.warning(
-          u'Unable to read objects data mapped page: {0:d}.'.format(
-              page_number))
-      return
-
-    return objects_page
 
   def _GetKeyValues(self, key):
     """Retrieves the key values from the key.
@@ -1531,6 +1563,68 @@ class ObjectsDataFile(object):
 
     return key_values[0], page_number, record_identifier, data_size
 
+  def _GetPage(self, page_number, data_page=False):
+    """Retrieves a specific page.
+
+    Args:
+      page_number: an integer containing the page number.
+      data_page: optional boolean value to indicate the page is a data page.
+
+    Returns:
+      An objects data page (instance of ObjectsDataPage) or None.
+    """
+    file_offset = page_number * ObjectsDataPage.PAGE_SIZE
+    if file_offset >= self._file_size:
+      return
+
+    # TODO: cache pages.
+    return self._ReadPage(file_offset, data_page=data_page)
+
+  def _ReadPage(self, file_offset, data_page=False):
+    """Reads a page.
+
+    Args:
+      file_offset: integer containing the offset of the page relative
+                   from the start of the file.
+      data_page: optional boolean value to indicate the page is a data page.
+
+    Return:
+      An objects data page (instance of ObjectsDataPage).
+
+    Raises:
+      IOError: if the page cannot be read.
+    """
+    objects_page = ObjectsDataPage(debug=self._debug)
+    objects_page.ReadPage(self._file_object, file_offset, data_page=data_page)
+    return objects_page
+
+  def Close(self):
+    """Closes the objects data file."""
+    if self._file_object_opened_in_object:
+      self._file_object.close()
+    self._file_object = None
+
+  def GetMappedPage(self, page_number, data_page=False):
+    """Retrieves a specific mapped page.
+
+    Args:
+      page_number: an integer containing the page number.
+      data_page: optional boolean value to indicate the page is a data page.
+
+    Returns:
+      An objects data page (instance of ObjectsDataPage) or None.
+    """
+    mapped_page_number = self._objects_mapping_file.mappings[page_number]
+
+    objects_page = self._GetPage(mapped_page_number, data_page=data_page)
+    if not objects_page:
+      logging.warning(
+          u'Unable to read objects data mapped page: {0:d}.'.format(
+              page_number))
+      return
+
+    return objects_page
+
   def GetObjectRecordByKey(self, key):
     """Retrieves a specific object record.
 
@@ -1538,7 +1632,7 @@ class ObjectsDataFile(object):
       key: a string containing the CIM key.
 
     Returns:
-      An objects data page (instance of ObjectsDataPage) or None.
+      An object record (instance of ObjectRecord) or None.
     """
     key, page_number, record_identifier, data_size = self._GetKeyValues(key)
 
@@ -1575,22 +1669,9 @@ class ObjectsDataFile(object):
       data_segment_index += 1
       page_number += 1
 
+    data_type, _, _ = key.partition(u'_')
     object_record_data = b''.join(data_segments)
-
-    if self._debug:
-      print(u'Object record data:')
-      print(hexdump.Hexdump(object_record_data))
-
-    if self._debug:
-      data_type, _, _ = key.partition(u'_')
-      if data_type == u'CD':
-        self._ReadClassDefinition(object_record_data)
-      elif data_type in (u'I', u'IL'):
-        self._ReadInterface(object_record_data)
-      elif data_type == u'R':
-        self._ReadRegistration(object_record_data)
-
-    return object_record_data
+    return ObjectRecord(data_type, object_record_data, debug=self._debug)
 
   def Open(self, filename):
     """Opens the objects data file.
@@ -1611,7 +1692,7 @@ class CIMRepository(object):
   _MAPPING_VER = construct.ULInt32(u'active_mapping_file')
 
   def __init__(self, debug=False):
-    """Initializes the CIM repository object.
+    """Initializes a CIM repository object.
 
     Args:
       debug: optional boolean value to indicate if debug information should
@@ -1719,7 +1800,7 @@ class CIMRepository(object):
       key: a string containing the CIM key.
 
     Returns:
-      An objects data page (instance of ObjectsDataPage) or None.
+      An object record (instance of ObjectRecord) or None.
     """
     if not self._objects_data_file:
       return
@@ -1829,7 +1910,8 @@ def Main():
   for key_name, keys in iter(object_record_keys.items()):
     for key in keys:
       print(key)
-      cim_repository.GetObjectRecordByKey(key)
+      object_record = cim_repository.GetObjectRecordByKey(key)
+      object_record.Read()
 
   cim_repository.Close()
 
