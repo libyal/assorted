@@ -7,7 +7,6 @@ import argparse
 import logging
 import os
 import sys
-import uuid
 
 import construct
 
@@ -20,15 +19,15 @@ class Record(object):
   Attributes:
     data_offset: an integer containing the record data offset.
     data_size: an integer containing the record data size.
+    record_type: an integer containing the record type.
     size: an integer containing the record size.
-    type: an integer containing the record type.
   """
 
-  def __init__(self, type, size, data_offset, data_size):
+  def __init__(self, record_type, size, data_offset, data_size):
     """Initializes the record object.
 
     Args:
-      type: an integer containing the record type.
+      record_type: an integer containing the record type.
       size: an integer containing the record size.
       data_offset: an integer containing the record data offset.
       data_size: an integer containing the record data size.
@@ -36,8 +35,8 @@ class Record(object):
     super(Record, self).__init__()
     self.data_offset = data_offset
     self.data_size = data_size
+    self.record_type = record_type
     self.size = size
-    self.type = type
 
 
 class EMFFile(object):
@@ -293,7 +292,7 @@ class EMFFile(object):
       print(hexdump.Hexdump(record_data))
 
     return Record(
-        emf_record_header_struct.record_type, 
+        emf_record_header_struct.record_type,
         emf_record_header_struct.record_size, data_offset, data_size)
 
   def Close(self):
@@ -529,7 +528,7 @@ class WMFFile(object):
       print(hexdump.Hexdump(record_data))
 
     return Record(
-        wmf_record_header_struct.record_type, 
+        wmf_record_header_struct.record_type,
         record_size, data_offset, data_size)
 
   def Close(self):

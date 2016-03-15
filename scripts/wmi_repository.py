@@ -15,8 +15,6 @@ import construct
 import hexdump
 
 
-# pylint: disable=logging-format-interpolation
-
 def FromFiletime(filetime):
   """Converts a FILETIME timestamp into a Python datetime object.
 
@@ -1140,8 +1138,10 @@ class ObjectRecord(object):
 
     property_descriptors = []
     for index in range(number_of_property_descriptors):
-      property_name_offset = property_descriptors_array[index].get(u'name_offset')
-      property_data_offset = property_descriptors_array[index].get(u'data_offset')
+      property_name_offset = property_descriptors_array[index].get(
+          u'name_offset')
+      property_data_offset = property_descriptors_array[index].get(
+          u'data_offset')
 
       property_descriptor = PropertyDescriptor(
           property_name_offset, property_data_offset)
@@ -1194,11 +1194,13 @@ class ObjectRecord(object):
       #   super_class_name_block_struct = class_definition_header_struct.get(
       #       u'super_class_name_block')
       #   print(u'Super class name string flags\t\t\t\t\t\t: 0x{0:02x}'.format(
-      #       super_class_name_block_struct.get(u'super_class_name_string_flags')))
+      #       super_class_name_block_struct.get(
+      #           u'super_class_name_string_flags')))
       #   print(u'Super class name string\t\t\t\t\t\t\t: {0:s}'.format(
       #       super_class_name_block_struct.get(u'super_class_name_string')))
       #   print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
-      #       super_class_name_block_struct.get(u'super_class_name_string_size')))
+      #       super_class_name_block_struct.get(
+      #           u'super_class_name_string_size')))
 
       print(u'')
 
@@ -1269,9 +1271,12 @@ class ObjectRecord(object):
             u'Unable to parse property name with error: {0:s}').format(
                 exception))
 
+      string_flags = property_name_struct.get(u'string_flags')
+
+      # TODO: check if string flags is 0
       if self._debug:
-        print(u'Property: {0:d} name string flags\t\t\t\t\t\t: 0x{1:02x}'.format(
-            index, property_name_struct.get(u'string_flags')))
+        print((u'Property: {0:d} name string flags\t\t\t\t\t\t: '
+               u'0x{1:02x}').format(index, string_flags))
         print(u'Property: {0:d} name string\t\t\t\t\t\t\t: {1:s}'.format(
             index, property_name_struct.get(u'string')))
         print(u'')
@@ -1301,7 +1306,7 @@ class ObjectRecord(object):
         print(u'Property: {0:d} level\t\t\t\t\t\t\t: {1:d}'.format(
             index, property_definition_struct.get(u'level')))
 
-        print(u'Property: {0:d} qualifiers block size\t\t\t\t\t: {0:d}'.format(
+        print(u'Property: {0:d} qualifiers block size\t\t\t\t\t: {1:d}'.format(
             index, property_definition_struct.get(u'qualifiers_block_size')))
         print(u'Property: {0:d} qualifiers block data:'.format(index))
         qualifiers_block_data = property_definition_struct.get(
@@ -1541,7 +1546,6 @@ class ObjectsDataPage(object):
     Raises:
       IOError: if the object descriptor cannot be read.
     """
-    file_offset = file_object.tell()
     while True:
       object_descriptor = self._ReadObjectDescriptor(file_object)
       if not object_descriptor:

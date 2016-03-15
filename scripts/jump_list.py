@@ -18,14 +18,13 @@ import sys
 import uuid
 
 import construct
+# pylint: disable=wrong-import-order
 import pyfwsi
 import pylnk
 import pyolecf
 
 import hexdump
 
-
-# pylint: disable=logging-format-interpolation
 
 def FromFiletime(filetime):
   """Converts a FILETIME timestamp into a Python datetime object.
@@ -212,7 +211,7 @@ class LNKFileEntry(object):
       shell_item_list.copy_from_byte_stream(
           self._lnk_file.link_target_identifier_data)
 
-      for shell_item in shell_item_list.items:
+      for shell_item in iter(shell_item_list.items):
         yield shell_item
 
   def Open(self, file_object):

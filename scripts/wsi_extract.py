@@ -5,6 +5,7 @@
 from __future__ import print_function
 import argparse
 import logging
+import os
 import sys
 
 import pylnk
@@ -13,8 +14,6 @@ import pysigscan
 import collector
 import hexdump
 
-
-# pylint: disable=logging-format-interpolation
 
 class WindowsShellItemExtractor(collector.WindowsVolumeCollector):
   """Class that defines a Windows shell item extractor."""
@@ -102,6 +101,7 @@ class WindowsShellItemExtractor(collector.WindowsVolumeCollector):
       signatures = self._GetSignature()
     else:
       # TODO: recurse and find supported file types.
+      pass
 
 
 class FileOutputWriter(object):

@@ -13,8 +13,6 @@ import construct
 import hexdump
 
 
-# pylint: disable=logging-format-interpolation
-
 class ChangeLogEntry(object):
   """Class that contains a Windows Restore Point change log entry."""
 

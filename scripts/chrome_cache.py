@@ -14,8 +14,6 @@ import construct
 import hexdump
 
 
-# pylint: disable=logging-format-interpolation
-
 def SuperFastHash(key):
   """Function to calculate the super fast hash.
 

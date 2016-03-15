@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Script to parse Copy in and out (CPIO) archive files."""
+"""Script to parse copy in and out (CPIO) archive files."""
 
 from __future__ import print_function
 import argparse
@@ -162,11 +162,13 @@ class CPIOArchiveFileEntry(object):
 
     self.data_offset = None
     self.data_size = None
+    self.group_identifier = None
     self.inode_number = None
     self.mode = None
     self.modification_time = None
     self.path = None
     self.size = None
+    self.user_identifier = None
 
   def read(self, size=None):
     """Reads a byte string from the file-like object at the current offset.
@@ -613,10 +615,10 @@ class CPIOArchiveFile(object):
 
   def Open(self, filename):
     """Opens the CPIO archive file.
- 
+
     Args:
       filename: the filename.
- 
+
     Raises:
       IOError: if the file format signature is not supported.
     """
@@ -716,7 +718,7 @@ class CPIOArchiveFileHasher(object):
       file_type = None
       if len(signature_data) > 2:
         if (signature_data[:2] in (
-            self._CPIO_SIGNATURE_BINARY_BIG_ENDIAN, 
+            self._CPIO_SIGNATURE_BINARY_BIG_ENDIAN,
             self._CPIO_SIGNATURE_BINARY_LITTLE_ENDIAN) or
             signature_data in (
                 self._CPIO_SIGNATURE_PORTABLE_ASCII,
