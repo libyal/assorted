@@ -8,6 +8,10 @@ import logging
 import os
 import sys
 
+from dfvfs.lib import definitions as dfvfs_definitions
+from dfvfs.helpers import volume_scanner as dfvfs_volume_scanner
+from dfvfs.resolver import resolver as dfvfs_resolver
+
 import pylnk
 import pysigscan
 
@@ -15,8 +19,8 @@ import collector
 import hexdump
 
 
-class WindowsShellItemExtractor(collector.WindowsVolumeCollector):
-  """Class that defines a Windows shell item extractor."""
+class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
+  """Class that defines a Windows shell items extractor."""
 
   _SIGNATURES = [
       (u'creg', 0, b'CREG'),
@@ -27,8 +31,35 @@ class WindowsShellItemExtractor(collector.WindowsVolumeCollector):
       (u'regf', 0, b'regf'),
   ]
 
+  # TSK metadata files that need special handling.
+  _METADATA_FILE_LOCATIONS_TSK = frozenset([
+      # NTFS
+      u'/$AttrDef',
+      u'/$BadClus',
+      u'/$Bitmap',
+      u'/$Boot',
+      u'/$Extend/$ObjId',
+      u'/$Extend/$Quota',
+      u'/$Extend/$Reparse',
+      u'/$Extend/$RmMetadata/$Repair',
+      u'/$Extend/$RmMetadata/$TxfLog/$Tops',
+      u'/$Extend/$UsnJrnl',
+      u'/$LogFile',
+      u'/$MFT',
+      u'/$MFTMirr',
+      u'/$Secure',
+      u'/$UpCase',
+      u'/$Volume',
+      # HFS+/HFSX
+      u'/$ExtentsFile',
+      u'/$CatalogFile',
+      u'/$BadBlockFile',
+      u'/$AllocationFile',
+      u'/$AttributesFile',
+  ])
+
   def __init__(self, debug=False, mediator=None):
-    """Initializes the Windows shell item extractor object.
+    """Initializes the Windows shell items extractor object.
 
     Args:
       debug: optional boolean value to indicate if debug information should
@@ -36,44 +67,141 @@ class WindowsShellItemExtractor(collector.WindowsVolumeCollector):
       mediator: a volume scanner mediator (instance of
                 dfvfs.VolumeScannerMediator) or None.
     """
-    super(WindowsShellItemExtractor, self).__init__(mediator=mediator)
+    super(WindowsShellItemsExtractor, self).__init__(mediator=mediator)
     self._debug = debug
+    self._file_scanner = self._GetSignatureScanner()
 
-  # TODO: extract WSI from LNK.
-  # TODO: extract WSI from BagsMRU.
-  # TODO: extract WSI from MRU.
-  # TODO: extract WSI from JumpLists.
-
-  def _ExtractFromLNKFile(self, output_writer, path):
-    """Extracts Windows shell item from a Windows Shortcut (LNK) file.
+  def _ExtractFromData(self, shell_items_data, output_writer):
+    """Extracts Windows shell items from data.
 
     Args:
+      shell_items_data: a binary string containing the shell items data.
       output_writer: the output writer (instance of OutputWriter).
-      path: a string containing the path of the LNK file.
     """
-    file_object = None
+    if not shell_items_data:
+      return
+
+    output_writer.WriteShellItems(shell_items_data)
+
+  def _ExtractFromDataStream(
+    self, file_entry, data_stream_name, full_path, output_writer):
+    """Extracts Windows shell items from a file entry data stream.
+
+    Args:
+      file_entry: the file entry (instance of dfvfs.FileEntry).
+      data_stream_name: the data stream name.
+      full_path: a string containing the full path of the file entry.
+      output_writer: the output writer (instance of OutputWriter).
+    """
+    try:
+      file_object = file_entry.GetFileObject(data_stream_name=data_stream_name)
+    except IOError as exception:
+      logging.warning((
+          u'Unable to open path specification:\n{0:s}'
+          u'with error: {1:s}').format(
+              file_entry.path_spec.comparable, exception))
+      return
+
+    if not file_object:
+      return
 
     try:
-      lnk_file = pylnk.file()
-      lnk_file.open_file_object(file_object)
-      lnk_file.link_target_identifier_data
-      lnk_file.close()
+      self._ExtractFromFileObject(file_object, full_path, output_writer)
+    except IOError as exception:
+      logging.warning((
+          u'Unable to read from path specification:\n{0:s}'
+          u'with error: {1:s}').format(
+              file_entry.path_spec.comparable, exception))
+      return
+
     finally:
       file_object.close()
 
-  def _GetSignature(self, file_object):
-    """Determins the if the file content contains a known signature.
+  def _ExtractFromFileEntry(
+    self, file_system, file_entry, parent_full_path, output_writer):
+    """Extracts Windows shell items from a file entry.
+
+    Args:
+      file_system: the file system (instance of dfvfs.FileSystem).
+      file_entry: the file entry (instance of dfvfs.FileEntry).
+      parent_full_path: a string containing the full path of the parent
+                        file entry.
+      output_writer: the output writer (instance of OutputWriter).
+    """
+    full_path = file_system.JoinPath([parent_full_path, file_entry.name])
+    for data_stream in file_entry.data_streams:
+      if data_stream.name:
+        data_stream_path = u'{0:s}:{1:s}'.format(full_path, data_stream.name)
+      else:
+        data_stream_path = full_path
+
+      self._ExtractFromDataStream(
+          file_entry, data_stream.name, data_stream_path, output_writer)
+
+    for sub_file_entry in file_entry.sub_file_entries:
+      if self._IsMetadataFile(sub_file_entry):
+        continue
+
+      self._ExtractFromFileEntry(
+          file_system, sub_file_entry, full_path, output_writer)
+
+  def _ExtractFromFileObject(self, file_object, full_path, output_writer):
+    """Extracts Windows shell items from a file-like object.
+
+    Args:
+      file_object: the file-like object.
+      full_path: a string containing the full path of the file entry.
+      output_writer: the output writer (instance of OutputWriter).
+    """
+    signatures = self._GetSignatures(file_object)
+
+    if u'lnk' in signatures:
+      self._ExtractFromLNK(file_object, full_path, output_writer)
+
+    if u'olecf' in signatures:
+      # TODO: extract WSI from automatic destination JumpLists.
+      pass
+
+    if u'regf' in signatures:
+      # TODO: extract WSI from BagsMRU.
+      # TODO: extract WSI from MRU.
+      # TODO: extract WSI from JumpLists.
+      pass
+
+    # TODO: extract WSI from custom destination JumpLists.
+
+  def _ExtractFromLNK(self, file_object, full_path, output_writer):
+    """Extracts Windows shell items from a Windows Shortcut file-like object.
+
+    Args:
+      file_object: the file-like object.
+      full_path: a string containing the full path of the file entry.
+      output_writer: the output writer (instance of OutputWriter).
+    """
+    print(full_path)
+
+    lnk_file = pylnk.file()
+    lnk_file.open_file_object(file_object)
+
+    try:
+      self._ExtractFromData(
+          lnk_file.link_target_identifier_data, output_writer)
+    finally:
+      lnk_file.close()
+
+  def _GetSignatures(self, file_object):
+    """Determines the if the file content contains known signatures.
 
     Args:
       file_object: a file-like object (instance of dfvfs.FileIO).
 
     Returns:
-      A string containing the signature identifier or None if no known
-      signature was found.
+      A list of strings containing the signature identifier or None
+      if no known signature was found.
     """
     scan_state = pysigscan.scan_state()
     self._file_scanner.scan_file_object(scan_state, file_object)
-    return scan_state.scan_results
+    return [scan_result.identifier for scan_result in scan_state.scan_results]
 
   def _GetSignatureScanner(self):
     """Retrieves a signature scanner object.
@@ -89,19 +217,39 @@ class WindowsShellItemExtractor(collector.WindowsVolumeCollector):
 
     return scanner_object
 
-  def ExtractWindowsShellItems(self, output_writer, path):
+  def _IsMetadataFile(self, file_entry):
+    """Determines if the file entry is a metadata file.
+
+    Args:
+      file_entry: a file entry object (instance of dfvfs.FileEntry).
+
+    Returns:
+      A boolean value indicating if the file entry is a metadata file.
+    """
+    if (file_entry.type_indicator == dfvfs_definitions.TYPE_INDICATOR_TSK and
+        file_entry.path_spec.location in self._METADATA_FILE_LOCATIONS_TSK):
+      return True
+
+    return False
+
+  def ExtractWindowsShellItems(self, base_path_specs, output_writer):
     """Extracts Windows shell items.
 
     Args:
+      base_path_specs: a list of source path specification (instances
+                       of dfvfs.PathSpec).
       output_writer: the output writer (instance of OutputWriter).
     """
-    if self._single_file:
-      # TODO: determine file type.
-      file_object = self.OpenFile(path)
-      signatures = self._GetSignature()
-    else:
-      # TODO: recurse and find supported file types.
-      pass
+    for base_path_spec in base_path_specs:
+      file_system = dfvfs_resolver.Resolver.OpenFileSystem(base_path_spec)
+      file_entry = dfvfs_resolver.Resolver.OpenFileEntry(base_path_spec)
+      if file_entry is None:
+        logging.warning(
+            u'Unable to open base path specification:\n{0:s}'.format(
+                base_path_spec.comparable))
+        continue
+
+      self._ExtractFromFileEntry(file_system, file_entry, u'', output_writer)
 
 
 class FileOutputWriter(object):
@@ -128,14 +276,14 @@ class FileOutputWriter(object):
     """
     return True
 
-  def WriteShellItem(self, shell_item_data):
-    """Writes a shell item.
+  def WriteShellItems(self, shell_items_data):
+    """Writes shell items.
 
     Args:
-      shell_item_data: a binary string containing the shell item data.
+      shell_items_data: a binary string containing the shell items data.
     """
     with open(options.output_file, 'wb') as output_file:
-      output_file.write(shell_item_data)
+      output_file.write(shell_items_data)
 
 
 class StdoutOutputWriter(object):
@@ -153,13 +301,13 @@ class StdoutOutputWriter(object):
     """
     return True
 
-  def WriteShellItem(self, shell_item_data):
-    """Writes a shell item.
+  def WriteShellItems(self, shell_items_data):
+    """Writes shell items.
 
     Args:
-      shell_item_data: a binary string containing the shell item data.
+      shell_items_data: a binary string containing the shell items data.
     """
-    print(hexdump.Hexdump(shell_item_data))
+    print(hexdump.Hexdump(shell_items_data))
 
 
 def Main():
@@ -217,15 +365,27 @@ def Main():
     return False
 
   # TODO: pass mediator.
-  extractor = WindowsShellItemExtractor(debug=options.debug)
 
-  if not extractor.ScanForWindowsVolume(options.source):
-    print((u'Unable to retrieve the volume with the Windows directory from: '
-           u'{0:s}.').format(options.source))
+  extractor = WindowsShellItemsExtractor(debug=options.debug)
+
+  try:
+    base_path_specs = extractor.GetBasePathSpecs(options.source)
+    if not base_path_specs:
+      print(u'No supported file system found in source.')
+      print(u'')
+      return False
+
+    extractor.ExtractWindowsShellItems(base_path_specs, output_writer)
+
     print(u'')
-    return False
+    print(u'Completed.')
 
-  extractor.ExtractWindowsShellItems(output_writer)
+  except KeyboardInterrupt:
+    return_value = False
+
+    print(u'')
+    print(u'Aborted by user.')
+
   output_writer.Close()
 
   return True
