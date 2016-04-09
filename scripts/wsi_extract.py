@@ -4,32 +4,24 @@
 
 from __future__ import print_function
 import argparse
+import hashlib
 import logging
 import os
 import sys
+
+import construct
+import pylnk
+import pysigscan
 
 from dfvfs.lib import definitions as dfvfs_definitions
 from dfvfs.helpers import volume_scanner as dfvfs_volume_scanner
 from dfvfs.resolver import resolver as dfvfs_resolver
 
-import pylnk
-import pysigscan
-
-import collector
 import hexdump
 
 
 class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
   """Class that defines a Windows shell items extractor."""
-
-  _SIGNATURES = [
-      (u'creg', 0, b'CREG'),
-      (u'lnk', 0, (b'\x4c\x00\x00\x00\x01\x14\x02\x00\x00\x00\x00\x00\xc0'
-                   b'\x00\x00\x00\x00\x00\x00\x46')),
-      (u'olecf', 0, b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'),
-      (u'olecf_beta', 0, b'\x0e\x11\xfc\x0d\xd0\xcf\x11\x0e'),
-      (u'regf', 0, b'regf'),
-  ]
 
   # TSK metadata files that need special handling.
   _METADATA_FILE_LOCATIONS_TSK = frozenset([
@@ -58,6 +50,29 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       u'/$AttributesFile',
   ])
 
+  _EXTENSION_BLOCK = construct.Struct(
+      u'extension_block',
+      construct.ULInt16(u'size'),
+      construct.ULInt16(u'version'),
+      construct.ULInt32(u'signature'),
+      construct.Bytes(
+          u'data', lambda ctx: 0 if not ctx.size else ctx.size - 8))
+
+  _SHELL_ITEM = construct.Struct(
+      u'shell_item',
+      construct.ULInt16(u'size'),
+      construct.Bytes(
+          u'data', lambda ctx: 0 if not ctx.size else ctx.size - 2))
+
+  _SIGNATURES = [
+      (u'creg', 0, b'CREG'),
+      (u'lnk', 0, (b'\x4c\x00\x00\x00\x01\x14\x02\x00\x00\x00\x00\x00\xc0'
+                   b'\x00\x00\x00\x00\x00\x00\x46')),
+      (u'olecf', 0, b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'),
+      (u'olecf_beta', 0, b'\x0e\x11\xfc\x0d\xd0\xcf\x11\x0e'),
+      (u'regf', 0, b'regf'),
+  ]
+
   def __init__(self, debug=False, mediator=None):
     """Initializes the Windows shell items extractor object.
 
@@ -78,10 +93,68 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       shell_items_data: a binary string containing the shell items data.
       output_writer: the output writer (instance of OutputWriter).
     """
-    if not shell_items_data:
-      return
+    data_offset = 0
+    last_data_offset = 0
+    data_size = len(shell_items_data)
 
-    output_writer.WriteShellItems(shell_items_data)
+    while data_offset < data_size:
+      try:
+        shell_item_struct = self._SHELL_ITEM.parse(
+            shell_items_data[data_offset:])
+
+      except construct.FieldError as exception:
+        raise IOError((
+            u'Unable to parse shell item at offset: 0x{0:08x} '
+            u'with error: {1:s}').format(data_offset, exception))
+
+      shell_item_data_size = shell_item_struct.size
+
+      # The last shell item is the list terminator.
+      if shell_item_data_size == 0:
+        data_offset += 2
+        break
+
+      last_data_offset = data_offset
+      data_offset += shell_item_data_size
+      shell_item_data = shell_items_data[last_data_offset:data_offset]
+
+      output_writer.WriteShellItem(shell_item_data)
+
+      extension_version_offset = construct.ULInt16(u'offset').parse(
+          shell_item_data[-2:])
+
+      # The extension block signature can be found by the extension
+      # version offset.
+      extension_signature_data = shell_item_struct.data[
+          extension_version_offset+2:extension_version_offset+6]
+
+      if extension_signature_data[-2:] == b'\xef\xbe':
+        extension_block_offset = extension_version_offset - 2
+        shell_item_data_size -= 2
+
+        while extension_block_offset < shell_item_data_size:
+          try:
+            extension_block_struct = self._EXTENSION_BLOCK.parse(
+                shell_item_struct.data[extension_block_offset:])
+
+          except construct.FieldError as exception:
+            raise IOError((
+                u'Unable to parse extension block at offset: 0x{0:08x} '
+                u'with error: {1:s}').format(
+                    extension_block_offset, exception))
+
+          extension_block_size = extension_block_struct.size
+
+          # The last extension block is the list terminator.
+          if extension_block_size == 0:
+            extension_block_offset += 2
+            break
+
+          extension_block_offset += extension_block_size
+
+        # TODO: report trailing data.
+
+    # TODO: report trailing data.
 
   def _ExtractFromDataStream(
     self, file_entry, data_stream_name, full_path, output_writer):
@@ -178,8 +251,6 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       full_path: a string containing the full path of the file entry.
       output_writer: the output writer (instance of OutputWriter).
     """
-    print(full_path)
-
     lnk_file = pylnk.file()
     lnk_file.open_file_object(file_object)
 
@@ -276,14 +347,18 @@ class FileOutputWriter(object):
     """
     return True
 
-  def WriteShellItems(self, shell_items_data):
-    """Writes shell items.
+  def WriteShellItem(self, shell_item_data):
+    """Writes a shell item.
 
     Args:
-      shell_items_data: a binary string containing the shell items data.
+      shell_item_data: a binary string containing the shell item data.
     """
-    with open(options.output_file, 'wb') as output_file:
-      output_file.write(shell_items_data)
+    hash_context = hashlib.md5(shell_item_data)
+    digest_hash = hash_context.hexdigest()
+
+    output_path = os.path.join(self._output_directory, digest_hash)
+    with open(output_path, 'wb') as output_file:
+      output_file.write(shell_item_data)
 
 
 class StdoutOutputWriter(object):
@@ -301,13 +376,13 @@ class StdoutOutputWriter(object):
     """
     return True
 
-  def WriteShellItems(self, shell_items_data):
-    """Writes shell items.
+  def WriteShellItem(self, shell_item_data):
+    """Writes a shell item.
 
     Args:
-      shell_items_data: a binary string containing the shell items data.
+      shell_item_data: a binary string containing the shell item data.
     """
-    print(hexdump.Hexdump(shell_items_data))
+    print(hexdump.Hexdump(shell_item_data))
 
 
 def Main():
