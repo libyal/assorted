@@ -215,8 +215,10 @@ class EMFFile(object):
           u'Unable to parse file header with error: {0:s}').format(exception))
 
     if self._debug:
-      print(u'Record type\t\t\t\t\t\t\t: 0x{0:04x}'.format(
-          emf_file_header_struct.record_type))
+      record_type_string = self._EMF_RECORD_TYPES.get(
+          emf_file_header_struct.record_type, u'UNKNOWN')
+      print(u'Record type\t\t\t\t\t\t\t: 0x{0:04x} ({1:s})'.format(
+          emf_file_header_struct.record_type, record_type_string))
       print(u'Record size\t\t\t\t\t\t\t: {0:d}'.format(
           emf_file_header_struct.record_size))
 
@@ -407,18 +409,60 @@ class WMFFile(object):
       0x0922: u'META_BITBLT',
       0x0940: u'META_DIBBITBLT',
       0x0a32: u'META_EXTTEXTOUT',
-      0x0B23: u'META_STRETCHBLT',
+      0x0b23: u'META_STRETCHBLT',
       0x0b41: u'META_DIBSTRETCHBLT',
       0x0d33: u'META_SETDIBTODEV',
       0x0f43: u'META_STRETCHDIB'
   }
 
+  _WMF_SETMAPMODE = construct.Struct(
+      u'wmf_setmapmode',
+      construct.ULInt16(u'map_mode'))
+
+  _WMF_SETSTRETCHBLTMODE = construct.Struct(
+      u'wmf_setstretchbltmode',
+      construct.ULInt16(u'stretch_mode'))
+  # TODO: documentation indicates there should be 16-bit reserved field.
+
+  _WMF_SETWINDOWORG = construct.Struct(
+      u'wmf_setwindoworg',
+      construct.ULInt16(u'x'),
+      construct.ULInt16(u'y'))
+
+  _WMF_SETWINDOWEXT = construct.Struct(
+      u'wmf_setwindowext',
+      construct.ULInt16(u'x'),
+      construct.ULInt16(u'y'))
+
+  # Here None represents that the record has no additional data.
+  _WMF_RECORD_DATA_STRUCT_TYPES = {
+      0x001e: None,
+      0x0103: _WMF_SETMAPMODE,
+      0x0107: _WMF_SETSTRETCHBLTMODE,
+      0x020b: _WMF_SETWINDOWORG,
+      0x020c: _WMF_SETWINDOWEXT}
+
+  _WMF_MAP_MODES = {
+      0x0001: u'MM_TEXT',
+      0x0002: u'MM_LOMETRIC',
+      0x0003: u'MM_HIMETRIC',
+      0x0004: u'MM_LOENGLISH',
+      0x0005: u'MM_HIENGLISH',
+      0x0006: u'MM_TWIPS',
+      0x0007: u'MM_ISOTROPIC',
+      0x0008: u'MM_ANISOTROPIC'}
+
+  _WMF_STRETCH_MODES = {
+      0x0001: u'BLACKONWHITE',
+      0x0002: u'WHITEONBLACK',
+      0x0003: u'COLORONCOLOR',
+      0x0004: u'HALFTONE'}
+
   def __init__(self, debug=False):
     """Initializes the .wmf file object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(WMFFile, self).__init__()
     self._debug = debug
@@ -522,14 +566,57 @@ class WMFFile(object):
     data_size = record_size - record_header_data_size
 
     if self._debug:
-      record_data = self._file_object.read(data_size)
-
-      print(u'Record data:')
-      print(hexdump.Hexdump(record_data))
+      self._ReadRecordData(wmf_record_header_struct.record_type, data_size)
 
     return Record(
         wmf_record_header_struct.record_type,
         record_size, data_offset, data_size)
+
+  def _ReadRecordData(self, record_type, data_size):
+    """Reads a record.
+
+    Args:
+      record_type (int): record type.
+      data_size (int): size of the record data.
+
+    Raises:
+      IOError: if the record cannot be read.
+    """
+    record_data = self._file_object.read(data_size)
+
+    if self._debug:
+      print(u'Record data:')
+      print(hexdump.Hexdump(record_data))
+
+    # TODO: use lookup dict with callback.
+    struct_type = self._WMF_RECORD_DATA_STRUCT_TYPES.get(record_type, None)
+    if not struct_type:
+      return
+
+    try:
+      record_data_struct = struct_type.parse(record_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse record data with error: {0:s}').format(exception))
+
+    if self._debug:
+      if record_type == 0x0103:
+        map_mode_string = self._WMF_MAP_MODES.get(
+            record_data_struct.map_mode, u'UNKNOWN')
+        print(u'Map mode\t\t\t\t\t\t\t: 0x{0:04x} ({1:s})'.format(
+            record_data_struct.map_mode, map_mode_string))
+
+      elif record_type == 0x0107:
+        stretch_mode_string = self._WMF_STRETCH_MODES.get(
+            record_data_struct.stretch_mode, u'UNKNOWN')
+        print(u'Stretch mode\t\t\t\t\t\t\t: 0x{0:04x} ({1:s})'.format(
+            record_data_struct.stretch_mode, stretch_mode_string))
+
+      elif record_type in (0x020b, 0x020c):
+        print(u'X\t\t\t\t\t\t\t\t: {0:d}'.format(record_data_struct.x))
+        print(u'Y\t\t\t\t\t\t\t\t: {0:d}'.format(record_data_struct.y))
+
+      print(u'')
 
   def Close(self):
     """Closes the .job file."""
