@@ -177,6 +177,42 @@ class EMFFile(object):
       104: u'EMR_PIXELFORMAT'
   }
 
+  _EMF_SETTEXTCOLOR = construct.Struct(
+      u'emf_settextcolor',
+      construct.ULInt32(u'color'))
+  # https://msdn.microsoft.com/en-us/library/cc250420.aspx
+
+  _EMF_SELECTOBJECT = construct.Struct(
+      u'emf_selectobject',
+      construct.ULInt32(u'object_identifier'))
+
+  # Here None represents that the record has no additional data.
+  _EMF_RECORD_DATA_STRUCT_TYPES = {
+      0x0018: _EMF_SETTEXTCOLOR,
+      0x0025: _EMF_SELECTOBJECT}
+
+  # https://msdn.microsoft.com/en-us/library/cc231191.aspx
+  _EMF_STOCK_OBJECTS = {
+      0x80000000: u'WHITE_BRUSH',
+      0x80000001: u'LTGRAY_BRUSH',
+      0x80000002: u'GRAY_BRUSH',
+      0x80000003: u'DKGRAY_BRUSH',
+      0x80000004: u'BLACK_BRUSH',
+      0x80000005: u'NULL_BRUSH',
+      0x80000006: u'WHITE_PEN',
+      0x80000007: u'BLACK_PEN',
+      0x80000008: u'NULL_PEN',
+      0x8000000A: u'OEM_FIXED_FONT',
+      0x8000000B: u'ANSI_FIXED_FONT',
+      0x8000000C: u'ANSI_VAR_FONT',
+      0x8000000D: u'SYSTEM_FONT',
+      0x8000000E: u'DEVICE_DEFAULT_FONT',
+      0x8000000F: u'DEFAULT_PALETTE',
+      0x80000010: u'SYSTEM_FIXED_FONT',
+      0x80000011: u'DEFAULT_GUI_FONT',
+      0x80000012: u'DC_BRUSH',
+      0x80000013: u'DC_PEN'}
+
   def __init__(self, debug=False):
     """Initializes an EMF file.
 
@@ -287,14 +323,55 @@ class EMFFile(object):
     data_size = emf_record_header_struct.record_size - record_header_data_size
 
     if self._debug:
-      record_data = self._file_object.read(data_size)
-
-      print(u'Record data:')
-      print(hexdump.Hexdump(record_data))
+      self._ReadRecordData(emf_record_header_struct.record_type, data_size)
 
     return Record(
         emf_record_header_struct.record_type,
         emf_record_header_struct.record_size, data_offset, data_size)
+
+  def _ReadRecordData(self, record_type, data_size):
+    """Reads a record.
+
+    Args:
+      record_type (int): record type.
+      data_size (int): size of the record data.
+
+    Raises:
+      IOError: if the record cannot be read.
+    """
+    record_data = self._file_object.read(data_size)
+
+    if self._debug and data_size > 0:
+      print(u'Record data:')
+      print(hexdump.Hexdump(record_data))
+
+    # TODO: use lookup dict with callback.
+    struct_type = self._EMF_RECORD_DATA_STRUCT_TYPES.get(record_type, None)
+    if not struct_type:
+      return
+
+    try:
+      record_data_struct = struct_type.parse(record_data)
+    except construct.FieldError as exception:
+      raise IOError((
+          u'Unable to parse record data with error: {0:s}').format(exception))
+
+    if self._debug:
+      if record_type == 0x0018:
+        print(u'Color\t\t\t\t\t\t\t\t: 0x{0:04x}'.format(
+            record_data_struct.color))
+
+      elif record_type == 0x0025:
+        stock_object_string = self._EMF_STOCK_OBJECTS.get(
+            record_data_struct.object_identifier, None)
+        if stock_object_string:
+          print(u'Object identifier\t\t\t\t\t\t: 0x{0:08x} ({1:s})'.format(
+              record_data_struct.object_identifier, stock_object_string))
+        else:
+          print(u'Object identifier\t\t\t\t\t\t: 0x{0:08x}'.format(
+              record_data_struct.object_identifier))
+
+      print(u'')
 
   def Close(self):
     """Closes an EMF file."""
@@ -1165,7 +1242,7 @@ class WMFFile(object):
       elif record_type == 0x0b41:
         raster_operation_string = self._WMF_RASTER_OPERATIONS.get(
             record_data_struct.raster_operation, u'UNKNOWN')
-        print(u'Raster operation\t\t\t\t\t\t: 0x{0:04x} ({1:s})'.format(
+        print(u'Raster operation\t\t\t\t\t\t: 0x{0:08x} ({1:s})'.format(
             record_data_struct.raster_operation, raster_operation_string))
 
         print(u'Source height\t\t\t\t\t\t\t: {0:d}'.format(
