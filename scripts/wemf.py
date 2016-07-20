@@ -450,6 +450,7 @@ class WMFFile(object):
       construct.ULInt16(u'destination_y_coordinate'),
       construct.Anchor(u'device_indepent_bitmap'))
 
+  # record_size == ((record_type >> 8) + 3)
   # DIB: https://msdn.microsoft.com/en-us/library/cc250593.aspx
 
   # Here None represents that the record has no additional data.
