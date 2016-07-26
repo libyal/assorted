@@ -41,6 +41,7 @@ in the section entitled "GNU Free Documentation License".
 |===
 | Version | Author | Date | Comments
 | 0.0.1 | J.B. Metz | January 2016 | Initial version.
+| 0.0.2 | J.B. Metz | July 2016 | Additional information.
 |===
 
 :numbered:
@@ -90,21 +91,32 @@ Contains a value in milliseconds
 See section: <<status,Status>>
 | 48 | 4 | | Flags +
 See section: <<flags,Flags>>
-| 52 | 2 | | Year +
+| 52 | 16 | | Last run time +
+Contains a <<system_time,system time>> or 0 if not set. +
+[yellow-background]*TODO: confirm this is local time.*
+|===
+
+==== [[system_time]]System time
+The system time is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Year +
 Contains a value ranging from 1601 to (including) 30827
-| 54 | 2 | | Month +
+| 2 | 2 | | Month +
 Contains a value ranging from 1 to (including) 12, where 1 represents January
-| 56 | 2 | | Weekday +
+| 4 | 2 | | Weekday +
 Contains a value ranging from 0 to (including) 6, where 0 represents Sunday
-| 58 | 2 | | Day +
+| 6 | 2 | | Day +
 Contains a value ranging from 1 to (including) 31
-| 60 | 2 | | Hours +
+| 8 | 2 | | Hours +
 Contains a value ranging from 1 to (including) 23
-| 62 | 2 | | Minutes +
+| 10 | 2 | | Minutes +
 Contains a value ranging from 0 to (including) 59
-| 64 | 2 | | Seconds +
+| 12 | 2 | | Seconds +
 Contains a value ranging from 0 to (including) 59
-| 66 | 2 | | Milliseconds +
+| 14 | 2 | | Milliseconds +
 Contains a value ranging from 0 to (including) 999
 |===
 
@@ -174,6 +186,21 @@ more of a Window API (WINAPI) compatibility version.
 |===
 
 === Variable size data section
+
+[yellow-background]*TODO: add text*
+
+....
+Running Instance Count
+Application Name
+Parameters
+Working Directory
+Author
+Comment
+User Data
+Reserved Data
+Triggers
+Job Signature
+....
 
 :numbered!:
 [appendix]
