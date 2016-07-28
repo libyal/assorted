@@ -277,68 +277,44 @@ Contains a value in range 0 to 23
 Contains a value in range 0 to 59
 | 20 | 4 | | Duration in minutes
 | 24 | 4 | | Interval in minutes
-| 28 | 4 | | Flags
-| 32 | 4 | | Trigger type
+| 28 | 4 | | Trigger flags +
+See section: <<variable_length_trigger_flags,Trigger flags>>
+| 32 | 4 | | Trigger type +
+See section: <<variable_length_trigger_types,Trigger types>>
 | 36 | 3 x 2 | | Trigger specific values
 | 42 | 2 | 0 | [yellow-background]*Unknown (padding)*
 | 44 | 2 x 2 | 0 | [yellow-background]*Unknown (reserved)*
 |===
 
-[yellow-background]*TODO: notes*
-....
-Flags
+==== [[variable_length_trigger_flags]]Trigger flags
 
-Value
-Description
-0x00000001
-TASK_TRIGGER_FLAG_HAS_END_DATE
-If set to 1, specifies that the task can stop at some point in time.
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000001 | TASK_TRIGGER_FLAG_HAS_END_DATE | Set if the task can stop at some point in time.
+| 0x00000002 | TASK_TRIGGER_FLAG_KILL_AT_DURATION_END | Set if the task can be stopped at the end of the repetition period.
+| 0x00000004 | TASK_TRIGGER_FLAG_DISABLED | Set if the trigger is disabled
+|===
 
-0x00000002
-TASK_TRIGGER_FLAG_KILL_AT_DURATION_END
-If set to 1, specifies that the task can be stopped at the end of the repetition period.
+==== [[variable_length_trigger_types]]Trigger types
 
-0x00000004
-TASK_TRIGGER_FLAG_DISABLED
-If set to 1, specifies that the trigger is disabled.
-....
-
-....
-Trigger types
-https://msdn.microsoft.com/en-us/library/cc248291.aspx
-
-ONCE
-0x00000000
-Not used
-
-DAILY
-0x00000001
-
-WEEKLY
-0x00000002
-Day of the week
-
-MONTHLYDATE
-0x00000003
-Day of the month
-
-MONTHLYDOW
-0x00000004
-
-EVENT_ON_IDLE
-0x00000005
-Not used
-
-EVENT_AT_SYSTEMSTART
-0x00000006
-Not used
-
-EVENT_AT_LOGON
-0x00000007
-Not used
-....
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000000 | ONCE | Not used according `[MSDN]`
+| 0x00000001 | DAILY | Daily
+| 0x00000002 | WEEKLY | Day of the week
+| 0x00000003 | MONTHLYDATE | Day of the month
+| 0x00000004 | MONTHLYDOW | Monthly day of week
+| 0x00000005 | EVENT_ON_IDLE | Not used according `[MSDN]`
+| 0x00000006 | EVENT_AT_SYSTEMSTART | Not used according `[MSDN]`
+| 0x00000007 | EVENT_AT_LOGON | Not used according `[MSDN]`
+|===
 
 [yellow-background]*TODO: describe trigger data*
+....
+https://msdn.microsoft.com/en-us/library/cc248291.aspx
+....
 
 ==== [[variable_length_job_signature]]Variable-length job signature
 The variable-length job signature (JOB_SIGNATURE_HEADER) is 68 bytes of size and consists of:
