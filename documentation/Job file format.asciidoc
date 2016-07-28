@@ -60,7 +60,7 @@ The job file consists of:
 |===
 
 === Fixed size data section
-The fixed size data (FIXDLEN_DATA) is 68 bytes of size and consists of:
+The fixed size data (FIXDLEN_DATA) section is 68 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -185,21 +185,182 @@ more of a Window API (WINAPI) compatibility version.
 | [yellow-background]*0x01000000* | TASK_APPLICATION_NAME | The task has an application name defined
 |===
 
-=== Variable size data section
+=== Variable-length data section
+The variable-length data section is variable of size and consists of:
 
-[yellow-background]*TODO: add text*
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Running instance count
+| 2 | ... | | Application name +
+Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
+| ... | ... | | Parameters +
+Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
+| ... | ... | | Working Directory +
+Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
+| ... | ... | | Author +
+Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
+| ... | ... | | Comment +
+Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
+| ... | ... | | User Data +
+Contains a <<variable_length_user_data,User data>>
+| ... | ... | | Reserved Data +
+Contains a <<variable_length_reserved_data,Reserved data>>
+| ... | 2 | | Number of triggers
+| ... | ... | | Array of triggers +
+See section: <<variable_length_trigger,Trigger>
+4+| _Optional_
+| ... | ... | | Job Signature
+|===
+
+==== [[variable_length_unicode_string]]Variable-length Unicode string
+The variable-length Unicode string is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | String size +
+Contains the number of characters, which does not include in the end-of-string character
+| 2 | ... | | String +
+Contains a UTF-16 little-endian formatted string with end-of-string character
+|===
+
+==== [[variable_length_user_data]]User data
+The user data is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Data size +
+Contains the number of bytes
+| 2 | ... | | Data
+|===
+
+==== [[variable_length_reserved_data]]Reserved data
+The reserved data (TASKRESERVED1) is 2 or 10 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | 0 or 8 | Data size +
+Contains the number of bytes or 0 if not set
+| 2 | 4 | | Start error +
+Contains the HRESULT error from the most recent attempt to start the task.
+| 6 | 4 | | Task flags +
+According to `[MSDN]` the task flags are not used.
+|===
+
+==== [[variable_length_trigger]]Trigger
+The trigger is 48 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | 48 | Trigger size +
+Contains the number of bytes
+| 2 | 2 | 0 | [yellow-background]*Unknown (reserved)*
+| 4 | 2 | | Start year +
+Contains a value in the range of 1601 to 30827
+| 6 | 2 | | Start month +
+Contains a value in the range of 1 to 12
+| 8 | 2 | | Start day of month +
+Contains a value in the range of 1 to 31
+| 10 | 2 | | End year +
+Contains a value in the range of 1601 to 30827
+| 12 | 2 | | End month +
+Contains a value in the range of 1 to 12
+| 14 | 2 | | End day of month +
+Contains a value in the range of 1 to 31
+| 16 | 2 | | Start hours +
+Contains a value in range 0 to 23
+| 18 | 2 | | Start minutes +
+Contains a value in range 0 to 59
+| 20 | 4 | | Duration in minutes
+| 24 | 4 | | Interval in minutes
+| 28 | 4 | | Flags
+| 32 | 4 | | Trigger type
+| 36 | 3 x 2 | | Trigger specific values
+| 42 | 2 | 0 | [yellow-background]*Unknown (padding)*
+| 44 | 2 x 2 | 0 | [yellow-background]*Unknown (reserved)*
+|===
+
+[yellow-background]*TODO: notes*
+....
+Flags
+
+Value
+Description
+0x00000001
+TASK_TRIGGER_FLAG_HAS_END_DATE
+If set to 1, specifies that the task can stop at some point in time.
+
+0x00000002
+TASK_TRIGGER_FLAG_KILL_AT_DURATION_END
+If set to 1, specifies that the task can be stopped at the end of the repetition period.
+
+0x00000004
+TASK_TRIGGER_FLAG_DISABLED
+If set to 1, specifies that the trigger is disabled.
+....
 
 ....
-Running Instance Count
-Application Name
-Parameters
-Working Directory
-Author
-Comment
-User Data
-Reserved Data
-Triggers
-Job Signature
+Trigger types
+https://msdn.microsoft.com/en-us/library/cc248291.aspx
+
+ONCE
+0x00000000
+Not used
+
+DAILY
+0x00000001
+
+WEEKLY
+0x00000002
+Day of the week
+
+MONTHLYDATE
+0x00000003
+Day of the month
+
+MONTHLYDOW
+0x00000004
+
+EVENT_ON_IDLE
+0x00000005
+Not used
+
+EVENT_AT_SYSTEMSTART
+0x00000006
+Not used
+
+EVENT_AT_LOGON
+0x00000007
+Not used
+....
+
+[yellow-background]*TODO: describe trigger data*
+
+==== [[variable_length_job_signature]]Variable-length job signature
+The variable-length job signature (JOB_SIGNATURE_HEADER) is 68 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | 1 | Signature format version
+| 2 | 2 | 1 | Minimum client version
+| 4 | 64 | | Signature
+|===
+
+[yellow-background]*TODO: notes*
+....
+The signature is calculated as follows:
+* The Security Identifier (SID) of the file owner, the uuidJob field of the 
+  FIXDLEN_DATA structure, and the null-terminated string value from Application 
+  Name in the variable-length data section is bytewise concatenated in a buffer.
+* A 16-byte MD5 [RFC1321] hash of the buffer is calculated.
+* A private key is obtained from the system to be used for the digital signature.
+* The hash is signed using MD5, and the signed hash is placed in the 64 bytes 
+  after the JOB_SIGNATURE_HEADER.
 ....
 
 :numbered!:
@@ -212,6 +373,12 @@ Job Signature
 |===
 | Title: | MS-TSCH: Task Scheduler Service Remoting Protocol
 | URL: | https://msdn.microsoft.com/en-us/library/cc248263.aspx
+|===
+
+[cols="1,5",options="header"]
+|===
+| Title: | .JOB File Format
+| URL: | https://msdn.microsoft.com/en-us/library/cc248285.aspx
 |===
 
 [appendix]
