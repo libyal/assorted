@@ -1,4 +1,4 @@
-= The Windows Job file format
+= The Windows Recycle.Bin file format
 
 :toc:
 :toclevels: 4
@@ -6,12 +6,13 @@
 :numbered!:
 [abstract]
 == Summary
-The Windows Job file format is used by the Task Scheduler subsystem of
-Windows. This specification is based on available documentation and was 
-enhanced by reverse engineering of the file format. 
+The Windows Recycle.Bin file format is used by Windows to keep track of the
+original location of soft deleted filed.  This specification is based on
+available documentation and was enhanced by reverse engineering of the file
+format. 
 
-This document is intended as a working document for the Windows Job file
-format specification. Which should allow existing Open Source forensic 
+This document is intended as a working document for the Windows Recycle.Bin
+file format specification. Which should allow existing Open Source forensic 
 tooling to be able to process these file types.
 
 [preface]
@@ -19,9 +20,9 @@ tooling to be able to process these file types.
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the Windows Job file format
+| Abstract: | This document contains information about the Windows Recycle.Bin file format
 | Classification: | Public
-| Keywords: | Job file, .job
+| Keywords: | Recycle.Bin, $I file, $R file
 |===
 
 [preface]
@@ -40,322 +41,55 @@ in the section entitled "GNU Free Documentation License".
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
-| 0.0.1 | J.B. Metz | January 2016 | Initial version.
-| 0.0.2 | J.B. Metz | July 2016 | Additional information.
+| 0.0.1 | J.B. Metz | July 2016 | Initial version.
 |===
 
 :numbered:
 == Overview
-The job file consists of:
+A Windows Recycle.Bin file constists of:
 
-* fixed size data section
-* variable size data section
+* $I file; contains metadata of the original file
+* $R file; contains data of the orignal file
 
 [cols="1,5",options="header"]
 |===
 | Characteristics | Description
 | Byte order | little-endian
-| Date and time values | 
-| Character strings | 
+| Date and time values | FILETIME in UTC
+| Character strings | UTF-16 little-endian formatted string with end-of-string character
 |===
 
-=== Fixed size data section
-The fixed size data (FIXDLEN_DATA) section is 68 bytes of size and consists of:
+=== $I file
+The $I file is variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | Product version +
-See section: <<product_versions,Product versions>>
-| 2 | 2 | | Format version
-| 4 | 16 | | Job identifier +
-Contains a UUID stored in little-endian
-| 20 | 2 | | Application name size offset +
-Contains the offest of the size of the application name string +
-The offset is relative from the start of the file
-| 22 | 2 | | Trigger offset +
-The offset is relative from the start of the file
-| 24 | 2 | | Error retry count
-| 26 | 2 | | Error retry interval +
-Contains a value in minutes
-| 28 | 2 | | Idle deadline +
-Contains a value in minutes
-| 30 | 2 | | Idle wait +
-Contains a value in minutes
-| 32 | 4 | | Priority +
-See section: <<priority,Priority>>
-| 36 | 4 | | Maximum run time +
-Contains a value in milliseconds
-| 40 | 4 | | Exit code
-| 44 | 4 | | Status +
-See section: <<status,Status>>
-| 48 | 4 | | Flags +
-See section: <<flags,Flags>>
-| 52 | 16 | | Last run time +
-Contains a <<system_time,system time>> or 0 if not set. +
-[yellow-background]*TODO: confirm this is local time.*
+| 0 | 8 | 1 or 2 | Format version
+| 8 | 8 | | Original file size
+| 16 | 8 | | Deletion date and time +
+Contains a FILETIME
+4+| _If format version == 1_
+| 24 | ... | | Original filename +
+Contains an UTF-16 little-endian string with end-of-string character.
+4+| _If format version == 2_
+| 24 | 4 | | Number of characters in original filename
+| 28 | ... | | Original filename +
+Contains an UTF-16 little-endian string with end-of-string character.
 |===
 
-==== [[system_time]]System time
-The system time is 16 bytes of size and consists of:
+==== Format versions
 
-[cols="1,1,1,5",options="header"]
+[cols="1,2",options="header"]
 |===
-| Offset | Size | Value | Description
-| 0 | 2 | | Year +
-Contains a value ranging from 1601 to (including) 30827
-| 2 | 2 | | Month +
-Contains a value ranging from 1 to (including) 12, where 1 represents January
-| 4 | 2 | | Weekday +
-Contains a value ranging from 0 to (including) 6, where 0 represents Sunday
-| 6 | 2 | | Day +
-Contains a value ranging from 1 to (including) 31
-| 8 | 2 | | Hours +
-Contains a value ranging from 1 to (including) 23
-| 10 | 2 | | Minutes +
-Contains a value ranging from 0 to (including) 59
-| 12 | 2 | | Seconds +
-Contains a value ranging from 0 to (including) 59
-| 14 | 2 | | Milliseconds +
-Contains a value ranging from 0 to (including) 999
+| Value | Description
+| 1 | Introduced in Windows Vista
+| 2 | Introduced in Windows 10
 |===
-
-==== [[product_versions]]Product versions
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x0400 | | Windows NT 4.0
-| 0x0500 | | Windows 2000
-| 0x0501 | | Windows XP
-| 0x0600 | | Windows Vista
-| 0x0601 | | Windows 7
-| 0x0602 | | Windows 8
-| 0x0603 | | Windows 8.1
-| 0x0a00 | | Windows 10
-|===
-
-[NOTE]
-The values above are those defined by MS-TSCH, they are known to be an 
-approximation to the actual Windows product version, and should be considered
-more of a Window API (WINAPI) compatibility version.
-
-==== [[priority]]Priority
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x00000020 | NORMAL_PRIORITY_CLASS | Normal priority class; no special scheduling requirements.
-| 0x00000040 | HIGH_PRIORITY_CLASS | High priority class; preempt the threads of normal or idle priority class processes
-| 0x00000080 | IDLE_PRIORITY_CLASS | Idle priority class; run only when the machine is idle.
-| 0x00000100 | REALTIME_PRIORITY_CLASS | Real-time priority class; preempt the threads of all other processes, including operating system processes performing important tasks.
-|===
-
-==== [[status]]Status
-
-[cols="1,1,5",options="header"]
-|===
-| 0x00041300 | SCHED_S_TASK_READY | Task is not running but is scheduled to run at some time in the future.
-| 0x00041301 | SCHED_S_TASK_RUNNING | Task is currently running.
-| 0x00041305 | SCHED_S_TASK_NOT_SCHEDULED | The task is not running and has no valid triggers.
-|===
-
-==== [[flags]]Flags
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x00000001 | TASK_FLAG_INTERACTIVE | The task can interact with the logged-on user
-| 0x00000002 | TASK_FLAG_DELETE_WHEN_DONE | The task can be deleted when there are no more scheduled run times
-| 0x00000004 | TASK_FLAG_DISABLED | The task is disabled
-| | |
-| 0x00000010 | TASK_FLAG_START_ONLY_IF_IDLE | The task begins only if the computer is not in use at the scheduled time
-| 0x00000020 | TASK_FLAG_KILL_ON_IDLE_END | The task can be terminated if the computer makes an idle to non-idle transition while the task is running
-| 0x00000040 | TASK_FLAG_DONT_START_IF_ON_BATTERIES | The task cannot start if its target computer is running on battery power
-| 0x00000080 | TASK_FLAG_KILL_IF_GOING_ON_BATTERIES | The task can end, and the associated application quit if the task's target computer switches to battery power
-| 0x00000100 | TASK_FLAG_RUN_ONLY_IF_DOCKED | [yellow-background]*Unused*
-| 0x00000200 | TASK_FLAG_HIDDEN | The task is hidden
-| 0x00000400 | TASK_FLAG_RUN_IF_CONNECTED_TO_INTERNET | [yellow-background]*Unused*
-| 0x00000800 | TASK_FLAG_RESTART_ON_IDLE_RESUME | The task can start again if the computer makes a non-idle to idle transition before all the task's triggers elapse
-| 0x00001000 | TASK_FLAG_SYSTEM_REQUIRED | The task can cause the system to resume, or awaken if the system is sleeping
-| 0x00002000 | TASK_FLAG_RUN_ONLY_IF_LOGGED_ON | The task can only run if the user specified in the task is logged on interactively
-| | |
-| [yellow-background]*0x00800000* | | [yellow-background]*Unknown*
-| | |
-| [yellow-background]*0x01000000* | TASK_APPLICATION_NAME | The task has an application name defined
-|===
-
-=== Variable-length data section
-The variable-length data section is variable of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 2 | | Running instance count
-| 2 | ... | | Application name +
-Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
-| ... | ... | | Parameters +
-Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
-| ... | ... | | Working Directory +
-Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
-| ... | ... | | Author +
-Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
-| ... | ... | | Comment +
-Contains a <<variable_length_unicode_string,Variable-length Unicode string>>
-| ... | ... | | User Data +
-Contains a <<variable_length_user_data,User data>>
-| ... | ... | | Reserved Data +
-Contains a <<variable_length_reserved_data,Reserved data>>
-| ... | 2 | | Number of triggers
-| ... | ... | | Array of triggers +
-See section: <<variable_length_trigger,Trigger>
-4+| _Optional_
-| ... | ... | | Job Signature
-|===
-
-==== [[variable_length_unicode_string]]Variable-length Unicode string
-The variable-length Unicode string is variable of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 2 | | String size +
-Contains the number of characters, which does not include in the end-of-string character
-| 2 | ... | | String +
-Contains a UTF-16 little-endian formatted string with end-of-string character
-|===
-
-==== [[variable_length_user_data]]User data
-The user data is variable of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 2 | | Data size +
-Contains the number of bytes
-| 2 | ... | | Data
-|===
-
-==== [[variable_length_reserved_data]]Reserved data
-The reserved data (TASKRESERVED1) is 2 or 10 bytes of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 2 | 0 or 8 | Data size +
-Contains the number of bytes or 0 if not set
-| 2 | 4 | | Start error +
-Contains the HRESULT error from the most recent attempt to start the task.
-| 6 | 4 | | Task flags +
-According to `[MSDN]` the task flags are not used.
-|===
-
-==== [[variable_length_trigger]]Trigger
-The trigger is 48 bytes of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 2 | 48 | Trigger size +
-Contains the number of bytes
-| 2 | 2 | 0 | [yellow-background]*Unknown (reserved)*
-| 4 | 2 | | Start year +
-Contains a value in the range of 1601 to 30827
-| 6 | 2 | | Start month +
-Contains a value in the range of 1 to 12
-| 8 | 2 | | Start day of month +
-Contains a value in the range of 1 to 31
-| 10 | 2 | | End year +
-Contains a value in the range of 1601 to 30827
-| 12 | 2 | | End month +
-Contains a value in the range of 1 to 12
-| 14 | 2 | | End day of month +
-Contains a value in the range of 1 to 31
-| 16 | 2 | | Start hours +
-Contains a value in range 0 to 23
-| 18 | 2 | | Start minutes +
-Contains a value in range 0 to 59
-| 20 | 4 | | Duration in minutes
-| 24 | 4 | | Interval in minutes
-| 28 | 4 | | Trigger flags +
-See section: <<variable_length_trigger_flags,Trigger flags>>
-| 32 | 4 | | Trigger type +
-See section: <<variable_length_trigger_types,Trigger types>>
-| 36 | 3 x 2 | | Trigger specific values
-| 42 | 2 | 0 | [yellow-background]*Unknown (padding)*
-| 44 | 2 x 2 | 0 | [yellow-background]*Unknown (reserved)*
-|===
-
-==== [[variable_length_trigger_flags]]Trigger flags
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x00000001 | TASK_TRIGGER_FLAG_HAS_END_DATE | Set if the task can stop at some point in time.
-| 0x00000002 | TASK_TRIGGER_FLAG_KILL_AT_DURATION_END | Set if the task can be stopped at the end of the repetition period.
-| 0x00000004 | TASK_TRIGGER_FLAG_DISABLED | Set if the trigger is disabled
-|===
-
-==== [[variable_length_trigger_types]]Trigger types
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x00000000 | ONCE | Not used according `[MSDN]`
-| 0x00000001 | DAILY | Daily
-| 0x00000002 | WEEKLY | Day of the week
-| 0x00000003 | MONTHLYDATE | Day of the month
-| 0x00000004 | MONTHLYDOW | Monthly day of week
-| 0x00000005 | EVENT_ON_IDLE | Not used according `[MSDN]`
-| 0x00000006 | EVENT_AT_SYSTEMSTART | Not used according `[MSDN]`
-| 0x00000007 | EVENT_AT_LOGON | Not used according `[MSDN]`
-|===
-
-[yellow-background]*TODO: describe trigger data*
-....
-https://msdn.microsoft.com/en-us/library/cc248291.aspx
-....
-
-==== [[variable_length_job_signature]]Variable-length job signature
-The variable-length job signature (JOB_SIGNATURE_HEADER) is 68 bytes of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 2 | 1 | Signature format version
-| 2 | 2 | 1 | Minimum client version
-| 4 | 64 | | Signature
-|===
-
-[yellow-background]*TODO: notes*
-....
-The signature is calculated as follows:
-* The Security Identifier (SID) of the file owner, the uuidJob field of the 
-  FIXDLEN_DATA structure, and the null-terminated string value from Application 
-  Name in the variable-length data section is bytewise concatenated in a buffer.
-* A 16-byte MD5 [RFC1321] hash of the buffer is calculated.
-* A private key is obtained from the system to be used for the digital signature.
-* The hash is signed using MD5, and the signed hash is placed in the 64 bytes 
-  after the JOB_SIGNATURE_HEADER.
-....
 
 :numbered!:
 [appendix]
 == References
-
-`[MSDN]`
-
-[cols="1,5",options="header"]
-|===
-| Title: | MS-TSCH: Task Scheduler Service Remoting Protocol
-| URL: | https://msdn.microsoft.com/en-us/library/cc248263.aspx
-|===
-
-[cols="1,5",options="header"]
-|===
-| Title: | .JOB File Format
-| URL: | https://msdn.microsoft.com/en-us/library/cc248285.aspx
-|===
 
 [appendix]
 == GNU Free Documentation License
