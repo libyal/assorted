@@ -83,6 +83,10 @@ AX_LIBFWNT_CHECK_ENABLE
 
 dnl Check for zlib compression support
 AX_ZLIB_CHECK_ENABLE
+AX_ZLIB_CHECK_ADLER32
+AX_ZLIB_CHECK_COMPRESS2
+AX_ZLIB_CHECK_COMPRESSBOUND
+AX_ZLIB_CHECK_UNCOMPRESS
 
 dnl Check for bz2lib compression support
 AX_BZIP2_CHECK_ENABLE
@@ -162,6 +166,7 @@ Building:
    libuna support:                                $ac_cv_libuna
    libcfile support:                              $ac_cv_libcfile
    libfwnt support:                               $ac_cv_libfwnt
+   ADLER32 checksum support:                      $ac_cv_adler32
    DEFLATE compression support:                   $ac_cv_zlib
    BZIP2 compression support:                     $ac_cv_bzip2
    LZNT1 compression support:                     $ac_cv_libfwnt
