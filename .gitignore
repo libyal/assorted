@@ -1,10 +1,13 @@
 # Files to ignore by git
 #
-# Version: 20150927
+# Version: 20160507
 
 # Generic auto-generated build files
 *~
 *.a
+*.gcda
+*.gcno
+*.gcov
 *.la
 *.lai
 *.lib
@@ -36,16 +39,19 @@ stamp-h[1-9]
 /__pycache__
 /ABOUT-NLS
 /aclocal.m4
-/autom4te.cache/
 /assorted.egg-info
+/autom4te.cache/
 /build
 /compile
+/confdefs.h
+/config.cache
 /config.guess
 /config.log
 /config.rpath
 /config.status
 /config.sub
 /configure
+/conftest.c
 /depcomp
 /dist
 /install-sh

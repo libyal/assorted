@@ -44,6 +44,9 @@ Fletcher-16
 Filetime:
 * create equivalent tool in libfdatetime
 
+20160831
+* updated dependencies
+
 20160124
 * worked on deflate
 
