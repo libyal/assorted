@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 import argparse
+import datetime
 import logging
 import os
 import sys
@@ -40,8 +41,8 @@ class BinaryCookiesFile(object):
       construct.ULInt32(u'path_offset'),
       construct.ULInt32(u'value_offset'),
       construct.ULInt64(u'unknown3'),
-      construct.LFloat64(u'expiration_date'),
-      construct.LFloat64(u'creation_date'))
+      construct.LFloat64(u'expiration_time'),
+      construct.LFloat64(u'creation_time'))
 
   _FILE_FOOTER = construct.Struct(
       u'file_footer',
@@ -215,10 +216,17 @@ class BinaryCookiesFile(object):
           record_header_struct.value_offset))
       print(u'Unknown3\t\t\t\t\t\t\t: 0x{0:08x}'.format(
           record_header_struct.unknown3))
-      print(u'expiration date\t\t\t\t\t\t\t: {0:f}'.format(
-          record_header_struct.expiration_date))
-      print(u'creation date\t\t\t\t\t\t\t: {0:f}'.format(
-          record_header_struct.creation_date))
+
+      date_time = (datetime.datetime(2001, 1, 1) + datetime.timedelta(
+          seconds=int(record_header_struct.expiration_time)))
+      print(u'expiration time\t\t\t\t\t\t\t: {0!s} ({1:f})'.format(
+          date_time, record_header_struct.expiration_time))
+
+      date_time = (datetime.datetime(2001, 1, 1) + datetime.timedelta(
+          seconds=int(record_header_struct.creation_time)))
+      print(u'creation time\t\t\t\t\t\t\t: {0!s} ({1:f})'.format(
+          date_time, record_header_struct.creation_time))
+
       print(u'')
 
       if record_header_struct.url_offset:
