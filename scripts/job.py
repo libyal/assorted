@@ -47,11 +47,10 @@ class JobFile(object):
       construct.Bytes(u'data', 1))
 
   def __init__(self, debug=False):
-    """Initializes the .job file object.
+    """Initializes a file.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(JobFile, self).__init__()
     self._debug = debug
@@ -142,21 +141,21 @@ class JobFile(object):
     """Reads the variable size data section.
 
     Raises:
-      IOError: if the file header cannot be read.
+      IOError: if the variable size data section cannot be read.
     """
     return
 
   def Close(self):
-    """Closes the .job file."""
+    """Closes a file."""
     if self._file_object_opened_in_object:
       self._file_object.close()
     self._file_object = None
 
   def Open(self, filename):
-    """Opens the .job file.
+    """Opens a file.
 
     Args:
-      filename: the filename.
+      filename (str): filename.
     """
     stat_object = os.stat(filename)
     self._file_size = stat_object.st_size
@@ -179,7 +178,7 @@ class StdoutWriter(object):
     """Opens the output writer object.
 
     Returns:
-      A boolean containing True if successful or False if not.
+      bool: True if successful or False if not.
     """
     return True
 
@@ -187,7 +186,7 @@ class StdoutWriter(object):
     """Writes text to stdout.
 
     Args:
-      text: the text to write.
+      text (str): text to write.
     """
     print(text)
 
@@ -196,7 +195,7 @@ def Main():
   """The main program function.
 
   Returns:
-    A boolean containing True if successful or False if not.
+    bool: True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
       u'Extracts information from Windows Job files.'))

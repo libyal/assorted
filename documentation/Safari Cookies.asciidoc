@@ -60,7 +60,7 @@ A Cookies.binarycookies file consists of:
 [cols="1,5",options="header"]
 |===
 | Characteristics | Description
-| Byte order | big-endian
+| Byte order | big-endian and little-endian
 | Date and time values | 
 | Character strings | 
 |===
@@ -72,9 +72,10 @@ The file header is variable of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | "cook" | Signature
-| 4 | 4 | | Number of pages
+| 4 | 4 | | Number of pages +
+Contains a big-endian integer value
 | 8 | 4 x number | | Page sizes +
-Array of 32-bit size values in bytes
+Array of 32-bit big-endian size values in bytes
 |===
 
 === Page
@@ -90,10 +91,11 @@ The page header is variable of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 0x00000100 | Page header signature
-| 4 | 4 | | Number of cookie records
+| 0 | 4 | "\x00\x00\x01\x00" | Page header signature
+| 4 | 4 | | Number of cookie records +
+Contains a little-endian integer value
 | 8 | 4 x number | | Record offsets +
-Array of 32-bit offset values in bytes
+Array of 32-bit little-endian offset values in bytes
 |===
 
 ==== Page footer
@@ -102,7 +104,7 @@ The page footer is 4 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 0x00000000 | Page footer signature
+| 0 | 4 | "\x00\x00\x00\x00" | Page footer signature
 |===
 
 ==== Cookie record
@@ -112,19 +114,24 @@ The cookie record is variable of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | | Record size +
-Contains the size of the record in bytes
+Contains the little-endina size of the record in bytes
 | 4 | 4 | | [yellow-background]*Unknown*
-| 8 | 4 | | Cookie flags
+| 8 | 4 | | Cookie flags +
+Contains a little-endian integer value
 | 12 | 4 | | [yellow-background]*Unknown*
-| 16 | 4 | | URL (or cookie domain) string offset
-| 20 | 4 | | Cookie name offset
-| 24 | 4 | | Cookie path offset
-| 28 | 4 | | Cookie value offset
+| 16 | 4 | | URL (or cookie domain) string offset +
+Contains a little-endian offset relative to the start of the record
+| 20 | 4 | | Cookie name offset +
+Contains a little-endian offset relative to the start of the record
+| 24 | 4 | | Cookie path offset +
+Contains a little-endian offset relative to the start of the record
+| 28 | 4 | | Cookie value offset +
+Contains a little-endian offset relative to the start of the record
 | 32 | 8 | 0 | [yellow-background]*Unknown (end of cookie record header?)*
 | 40 | 8 | | Expiration date and time +
-Contains a 64-bit float Cocoa timestamp
+Contains a 64-bit little-endian float Cocoa timestamp
 | 48 | 8 | | Creation date and time +
-Contains a 64-bit float Cocoa timestamp
+Contains a 64-bit little-endian float Cocoa timestamp
 | 56 | ... | URL (or cookie domain) string
 | ... | ... | Cookie name string
 | ... | ... | Cookie path string
