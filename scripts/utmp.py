@@ -4,11 +4,8 @@
 
 from __future__ import print_function
 import argparse
-import bz2
-import gzip
-import hashlib
+import datetime
 import logging
-import lzma
 import os
 import sys
 
@@ -96,7 +93,12 @@ class UTMPFile(object):
       print(u'Termination\t\t\t\t\t\t\t: 0x{0:04x}'.format(entry_struct.termination))
       print(u'Exit\t\t\t\t\t\t\t\t: 0x{0:04x}'.format(entry_struct.exit))
       print(u'Session\t\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.session))
-      print(u'Timestamp\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.timestamp))
+
+      date_time = (datetime.datetime(1970, 1, 1) + datetime.timedelta(
+          seconds=int(entry_struct.timestamp)))
+      print(u'Timestamp\t\t\t\t\t\t\t: {0!s} ({1:d})'.format(
+          date_time, entry_struct.timestamp))
+
       print(u'Micro seconds\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.micro_seconds))
       print(u'Address A\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_struct.address_a))
       print(u'Address B\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_struct.address_b))
