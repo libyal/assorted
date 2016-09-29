@@ -18,7 +18,10 @@ def SuperFastHash(key):
   """Function to calculate the super fast hash.
 
   Args:
-    key: the key for which to calculate the hash.
+    key (bytes): key for which to calculate the hash.
+
+  Returns:
+    int: hash of the key.
   """
   if not key:
     return 0
@@ -77,11 +80,11 @@ class CacheAddress(object):
   """Class that contains a cache address.
 
   Attributes:
-    block_number: an integer containing the block data file number.
-    block_offset: an integer containing the offset within the block data file.
-    block_size: an integer containing the block size.
-    filename: a string containing the name of the block data file.
-    value: an integer containing the cache address.
+    block_number (int): block data file number.
+    block_offset (int): offset within the block data file.
+    block_size (int): block size.
+    filename (str): name of the block data file.
+    value (int): cache address.
   """
   FILE_TYPE_SEPARATE = 0
   FILE_TYPE_BLOCK_RANKINGS = 1
@@ -108,7 +111,7 @@ class CacheAddress(object):
     """Initializes a cache address object.
 
     Args:
-      cache_address: an integer containing the cache address.
+      cache_address (int): cache address.
     """
     super(CacheAddress, self).__init__()
     self.block_number = None
@@ -139,7 +142,11 @@ class CacheAddress(object):
         self.block_offset = 8192 + (self.block_number * file_block_size)
 
   def GetDebugString(self):
-    """Retrieves a debug string of the cache address object."""
+    """Retrieves a debug string of the cache address object.
+
+    Return:
+      str: debug string of the cache address object.
+    """
     if self.file_type <= 4:
       file_type_description = self._FILE_TYPE_DESCRIPTIONS[self.file_type]
     else:
@@ -169,13 +176,12 @@ class CacheEntry(object):
   """Class that contains a cache entry.
 
   Attributes:
-    creation_time: an integer containing the creation time, in number of
-                   micro seconds since January 1, 1970, 00:00:00 UTC.
-    hash: an integer containing the super fast hash of the key.
-    key: a binary string containing the key.
-    next: an integer containing the cache address of the next cache entry.
-    rankings_node: an integer containing the cache address of the rankings
-                   node.
+    creation_time (int): creation time, in number of micro seconds since
+        January 1, 1970, 00:00:00 UTC.
+    hash (int): super fast hash of the key.
+    key (byte): data of the key.
+    next (int): cache address of the next cache entry.
+    rankings_node (int): cache address of the rankings node.
   """
 
   def __init__(self):
@@ -225,8 +231,7 @@ class IndexFile(object):
     """Initializes the index file object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(IndexFile, self).__init__()
     self._debug = debug
@@ -392,7 +397,7 @@ class IndexFile(object):
     """Opens the index file.
 
     Args:
-      filename: the filename.
+      filename (str): path of the file.
     """
     self._file_object = open(filename, 'rb')
     self._file_object_opened_in_object = True
@@ -404,7 +409,7 @@ class IndexFile(object):
     """Opens the index file-like object.
 
     Args:
-      file_object: the file-like object.
+      file_object (file): file-like object.
     """
     self._file_object = file_object
     self._file_object_opened_in_object = False
@@ -457,8 +462,7 @@ class DataBlockFile(object):
     """Initializes the data block file object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(DataBlockFile, self).__init__()
     self._debug = debug
@@ -560,7 +564,11 @@ class DataBlockFile(object):
       print(u'')
 
   def ReadCacheEntry(self, block_offset):
-    """Reads a cache entry."""
+    """Reads a cache entry.
+
+    Args:
+      block_offset (int): offset of the block that contains the cache entry.
+    ""
     if self._debug:
       print(u'Seeking cache entry offset: 0x{0:08x}'.format(block_offset))
 
@@ -659,7 +667,7 @@ class DataBlockFile(object):
     """Opens the data block file.
 
     Args:
-      filename: the filename.
+      filename (str): path of the file.
     """
     self._file_object = open(filename, 'rb')
     self._file_object_opened_in_object = True
@@ -669,7 +677,7 @@ class DataBlockFile(object):
     """Opens the data block file.
 
     Args:
-      file_object: the file object.
+      file_object (file): file-like object.
     """
     self._file_object = file_object
     self._file_object_opened_in_object = False
@@ -680,7 +688,7 @@ def Main():
   """The main program function.
 
   Returns:
-    A boolean containing True if successful or False if not.
+    bool: True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
       u'Extracts information from Chrome Cache files.'))
