@@ -21,10 +21,10 @@ class DataRange(object):
   """Class that implements an in-file data range file-like object."""
 
   def __init__(self, file_object):
-    """Initializes the file-like object.
+    """Initializes a file-like object.
 
     Args:
-      file_object: the parent file-like object.
+      file_object (file): parent file-like object.
     """
     super(DataRange, self).__init__()
     self._current_offset = 0
@@ -39,8 +39,8 @@ class DataRange(object):
     (e.g. a single partition within a full disk image) as a file-like object.
 
     Args:
-      range_offset: the start offset of the data range.
-      range_size: the size of the data range.
+      range_offset (int): start offset of the data range.
+      range_size (int): size of the data range.
 
     Raises:
       ValueError: if the range offset or range size is invalid.
@@ -65,15 +65,15 @@ class DataRange(object):
   def read(self, size=None):
     """Reads a byte string from the file-like object at the current offset.
 
-       The function will read a byte string of the specified size or
-       all of the remaining data if no size was specified.
+    The function will read a byte string of the specified size or
+    all of the remaining data if no size was specified.
 
     Args:
-      size: optional integer value containing the number of bytes to read.
-            Default is all remaining data (None).
+      size (Optional[int]): number of bytes to read, where None represents
+          all remaining data.
 
     Returns:
-      A byte string containing the data read.
+      bytes: data read.
 
     Raises:
       IOError: if the read failed.
@@ -107,9 +107,9 @@ class DataRange(object):
     """Seeks an offset within the file-like object.
 
     Args:
-      offset: the offset to seek.
-      whence: optional value that indicates whether offset is an absolute
-              or relative position within the file. Default is SEEK_SET.
+      offset (int): offset to seek.
+      whence (Optional[int]): indicates whether offset is an absolute
+          or relative position within the file.
 
     Raises:
       IOError: if the seek failed.
@@ -130,20 +130,36 @@ class DataRange(object):
     self._current_offset = offset
 
   def get_offset(self):
-    """Returns the current offset into the file-like object."""
+    """Retrieves the current offset into the file-like object.
+
+    Returns:
+      int: offset.
+    """
     return self._current_offset
 
   # Pythonesque alias for get_offset().
   def tell(self):
-    """Returns the current offset into the file-like object."""
+    """Retrieves the current offset into the file-like object.
+
+    Returns:
+      int: offset.
+    """
     return self.get_offset()
 
   def get_size(self):
-    """Returns the size of the file-like object."""
+    """Retrieves the size of the file-like object.
+
+    Returns:
+      int: size.
+    """
     return self._range_size
 
   def seekable(self):
-    """Determines if a file-like object is seekable."""
+    """Determines if a file-like object is seekable.
+
+    Returns:
+      bool: True if seekable.
+    """
     return True
 
 
@@ -154,7 +170,7 @@ class CPIOArchiveFileEntry(object):
     """Initializes the CPIO archive file entry object.
 
     Args:
-      file_object: the file-like object of the CPIO archive file.
+      file_object (file): file-like object of the CPIO archive file.
     """
     super(CPIOArchiveFileEntry, self).__init__()
     self._current_offset = 0
@@ -177,11 +193,11 @@ class CPIOArchiveFileEntry(object):
     all of the remaining data if no size was specified.
 
     Args:
-      size: Optional integer value containing the number of bytes to read.
-            Default is all remaining data (None).
+      size (Optional[int]): number of bytes to read, where None represents
+          all remaining data.
 
     Returns:
-      A byte string containing the data read.
+      bytes: data read.
 
     Raises:
       IOError: if the read failed.
@@ -203,9 +219,9 @@ class CPIOArchiveFileEntry(object):
     """Seeks an offset within the file-like object.
 
     Args:
-      offset: The offset to seek.
-      whence: Optional value that indicates whether offset is an absolute
-              or relative position within the file. Default is SEEK_SET.
+      offset (int): offset to seek.
+      whence (Optional[int]): indicates whether offset is an absolute
+          or relative position within the file.
 
     Raises:
       IOError: if the seek failed.
@@ -223,16 +239,28 @@ class CPIOArchiveFileEntry(object):
       raise IOError(u'Unsupported whence.')
 
   def get_offset(self):
-    """Returns the current offset into the file-like object."""
+    """Retrieves the current offset into the file-like object.
+
+    Returns:
+      int: offset.
+    """
     return self._current_offset
 
   # Pythonesque alias for get_offset().
   def tell(self):
-    """Returns the current offset into the file-like object."""
+    """Retrieves the current offset into the file-like object.
+
+    Returns:
+      int: offset.
+    """
     return self.get_offset()
 
   def get_size(self):
-    """Returns the size of the file-like object."""
+    """Retrieves the size of the file-like object.
+
+    Returns:
+      int: size.
+    """
     return self.data_size
 
 
@@ -240,7 +268,7 @@ class CPIOArchiveFile(object):
   """Class that contains a CPIO archive file.
 
   Attributes:
-    file_format: a string containing the CPIO file format.
+    file_format (str): CPIO file format.
   """
 
   _CPIO_SIGNATURE_BINARY_BIG_ENDIAN = b'\x71\xc7'
@@ -316,8 +344,7 @@ class CPIOArchiveFile(object):
     """Initializes the CPIO archive file object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(CPIOArchiveFile, self).__init__()
     self._debug = debug
@@ -333,7 +360,7 @@ class CPIOArchiveFile(object):
     """Reads a file entry.
 
     Args:
-      file_offset: an integer containing the current file offset.
+      file_offset (int): current file offset.
 
     Raises:
       IOError: if the file entry cannot be read.
@@ -576,10 +603,10 @@ class CPIOArchiveFile(object):
     """Determines if file entry for a specific path exists.
 
     Args:
-      path: a string containing the file entry path.
+      path (str): path of the file entry.
 
     Returns:
-      A boolean value indicating the file entry exists.
+      bool: True if the file entry exists.
     """
     if self._file_entries is None:
       return False
@@ -590,10 +617,10 @@ class CPIOArchiveFile(object):
     """Retrieves the file entries.
 
     Args:
-      path_prefix: a string containing the path prefix.
+      path_prefix (Optional[str]): path prefix.
 
     Yields:
-      A CPIO archive file entry (instance of CPIOArchiveFileEntry).
+      CPIOArchiveFileEntry: CPIO archive file entry.
     """
     for path, file_entry in iter(self._file_entries.items()):
       if path.startswith(path_prefix):
@@ -603,10 +630,10 @@ class CPIOArchiveFile(object):
     """Retrieves a file entry for a specific path.
 
     Args:
-      path: a string containing the file entry path.
+      path (str): path of the file entry.
 
     Returns:
-      A CPIO archive file entry (instance of CPIOArchiveFileEntry) or None.
+      CPIOArchiveFileEntry: CPIO archive file entry or None.
     """
     if self._file_entries is None:
       return
@@ -617,7 +644,7 @@ class CPIOArchiveFile(object):
     """Opens the CPIO archive file.
 
     Args:
-      filename: the filename.
+      filename (str): path of the file..
 
     Raises:
       IOError: if the file format signature is not supported.
@@ -635,7 +662,7 @@ class CPIOArchiveFile(object):
     """Opens the CPIO archive file.
 
     Args:
-      file_object: a file-like object.
+      file_object (file): file-like object.
 
     Raises:
       IOError: if the file is alread opened or the format signature is
@@ -687,9 +714,8 @@ class CPIOArchiveFileHasher(object):
     """Initializes the CPIO archive file hasher object.
 
     Args:
-      path: a string containing the path of the CPIO archive file.
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      path (str0: path of the CPIO archive file.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(CPIOArchiveFileHasher, self).__init__()
     self._debug = debug
@@ -699,7 +725,7 @@ class CPIOArchiveFileHasher(object):
     """Hashes the file entries stored in the CPIO archive file.
 
     Args:
-      output_writer: an output writer object.
+      output_writer (OutputWriter): output writer.
     """
     stat_object = os.stat(self._path)
 
@@ -788,7 +814,7 @@ class StdoutWriter(object):
     """Opens the output writer object.
 
     Returns:
-      A boolean containing True if successful or False if not.
+      bool: True if successful or False if not.
     """
     return True
 
@@ -796,7 +822,7 @@ class StdoutWriter(object):
     """Writes text to stdout.
 
     Args:
-      text: the text to write.
+      text (str): text to write.
     """
     print(text)
 
@@ -805,7 +831,7 @@ def Main():
   """The main program function.
 
   Returns:
-    A boolean containing True if successful or False if not.
+    bool: True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
       u'Extracts information from CPIO archive files.'))
