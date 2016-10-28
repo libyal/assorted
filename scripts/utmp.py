@@ -86,10 +86,16 @@ class UTMPFile(object):
     if self._debug:
       print(u'Type\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_struct.type))
       print(u'PID\t\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.pid))
-      print(u'Terminal\t\t\t\t\t\t\t: {0:s}'.format(entry_struct.terminal))
+
+      terminal = entry_struct.terminal.replace(u'\0', '')
+      print(u'Terminal\t\t\t\t\t\t\t: {0:s}'.format(terminal))
       print(u'Terminal ID\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.terminal_id))
-      print(u'Username\t\t\t\t\t\t\t: {0:s}'.format(entry_struct.username))
-      print(u'Hostname\t\t\t\t\t\t\t: {0:s}'.format(entry_struct.hostname))
+
+      username = entry_struct.username.replace(u'\0', '')
+      print(u'Username\t\t\t\t\t\t\t: {0:s}'.format(username))
+
+      hostname = entry_struct.hostname.replace(u'\0', '')
+      print(u'Hostname\t\t\t\t\t\t\t: {0:s}'.format(hostname))
       print(u'Termination\t\t\t\t\t\t\t: 0x{0:04x}'.format(entry_struct.termination))
       print(u'Exit\t\t\t\t\t\t\t\t: 0x{0:04x}'.format(entry_struct.exit))
       print(u'Session\t\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.session))
