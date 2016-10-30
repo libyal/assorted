@@ -1,5 +1,5 @@
-= Mac OS X disk image types
-Analysis of Mac OS X disk image type formats
+= Mac OS disk image types
+Analysis of Mac OS disk image type formats
 
 :toc:
 :toclevels: 4
@@ -7,12 +7,12 @@ Analysis of Mac OS X disk image type formats
 :numbered!:
 [abstract]
 == Summary
-Apple Mac OS X supports disk image types used for various purposes by the 
+Apple Mac OS supports disk image types used for various purposes by the 
 operating system, e.g. software distribution in the form of .dmg files. This 
 specification is based on available documentation and was enhanced by reverse 
 engineering of the file format. 
 
-This document is intended as a working document for the Mac OS X disk image
+This document is intended as a working document for the Mac OS disk image
 formats specification. Which should allow existing Open Source forensic tooling
 to be able to process this file type. 
 
@@ -21,9 +21,9 @@ to be able to process this file type.
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the Analysis of Mac OS X disk image type formats
+| Abstract: | This document contains information about the Analysis of Mac OS disk image type formats
 | Classification: | Public
-| Keywords: | Mac OS X disk image type formats
+| Keywords: | Mac OS disk image type formats
 |===
 
 [preface]
@@ -44,13 +44,14 @@ in the section entitled "GNU Free Documentation License".
 | Version | Author | Date | Comments
 | 0.0.1 | J.B. Metz | July 2012 | Initial version.
 | 0.0.2 | J.B. Metz | January 2016 | Switched to asccidoc format.
+| 0.0.3 | J.B. Metz | October 2016 | Textual changes.
 |===
 
 :numbered:
 == Overview
-Apple Mac OS X supports disk image types used for various purposes by the 
+Apple Mac OS supports disk image types used for various purposes by the 
 operating system, e.g. software distribution in the form of .dmg files.
-Currently Max OS X is known to support:
+Currently Max OS is known to support:
 
 * Read-write disk image (.dmg)
 * Sparse disk image (.sparseimage)
@@ -62,7 +63,7 @@ document:
 
 * Mac OS X 10.7 (Lion)
 
-[yellow-background]*TODO add other Mac OS X test versions*
+[yellow-background]*TODO add other Mac OS test versions*
 
 == Read-write disk image (.dmg)
 RAW image (CRawDiskImage).
