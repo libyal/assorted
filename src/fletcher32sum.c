@@ -69,18 +69,18 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcerror_error_t *error           = NULL;
-	libcfile_file_t *source_file       = NULL;
-	uint8_t *buffer                    = NULL;
-	char *program                      = "fletcher32sum";
-	char *source                       = NULL;
-	libcstring_system_integer_t option = 0;
-	uint32_t fletcher32                = 0;
-	uint32_t previous_key              = 0;
-	off_t source_offset                = 0;
-	size_t source_size                 = 0;
-	ssize_t read_count                 = 0;
-	int verbose                        = 0;
+	libcerror_error_t *error              = NULL;
+	libcfile_file_t *source_file          = NULL;
+	libcstring_system_character_t *source = NULL;
+	uint8_t *buffer                       = NULL;
+	char *program                         = "fletcher32sum";
+	libcstring_system_integer_t option    = 0;
+	uint32_t fletcher32                   = 0;
+	uint32_t previous_key                 = 0;
+	off_t source_offset                   = 0;
+	size_t source_size                    = 0;
+	ssize_t read_count                    = 0;
+	int verbose                           = 0;
 
 	assorted_output_version_fprint(
 	 stdout,

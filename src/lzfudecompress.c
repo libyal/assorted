@@ -69,22 +69,22 @@ int main( int argc, char * const argv[] )
 {
 	char destination[ 128 ];
 
-	libcerror_error_t *error           = NULL;
-	libcfile_file_t *destination_file  = NULL;
-	libcfile_file_t *source_file       = NULL;
-	uint8_t *buffer                    = NULL;
-	uint8_t *uncompressed_data         = NULL;
-	char *program                      = "lzfudecompress";
-	char *source                       = NULL;
-	libcstring_system_integer_t option = 0;
-	size64_t source_size               = 0;
-	off_t source_offset                = 0;
-	size_t uncompressed_data_size      = 0;
-	ssize_t read_count                 = 0;
-	ssize_t write_count                = 0;
-	int print_count                    = 0;
-	int result                         = 0;
-	int verbose                        = 0;
+	libcerror_error_t *error              = NULL;
+	libcfile_file_t *destination_file     = NULL;
+	libcfile_file_t *source_file          = NULL;
+	libcstring_system_character_t *source = NULL;
+	uint8_t *buffer                       = NULL;
+	uint8_t *uncompressed_data            = NULL;
+	char *program                         = "lzfudecompress";
+	libcstring_system_integer_t option    = 0;
+	size64_t source_size                  = 0;
+	off_t source_offset                   = 0;
+	size_t uncompressed_data_size         = 0;
+	ssize_t read_count                    = 0;
+	ssize_t write_count                   = 0;
+	int print_count                       = 0;
+	int result                            = 0;
+	int verbose                           = 0;
 
 	assorted_output_version_fprint(
 	 stdout,

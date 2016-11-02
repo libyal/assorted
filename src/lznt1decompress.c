@@ -136,10 +136,10 @@ int main( int argc, char * const argv[] )
 	libcfile_file_t *destination_file                 = NULL;
 	libcfile_file_t *source_file                      = NULL;
 	libcstring_system_character_t *option_target_path = NULL;
+	libcstring_system_character_t *source             = NULL;
 	uint8_t *buffer                                   = NULL;
 	uint8_t *uncompressed_data                        = NULL;
 	char *program                                     = "lznt1decompress";
-	char *source                                      = NULL;
 	libcstring_system_integer_t option                = 0;
 	size64_t source_size                              = 0;
 	off_t source_offset                               = 0;
@@ -410,7 +410,7 @@ int main( int argc, char * const argv[] )
 	{
 		result = libfwnt_lznt1_decompress(
 		          buffer,
-		          source_size,
+		          (size_t) source_size,
 		          uncompressed_data,
 		          &uncompressed_data_size,
 		          &error );
@@ -420,9 +420,9 @@ int main( int argc, char * const argv[] )
 	{
 		result = lznt1compress_RtlDecompressBuffer(
 		          COMPRESSION_FORMAT_LZNT1,
-		          (char *) buffer,
+		          (unsigned char *) buffer,
 		          (unsigned long) source_size,
-		          (char *) uncompressed_data,
+		          (unsigned char *) uncompressed_data,
 		          (unsigned long) uncompressed_data_size,
 		          (unsigned long *) &uncompressed_data_size );
 

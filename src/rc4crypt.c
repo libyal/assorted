@@ -173,12 +173,12 @@ int main( int argc, char * const argv[] )
 	libcfile_file_t *source_file                      = NULL;
 	libcstring_system_character_t *option_keys        = NULL;
 	libcstring_system_character_t *option_target_path = NULL;
+	libcstring_system_character_t *source             = NULL;
 	rc4_context_t *context                            = NULL;
 	uint8_t *buffer                                   = NULL;
 	uint8_t *decrypted_data                           = NULL;
 	uint8_t *key_data                                 = NULL;
 	char *program                                     = "rc4crypt";
-	char *source                                      = NULL;
 	libcstring_system_integer_t option                = 0;
 	size64_t source_size                              = 0;
 	off_t source_offset                               = 0;

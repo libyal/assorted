@@ -76,25 +76,25 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcerror_error_t *error           = NULL;
-	libcfile_file_t *source_file       = NULL;
-	uint8_t *buffer                    = NULL;
-	char *program                      = "crc32sum";
-	char *source                       = NULL;
-	libcstring_system_integer_t option = 0;
-	size64_t source_size               = 0;
-	off_t source_offset                = 0;
-	ssize_t read_count                 = 0;
-	uint32_t calculated_crc32          = 0;
-	uint32_t crc32                     = 0;
-	uint32_t initial_value             = 0;
-	uint32_t polynomial                = 0xedb88320UL;
-	uint8_t bit_index                  = 0;
-	uint8_t weak_crc                   = 0;
-	int calculation_method             = 2;
-	int result                         = 0;
-	int validate_crc                   = 0;
-	int verbose                        = 0;
+	libcerror_error_t *error              = NULL;
+	libcfile_file_t *source_file          = NULL;
+	libcstring_system_character_t *source = NULL;
+	uint8_t *buffer                       = NULL;
+	char *program                         = "crc32sum";
+	libcstring_system_integer_t option    = 0;
+	size64_t source_size                  = 0;
+	off_t source_offset                   = 0;
+	ssize_t read_count                    = 0;
+	uint32_t calculated_crc32             = 0;
+	uint32_t crc32                        = 0;
+	uint32_t initial_value                = 0;
+	uint32_t polynomial                   = 0xedb88320UL;
+	uint8_t bit_index                     = 0;
+	uint8_t weak_crc                      = 0;
+	int calculation_method                = 2;
+	int result                            = 0;
+	int validate_crc                      = 0;
+	int verbose                           = 0;
 
 	assorted_output_version_fprint(
 	 stdout,

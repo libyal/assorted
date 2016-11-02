@@ -72,6 +72,7 @@ int main( int argc, char * const argv[] )
 
 	libcerror_error_t *error                    = NULL;
 	libcfile_file_t *source_file                = NULL;
+	libcstring_system_character_t *source       = NULL;
 	libcstring_system_character_t *value_string = NULL;
 	uint8_t *buffer                             = NULL;
 	uint8_t *decoded_data                       = NULL;
@@ -80,7 +81,6 @@ int main( int argc, char * const argv[] )
 	uint8_t *value_utf16_stream                 = NULL;
 	static char *function                       = "main";
 	char *program                               = "mssearchdecode";
-	char *source                                = NULL;
 	libcstring_system_integer_t option          = 0;
 	size64_t source_size                        = 0;
 	off_t source_offset                         = 0;
