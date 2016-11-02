@@ -1,5 +1,5 @@
 /*
- * Decompresses LZXPRESS compressed data
+ * Decompresses LZNT1 compressed data
  *
  * Copyright (C) 2008-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -41,7 +41,7 @@
 /* Cross Windows safe version of RtlDecompressBuffer
  * Returns 0 if successful or an error code on error
  */
-NTSTATUS lzxpresscompress_RtlDecompressBuffer(
+NTSTATUS lznt1compress_RtlDecompressBuffer(
           unsigned short CompressionFormat,
           unsigned char *UncompressedBuffer,
           unsigned long UncompressedBufferSize,
@@ -96,24 +96,21 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use lzxpressdecompress to decompress LZXPRESS compressed data.\n\n" );
+	fprintf( stream, "Use lznt1decompress to decompress LZNT1 compressed data.\n\n" );
 
 #if defined( WINAPI )
-	fprintf( stream, "Usage: lzxpressdecompress [ -d size ] [ -o offset ] [ -s size ]\n"
-	                 "                          [ -t target ] [ -12345hvV ] source\n\n" );
+	fprintf( stream, "Usage: lznt1decompress [ -d size ] [ -o offset ] [ -s size ]\n"
+	                 "                       [ -t target ] [ -12hvV ] source\n\n" );
 #else
-	fprintf( stream, "Usage: lzxpressdecompress [ -d size ] [ -o offset ] [ -s size ]\n"
-	                 "                          [ -t target ] [ -123hvV ] source\n\n" );
+	fprintf( stream, "Usage: lznt1decompress [ -d size ] [ -o offset ] [ -s size ]\n"
+	                 "                       [ -t target ] [ -1hvV ] source\n\n" );
 #endif
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
-	fprintf( stream, "\t-1:     use the LZ77 + DIRECT2 decompression method (default)\n" );
-	fprintf( stream, "\t-2:     use the Huffman decompression method\n" );
-	fprintf( stream, "\t-3:     use the Huffman stream decompression method\n" );
+	fprintf( stream, "\t-1:     use the LZNT1 decompression method (default)\n" );
 #if defined( WINAPI )
-	fprintf( stream, "\t-4:     use the WINAPI LZ77 + DIRECT2 decompression method\n" );
-	fprintf( stream, "\t-5:     use the WINAPI Huffman decompression method\n" );
+	fprintf( stream, "\t-2:     use the WINAPI LZNT1 decompression method\n" );
 #endif
 	fprintf( stream, "\t-d:     size of the decompressed data (default is 65536).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
@@ -141,7 +138,7 @@ int main( int argc, char * const argv[] )
 	libcstring_system_character_t *option_target_path = NULL;
 	uint8_t *buffer                                   = NULL;
 	uint8_t *uncompressed_data                        = NULL;
-	char *program                                     = "lzxpressdecompress";
+	char *program                                     = "lznt1decompress";
 	char *source                                      = NULL;
 	libcstring_system_integer_t option                = 0;
 	size64_t source_size                              = 0;
@@ -166,12 +163,12 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12345" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12" ) ) ) != (libcstring_system_integer_t) -1 )
 #else
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV123" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV1" ) ) ) != (libcstring_system_integer_t) -1 )
 #endif
 	{
 		switch( option )
@@ -193,24 +190,9 @@ int main( int argc, char * const argv[] )
 
 				break;
 
+#if defined( WINAPI )
 			case (libcstring_system_integer_t) '2':
 				decompression_method = 2;
-
-				break;
-
-			case (libcstring_system_integer_t) '3':
-				decompression_method = 3;
-
-				break;
-
-#if defined( WINAPI )
-			case (libcstring_system_integer_t) '4':
-				decompression_method = 4;
-
-				break;
-
-			case (libcstring_system_integer_t) '5':
-				decompression_method = 5;
 
 				break;
 
@@ -383,7 +365,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting LZXPRESS decompression of: %s at offset: %jd (0x%08jx).\n",
+	 "Starting LZNT1 decompression of: %s at offset: %jd (0x%08jx).\n",
 	 source,
 	 source_offset,
 	 source_offset );
@@ -417,25 +399,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( decompression_method == 1 )
 	{
-		result = libfwnt_lzxpress_decompress(
-		          buffer,
-		          source_size,
-		          uncompressed_data,
-		          &uncompressed_data_size,
-		          &error );
-	}
-	else if( decompression_method == 2 )
-	{
-		result = libfwnt_lzxpress_huffman_decompress(
-		          buffer,
-		          source_size,
-		          uncompressed_data,
-		          &uncompressed_data_size,
-		          &error );
-	}
-	else if( decompression_method == 3 )
-	{
-		result = libfwnt_lzxpress_huffman_stream_decompress(
+		result = libfwnt_lznt1_decompress(
 		          buffer,
 		          source_size,
 		          uncompressed_data,
@@ -443,19 +407,10 @@ int main( int argc, char * const argv[] )
 		          &error );
 	}
 #if defined( WINAPI )
-	else if( ( decompression_method == 4 )
-	      || ( decompression_method == 5 ) )
+	else if( decompression_method == 2 )
 	{
-		if( decompression_method == 4 )
-		{
-			winapi_compression_method = COMPRESSION_FORMAT_XPRESS;
-		}
-		else if( decompression_method == 5 )
-		{
-			winapi_compression_method = COMPRESSION_FORMAT_XPRESS_HUFF;
-		}
-		result = lzxpresscompress_RtlDecompressBuffer(
-		          winapi_compression_method,
+		result = lznt1compress_RtlDecompressBuffer(
+		          COMPRESSION_FORMAT_LZNT1,
 		          (char *) buffer,
 		          (unsigned long) source_size,
 		          (char *) uncompressed_data,
@@ -589,7 +544,7 @@ int main( int argc, char * const argv[] )
 
 	fprintf(
 	 stdout,
-	 "LZXPRESS decompression:\tSUCCESS\n" );
+	 "LZNT1 decompression:\tSUCCESS\n" );
 
 	return( EXIT_SUCCESS );
 
@@ -625,7 +580,7 @@ on_error:
 	}
 	fprintf(
 	 stdout,
-	 "LZXPRESS decompression:\tFAILURE\n" );
+	 "LZNT1 decompression:\tFAILURE\n" );
 
 	return( EXIT_FAILURE );
 }

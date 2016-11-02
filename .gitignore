@@ -119,6 +119,7 @@ stamp-h[1-9]
 /src/crc64sum
 /src/fletcher32sum
 /src/lzfudecompress
+/src/lznt1decompress
 /src/lzxpressdecompress
 /src/mssearchdecode
 /src/zcompress

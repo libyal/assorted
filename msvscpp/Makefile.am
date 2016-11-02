@@ -16,6 +16,7 @@ MSVSCPP_FILES = \
 	libhmac/libhmac.vcproj \
 	libuna/libuna.vcproj \
 	lzfudecompress/lzfudecompress.vcproj \
+	lznt1decompress/lznt1decompress.vcproj \
 	lzxpressdecompress/lzxpressdecompress.vcproj \
 	mssearchdecode/mssearchdecode.vcproj \
 	rc4crypt/rc4crypt.vcproj \

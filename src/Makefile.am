@@ -24,6 +24,7 @@ bin_PROGRAMS = \
 	crc64sum \
 	fletcher32sum \
 	lzfudecompress \
+	lznt1decompress \
 	lzxpressdecompress \
 	mssearchdecode \
 	rc4crypt \
@@ -134,6 +135,25 @@ lzfudecompress_SOURCES = \
 
 lzfudecompress_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
+
+lznt1decompress_SOURCES = \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libcstring.h \
+	assorted_libcsystem.h \
+	assorted_libfwnt.h \
+	assorted_output.c assorted_output.h \
+	lznt1decompress.c
+
+lznt1decompress_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBFWNT_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -292,6 +312,8 @@ splint:
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(mssearchdecode_SOURCES)
 	@echo "Running splint on lzfudecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzfudecompress_SOURCES)
+	@echo "Running splint on lznt1decompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lznt1decompress_SOURCES)
 	@echo "Running splint on lzxpressdecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzxpressdecompress_SOURCES)
 	@echo "Running splint on rc4crypt ..."

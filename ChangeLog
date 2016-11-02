@@ -7,12 +7,10 @@ TODO
 * decompression tools and code
   - clean up, make stand-alone libs
   - add compression equiv
-  - move ntfs compression to lznt1.[ch]
   - move all the decompression into one tool?
 
 * lznt1decompress
-  - add support for source size
-  - merge with other decompress tools
+- allow to set size of decompressed data
 
 * zdecompress
   - zdecompress enlarge buffer when zlib uncompress fails (size uncompressed = 81 x size compressed)
@@ -46,6 +44,7 @@ Filetime:
 
 20161102
 * worked on lzxpressdecompress
+* worked on lznt1decompress
 
 20160831
 * updated dependencies

@@ -171,6 +171,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfwnt\libfwnt_lznt1.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfwnt\libfwnt_lzxpress.c"
 				>
 			</File>
@@ -234,6 +238,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfwnt\libfwnt_locale_identifier.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfwnt\libfwnt_lznt1.h"
 				>
 			</File>
 			<File
