@@ -300,6 +300,15 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
+		if( source_size <= source_offset )
+		{
+			fprintf(
+			 stderr,
+			 "Invalid source size value is less equal than source offset.\n" );
+
+			goto on_error;
+		}
+		source_size -= source_offset;
 	}
 	if( source_size == 0 )
 	{
@@ -420,10 +429,10 @@ int main( int argc, char * const argv[] )
 	{
 		result = lznt1compress_RtlDecompressBuffer(
 		          COMPRESSION_FORMAT_LZNT1,
-		          (unsigned char *) buffer,
-		          (unsigned long) source_size,
 		          (unsigned char *) uncompressed_data,
 		          (unsigned long) uncompressed_data_size,
+		          (unsigned char *) buffer,
+		          (unsigned long) source_size,
 		          (unsigned long *) &uncompressed_data_size );
 
 		if( result != 0 )

@@ -38,16 +38,17 @@
 
 #if defined( WINAPI )
 
-/* Cross Windows safe version of RtlDecompressBuffer
+/* Cross Windows safe version of RtlDecompressBufferEx
  * Returns 0 if successful or an error code on error
  */
-NTSTATUS lzxpresscompress_RtlDecompressBuffer(
+NTSTATUS lzxpresscompress_RtlDecompressBufferEx(
           unsigned short CompressionFormat,
           unsigned char *UncompressedBuffer,
           unsigned long UncompressedBufferSize,
           unsigned char *CompressedBuffer,
           unsigned long CompressedBufferSize,
-          unsigned long *FinalUncompressedSize )
+          unsigned long *FinalUncompressedSize,
+          void *WorkSpace )
 {
 	FARPROC function       = NULL;
 	HMODULE library_handle = NULL;
@@ -62,7 +63,7 @@ NTSTATUS lzxpresscompress_RtlDecompressBuffer(
 	}
 	function = GetProcAddress(
 	            library_handle,
-	            (LPCSTR) "RtlDecompressBuffer");
+	            (LPCSTR) "RtlDecompressBufferEx");
 
 	if( function != NULL )
 	{
@@ -72,7 +73,8 @@ NTSTATUS lzxpresscompress_RtlDecompressBuffer(
 		          UncompressedBufferSize,
 		          CompressedBuffer,
 		          CompressedBufferSize,
-		          FinalUncompressedSize );
+		          FinalUncompressedSize,
+		          WorkSpace );
 	}
 	/* This call should be after using the function
 	 * in most cases ntdll.dll will still be available after free
@@ -155,6 +157,7 @@ int main( int argc, char * const argv[] )
 	int verbose                                       = 0;
 
 #if defined( WINAPI )
+	void *workspace                                   = NULL;
 	unsigned short winapi_compression_method          = 0;
 #endif
 
@@ -216,8 +219,11 @@ int main( int argc, char * const argv[] )
 
 #endif
 			case (libcstring_system_integer_t) 'd':
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				uncompressed_data_size = _wtol( optarg );
+#else
 				uncompressed_data_size = atol( optarg );
-
+#endif
 				break;
 
 			case (libcstring_system_integer_t) 'h':
@@ -227,13 +233,19 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case (libcstring_system_integer_t) 'o':
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				source_offset = _wtol( optarg );
+#else
 				source_offset = atol( optarg );
-
+#endif
 				break;
 
 			case (libcstring_system_integer_t) 's':
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				source_size = _wtol( optarg );
+#else
 				source_size = atol( optarg );
-
+#endif
 				break;
 
 			case (libcstring_system_integer_t) 't':
@@ -318,6 +330,15 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
+		if( source_size <= source_offset )
+		{
+			fprintf(
+			 stderr,
+			 "Invalid source size value is less equal than source offset.\n" );
+
+			goto on_error;
+		}
+		source_size -= source_offset;
 	}
 	if( source_size == 0 )
 	{
@@ -463,13 +484,29 @@ int main( int argc, char * const argv[] )
 		{
 			winapi_compression_method = COMPRESSION_FORMAT_XPRESS_HUFF;
 		}
-		result = lzxpresscompress_RtlDecompressBuffer(
+/* TODO: determine workspace size: RtlGetCompressionWorkSpaceSize */
+		workspace = (void *) memory_allocate(
+		                      16 * 1024 * 1024 );
+
+		if( workspace == NULL )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to create workspace.\n" );
+
+			goto on_error;
+		}
+		result = lzxpresscompress_RtlDecompressBufferEx(
 		          winapi_compression_method,
-		          (unsigned char *) buffer,
-		          (unsigned long) source_size,
 		          (unsigned char *) uncompressed_data,
 		          (unsigned long) uncompressed_data_size,
-		          (unsigned long *) &uncompressed_data_size );
+		          (unsigned char *) buffer,
+		          (unsigned long) source_size,
+		          (unsigned long *) &uncompressed_data_size,
+		          workspace );
+
+		memory_free(
+		 workspace );
 
 		if( result != 0 )
 		{
