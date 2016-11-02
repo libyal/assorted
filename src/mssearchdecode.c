@@ -287,7 +287,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting MS Search decoding data of: %s at offset: %jd (0x%08jx).\n",
+	 "Starting MS Search decoding data of: %" PRIs_LIBCSTRING_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );

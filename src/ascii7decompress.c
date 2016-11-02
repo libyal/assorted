@@ -272,7 +272,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting 7-bit ASCII decompression of: %s at offset: %jd (0x%08jx).\n",
+	 "Starting 7-bit ASCII decompression of: %" PRIs_LIBCSTRING_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );

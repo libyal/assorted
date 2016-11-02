@@ -374,7 +374,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting LZNT1 decompression of: %s at offset: %" PRIjd " (0x%08" PRIjx ").\n",
+	 "Starting LZNT1 decompression of: %" PRIs_LIBCSTRING_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );

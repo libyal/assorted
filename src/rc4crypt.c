@@ -394,7 +394,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting R4 decrypting data of: %s at offset: %jd (0x%08jx).\n",
+	 "Starting R4 decrypting data of: %" PRIs_LIBCSTRING_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );
