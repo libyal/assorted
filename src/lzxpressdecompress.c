@@ -284,11 +284,20 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libcfile_file_open(
-	     source_file,
-	     source,
-	     LIBCFILE_OPEN_READ,
-	     &error ) != 1 )
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libcfile_file_open_wide(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#else
+	result = libcfile_file_open(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#endif
+ 	if( result != 1 )
 	{
 		fprintf(
 		 stderr,
@@ -383,7 +392,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting LZXPRESS decompression of: %s at offset: %jd (0x%08jx).\n",
+	 "Starting LZXPRESS decompression of: %s at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );
@@ -508,11 +517,20 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		if( libcfile_file_open(
-		     destination_file,
-		     option_target_path,
-		     LIBCFILE_OPEN_WRITE,
-		     &error ) != 1 )
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libcfile_file_open_wide(
+		          destination_file,
+		          option_target_path,
+		          LIBCFILE_OPEN_WRITE,
+		          &error );
+#else
+		result = libcfile_file_open(
+		          destination_file,
+		          option_target_path,
+		          LIBCFILE_OPEN_WRITE,
+		          &error );
+#endif
+	 	if( result != 1 )
 		{
 			fprintf(
 			 stderr,
