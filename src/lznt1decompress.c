@@ -144,7 +144,7 @@ int main( int argc, char * const argv[] )
 	size64_t source_size                              = 0;
 	off_t source_offset                               = 0;
 	size_t buffer_size                                = 0;
-	size_t uncompressed_data_size                     = 65536;
+	size_t uncompressed_data_size                     = 0;
 	ssize_t read_count                                = 0;
 	ssize_t write_count                               = 0;
 	int decompression_method                          = 1;
@@ -332,9 +332,9 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( decompression_method == 1 )
+	if( uncompressed_data_size == 0 )
 	{
-		uncompressed_data_size = source_size * 10;
+		uncompressed_data_size = 65536;
 	}
 	uncompressed_data = (uint8_t *) memory_allocate(
 	                                 sizeof( uint8_t ) * uncompressed_data_size );
