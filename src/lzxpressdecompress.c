@@ -36,6 +36,57 @@
 #include "assorted_libfwnt.h"
 #include "assorted_output.h"
 
+#if defined( WINAPI )
+
+/* Cross Windows safe version of RtlDecompressBuffer
+ * Returns 0 if successful or an error code on error
+ */
+NTSTATUS lzxpresscompress_RtlDecompressBuffer(
+          unsigned short CompressionFormat,
+          unsigned char *UncompressedBuffer,
+          unsigned long UncompressedBufferSize,
+          unsigned char *CompressedBuffer,
+          unsigned long CompressedBufferSize,
+          unsigned long *FinalUncompressedSize )
+{
+	FARPROC function       = NULL;
+	HMODULE library_handle = NULL;
+	NTSTATUS result        = 0;
+
+	library_handle = LoadLibrary(
+	                  _LIBCSTRING_SYSTEM_STRING( "ntdll.dll" ) );
+
+	if( library_handle == NULL )
+	{
+		return( 1 );
+	}
+	function = GetProcAddress(
+	            library_handle,
+	            (LPCSTR) "RtlDecompressBuffer");
+
+	if( function != NULL )
+	{
+		result = function(
+		          CompressionFormat,
+		          UncompressedBuffer,
+		          UncompressedBufferSize,
+		          CompressedBuffer,
+		          CompressedBufferSize,
+		          FinalUncompressedSize );
+	}
+	/* This call should be after using the function
+	 * in most cases ntdll.dll will still be available after free
+	 */
+	if( FreeLibrary(
+	     library_handle) != TRUE )
+	{
+		result = 1;
+	}
+	return( result );
+}
+
+#endif /* defined( WINAPI ) */
+
 /* Prints the executable usage information
  */
 void usage_fprint(
@@ -47,14 +98,23 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use lzxpressdecompress to decompress MS XPRESS compressed data.\n\n" );
 
+#if defined( WINAPI )
+	fprintf( stream, "Usage: lzxpressdecompress [ -d size ] [ -o offset ] [ -s size ]\n"
+	                 "                          [ -t target ] [ -12345hvV ] source\n\n" );
+#else
 	fprintf( stream, "Usage: lzxpressdecompress [ -d size ] [ -o offset ] [ -s size ]\n"
 	                 "                          [ -t target ] [ -123hvV ] source\n\n" );
+#endif
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
 	fprintf( stream, "\t-1:     use the LZ77 + DIRECT2 decompression method (default)\n" );
 	fprintf( stream, "\t-2:     use the Huffman decompression method\n" );
 	fprintf( stream, "\t-3:     use the Huffman stream decompression method\n" );
+#if defined( WINAPI )
+	fprintf( stream, "\t-4:     use the WINAPI LZ77 + DIRECT2 decompression method (default)\n" );
+	fprintf( stream, "\t-5:     use the WINAPI Huffman decompression method\n" );
+#endif
 	fprintf( stream, "\t-d:     size of the decompressed data (default is 65536).\n"
 	                 "\t        Only applies to the Huffman (stream) decompression method\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
@@ -88,25 +148,32 @@ int main( int argc, char * const argv[] )
 	size64_t source_size                              = 0;
 	off_t source_offset                               = 0;
 	size_t buffer_size                                = 0;
-	size_t compressed_buffer_offset                   = 0;
-	size_t remaining_uncompressed_data_size           = 0;
-	size_t uncompressed_buffer_offset                 = 0;
-	size_t uncompressed_block_size                    = 0;
 	size_t uncompressed_data_size                     = 65536;
-	ssize_t decompress_count                          = 0;
 	ssize_t read_count                                = 0;
 	ssize_t write_count                               = 0;
 	int decompression_method                          = 1;
+	int result                                        = 0;
 	int verbose                                       = 0;
+
+#if defined( WINAPI )
+	unsigned short winapi_compression_method          = 0;
+#endif
 
 	assorted_output_version_fprint(
 	 stdout,
 	 program );
 
+#if defined( WINAPI )
+	while( ( option = libcsystem_getopt(
+	                   argc,
+	                   argv,
+	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12345" ) ) ) != (libcstring_system_integer_t) -1 )
+#else
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
 	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV123" ) ) ) != (libcstring_system_integer_t) -1 )
+#endif
 	{
 		switch( option )
 		{
@@ -137,6 +204,18 @@ int main( int argc, char * const argv[] )
 
 				break;
 
+#if defined( WINAPI )
+			case (libcstring_system_integer_t) '4':
+				decompression_method = 4;
+
+				break;
+
+			case (libcstring_system_integer_t) '5':
+				decompression_method = 5;
+
+				break;
+
+#endif
 			case (libcstring_system_integer_t) 'd':
 				uncompressed_data_size = atol( optarg );
 
@@ -339,32 +418,61 @@ int main( int argc, char * const argv[] )
 	}
 	if( decompression_method == 1 )
 	{
-		decompress_count = libfwnt_lzxpress_decompress(
-		                    buffer,
-		                    source_size,
-		                    uncompressed_data,
-		                    &uncompressed_data_size,
-		                    &error );
+		result = libfwnt_lzxpress_decompress(
+		          buffer,
+		          source_size,
+		          uncompressed_data,
+		          &uncompressed_data_size,
+		          &error );
 	}
 	else if( decompression_method == 2 )
 	{
-		decompress_count = libfwnt_lzxpress_huffman_decompress(
-		                    buffer,
-		                    source_size,
-		                    uncompressed_data,
-		                    &uncompressed_data_size,
-		                    &error );
+		result = libfwnt_lzxpress_huffman_decompress(
+		          buffer,
+		          source_size,
+		          uncompressed_data,
+		          &uncompressed_data_size,
+		          &error );
 	}
 	else if( decompression_method == 3 )
 	{
-		decompress_count = libfwnt_lzxpress_huffman_stream_decompress(
-		                    buffer,
-		                    source_size,
-		                    uncompressed_data,
-		                    &uncompressed_data_size,
-		                    &error );
+		result = libfwnt_lzxpress_huffman_stream_decompress(
+		          buffer,
+		          source_size,
+		          uncompressed_data,
+		          &uncompressed_data_size,
+		          &error );
 	}
-	if( decompress_count == -1 )
+#if defined( WINAPI )
+	else if( ( decompression_method == 4 )
+	      || ( decompression_method == 5 ) )
+	{
+		if( decompression_method == 4 )
+		{
+			winapi_compression_method = COMPRESSION_FORMAT_XPRESS;
+		}
+		else if( decompression_method == 5 )
+		{
+			winapi_compression_method = COMPRESSION_FORMAT_XPRESS_HUFF;
+		}
+		result = lzxpresscompress_RtlDecompressBuffer(
+		          (char *) buffer,
+		          (unsigned long) source_size,
+		          (char *) uncompressed_data,
+		          (unsigned long) uncompressed_data_size,
+		          (unsigned long *) &uncompressed_data_size );
+
+		if( result != 0 )
+		{
+			result = -1;
+		}
+		else
+		{
+			result = 1;
+		}
+	}
+#endif
+	if( result == -1 )
 	{
 		fprintf(
 		 stderr,
@@ -377,8 +485,6 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	compressed_buffer_offset += decompress_count;
-
 	if( option_target_path == NULL )
 	{
 		fprintf(
