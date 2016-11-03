@@ -136,6 +136,7 @@ int main( int argc, char * const argv[] )
 	libcfile_file_t *destination_file                 = NULL;
 	libcfile_file_t *source_file                      = NULL;
 	libcstring_system_character_t *option_target_path = NULL;
+	libcstring_system_character_t *options_string     = NULL;
 	libcstring_system_character_t *source             = NULL;
 	uint8_t *buffer                                   = NULL;
 	uint8_t *uncompressed_data                        = NULL;
@@ -160,16 +161,14 @@ int main( int argc, char * const argv[] )
 	 program );
 
 #if defined( WINAPI )
-	while( ( option = libcsystem_getopt(
-	                   argc,
-	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12" ) ) ) != (libcstring_system_integer_t) -1 )
+	options_string = _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12" );
 #else
+	options_string = _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV1" );
+#endif
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV1" ) ) ) != (libcstring_system_integer_t) -1 )
-#endif
+	                   options_string ) ) != (libcstring_system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -300,7 +299,7 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		if( source_size <= source_offset )
+		if( source_size <= (size64_t) source_offset )
 		{
 			fprintf(
 			 stderr,

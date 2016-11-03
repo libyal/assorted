@@ -102,20 +102,19 @@ void usage_fprint(
 
 #if defined( WINAPI )
 	fprintf( stream, "Usage: lzxpressdecompress [ -d size ] [ -o offset ] [ -s size ]\n"
-	                 "                          [ -t target ] [ -12345hvV ] source\n\n" );
+	                 "                          [ -t target ] [ -1234hvV ] source\n\n" );
 #else
 	fprintf( stream, "Usage: lzxpressdecompress [ -d size ] [ -o offset ] [ -s size ]\n"
-	                 "                          [ -t target ] [ -123hvV ] source\n\n" );
+	                 "                          [ -t target ] [ -12hvV ] source\n\n" );
 #endif
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
 	fprintf( stream, "\t-1:     use the LZ77 + DIRECT2 decompression method (default)\n" );
 	fprintf( stream, "\t-2:     use the Huffman decompression method\n" );
-	fprintf( stream, "\t-3:     use the Huffman stream decompression method\n" );
 #if defined( WINAPI )
-	fprintf( stream, "\t-4:     use the WINAPI LZ77 + DIRECT2 decompression method\n" );
-	fprintf( stream, "\t-5:     use the WINAPI Huffman decompression method\n" );
+	fprintf( stream, "\t-2:     use the WINAPI LZ77 + DIRECT2 decompression method\n" );
+	fprintf( stream, "\t-3:     use the WINAPI Huffman decompression method\n" );
 #endif
 	fprintf( stream, "\t-d:     size of the decompressed data (default is 65536).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
@@ -141,6 +140,7 @@ int main( int argc, char * const argv[] )
 	libcfile_file_t *destination_file                 = NULL;
 	libcfile_file_t *source_file                      = NULL;
 	libcstring_system_character_t *option_target_path = NULL;
+	libcstring_system_character_t *options_string     = NULL;
 	libcstring_system_character_t *source             = NULL;
 	uint8_t *buffer                                   = NULL;
 	uint8_t *uncompressed_data                        = NULL;
@@ -166,16 +166,14 @@ int main( int argc, char * const argv[] )
 	 program );
 
 #if defined( WINAPI )
-	while( ( option = libcsystem_getopt(
-	                   argc,
-	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12345" ) ) ) != (libcstring_system_integer_t) -1 )
+	options_string = _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV1234" );
 #else
+	options_string = _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12" );
+#endif
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV123" ) ) ) != (libcstring_system_integer_t) -1 )
-#endif
+	                   options_string ) ) != (libcstring_system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -201,19 +199,14 @@ int main( int argc, char * const argv[] )
 
 				break;
 
+#if defined( WINAPI )
 			case (libcstring_system_integer_t) '3':
 				decompression_method = 3;
 
 				break;
 
-#if defined( WINAPI )
 			case (libcstring_system_integer_t) '4':
 				decompression_method = 4;
-
-				break;
-
-			case (libcstring_system_integer_t) '5':
-				decompression_method = 5;
 
 				break;
 
@@ -330,7 +323,7 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		if( source_size <= source_offset )
+		if( source_size <= (size64_t) source_offset )
 		{
 			fprintf(
 			 stderr,
@@ -463,24 +456,15 @@ int main( int argc, char * const argv[] )
 		          &uncompressed_data_size,
 		          &error );
 	}
-	else if( decompression_method == 3 )
-	{
-		result = libfwnt_lzxpress_huffman_stream_decompress(
-		          buffer,
-		          (size_t) source_size,
-		          uncompressed_data,
-		          &uncompressed_data_size,
-		          &error );
-	}
 #if defined( WINAPI )
-	else if( ( decompression_method == 4 )
-	      || ( decompression_method == 5 ) )
+	else if( ( decompression_method == 3 )
+	      || ( decompression_method == 4 ) )
 	{
-		if( decompression_method == 4 )
+		if( decompression_method == 3 )
 		{
 			winapi_compression_method = COMPRESSION_FORMAT_XPRESS;
 		}
-		else if( decompression_method == 5 )
+		else if( decompression_method == 4 )
 		{
 			winapi_compression_method = COMPRESSION_FORMAT_XPRESS_HUFF;
 		}
