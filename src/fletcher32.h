@@ -42,5 +42,5 @@ int fletcher32_calculate(
 }
 #endif
 
-#endif
+#endif /* !defined( _FLETCHER32_H ) */
 

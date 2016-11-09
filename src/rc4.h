@@ -70,5 +70,5 @@ int rc4_crypt(
 }
 #endif
 
-#endif
+#endif /* !defined( _RC4_H ) */
 

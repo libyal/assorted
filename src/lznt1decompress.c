@@ -22,6 +22,7 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <system_string.h>
 #include <types.h>
 
 #if defined( HAVE_STDLIB_H )
@@ -31,7 +32,6 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
 #include "assorted_libfwnt.h"
 #include "assorted_output.h"
@@ -54,7 +54,7 @@ NTSTATUS lznt1compress_RtlDecompressBuffer(
 	NTSTATUS result        = 0;
 
 	library_handle = LoadLibrary(
-	                  _LIBCSTRING_SYSTEM_STRING( "ntdll.dll" ) );
+	                  _SYSTEM_STRING( "ntdll.dll" ) );
 
 	if( library_handle == NULL )
 	{
@@ -126,34 +126,34 @@ void usage_fprint(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain( int argc, wchar_t * const argv[] )
 #else
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcerror_error_t *error                          = NULL;
-	libcfile_file_t *destination_file                 = NULL;
-	libcfile_file_t *source_file                      = NULL;
-	libcstring_system_character_t *option_target_path = NULL;
-	libcstring_system_character_t *options_string     = NULL;
-	libcstring_system_character_t *source             = NULL;
-	uint8_t *buffer                                   = NULL;
-	uint8_t *uncompressed_data                        = NULL;
-	char *program                                     = "lznt1decompress";
-	libcstring_system_integer_t option                = 0;
-	size64_t source_size                              = 0;
-	off_t source_offset                               = 0;
-	size_t buffer_size                                = 0;
-	size_t uncompressed_data_size                     = 0;
-	ssize_t read_count                                = 0;
-	ssize_t write_count                               = 0;
-	int decompression_method                          = 1;
-	int result                                        = 0;
-	int verbose                                       = 0;
+	libcerror_error_t *error                 = NULL;
+	libcfile_file_t *destination_file        = NULL;
+	libcfile_file_t *source_file             = NULL;
+	system_character_t *option_target_path   = NULL;
+	system_character_t *options_string       = NULL;
+	system_character_t *source               = NULL;
+	uint8_t *buffer                          = NULL;
+	uint8_t *uncompressed_data               = NULL;
+	char *program                            = "lznt1decompress";
+	system_integer_t option                  = 0;
+	size64_t source_size                     = 0;
+	size_t buffer_size                       = 0;
+	size_t uncompressed_data_size            = 0;
+	ssize_t read_count                       = 0;
+	ssize_t write_count                      = 0;
+	off_t source_offset                      = 0;
+	int decompression_method                 = 1;
+	int result                               = 0;
+	int verbose                              = 0;
 
 #if defined( WINAPI )
-	unsigned short winapi_compression_method          = 0;
+	unsigned short winapi_compression_method = 0;
 #endif
 
 	assorted_output_version_fprint(
@@ -161,22 +161,22 @@ int main( int argc, char * const argv[] )
 	 program );
 
 #if defined( WINAPI )
-	options_string = _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV12" );
+	options_string = _SYSTEM_STRING( "d:ho:s:t:vV12" );
 #else
-	options_string = _LIBCSTRING_SYSTEM_STRING( "d:ho:s:t:vV1" );
+	options_string = _SYSTEM_STRING( "d:ho:s:t:vV1" );
 #endif
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   options_string ) ) != (libcstring_system_integer_t) -1 )
+	                   options_string ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
-			case (libcstring_system_integer_t) '?':
+			case (system_integer_t) '?':
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
+				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind ] );
 
 				usage_fprint(
@@ -184,50 +184,50 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_FAILURE );
 
-			case (libcstring_system_integer_t) '1':
+			case (system_integer_t) '1':
 				decompression_method = 1;
 
 				break;
 
 #if defined( WINAPI )
-			case (libcstring_system_integer_t) '2':
+			case (system_integer_t) '2':
 				decompression_method = 2;
 
 				break;
 
 #endif
-			case (libcstring_system_integer_t) 'd':
+			case (system_integer_t) 'd':
 				uncompressed_data_size = atol( optarg );
 
 				break;
 
-			case (libcstring_system_integer_t) 'h':
+			case (system_integer_t) 'h':
 				usage_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );
 
-			case (libcstring_system_integer_t) 'o':
+			case (system_integer_t) 'o':
 				source_offset = atol( optarg );
 
 				break;
 
-			case (libcstring_system_integer_t) 's':
+			case (system_integer_t) 's':
 				source_size = atol( optarg );
 
 				break;
 
-			case (libcstring_system_integer_t) 't':
+			case (system_integer_t) 't':
 				option_target_path = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'v':
+			case (system_integer_t) 'v':
 				verbose = 1;
 
 				break;
 
-			case (libcstring_system_integer_t) 'V':
+			case (system_integer_t) 'V':
 				assorted_output_copyright_fprint(
 				 stdout );
 
@@ -265,7 +265,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libcfile_file_open_wide(
 	          source_file,
 	          source,
@@ -382,7 +382,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting LZNT1 decompression of: %" PRIs_LIBCSTRING_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
+	 "Starting LZNT1 decompression of: %" PRIs_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );
@@ -480,7 +480,7 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libcfile_file_open_wide(
 		          destination_file,
 		          option_target_path,

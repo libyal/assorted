@@ -49,5 +49,5 @@ int checksum_calculate_little_endian_xor32_cpu_aligned(
 }
 #endif
 
-#endif
+#endif /* !defined( _XOR32_H ) */
 

@@ -22,7 +22,10 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #if defined( HAVE_STDLIB_H )
 #include <stdlib.h>
@@ -31,7 +34,6 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
 #include "assorted_libuna.h"
 #include "assorted_output.h"
@@ -41,7 +43,7 @@
  * Returns 1 if successful or -1 on error
  */
 int rc4crypt_set_keys(
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      uint8_t **key_data,
      size_t *key_data_size,
      libcerror_error_t **error )
@@ -50,7 +52,7 @@ int rc4crypt_set_keys(
 	size_t string_length    = 0;
 	uint32_t base16_variant = 0;
 
-	string_length = libcstring_system_string_length(
+	string_length = system_string_length(
 	                 string );
 
 	*key_data_size = string_length / 2;
@@ -85,7 +87,7 @@ int rc4crypt_set_keys(
 	}
 	base16_variant = LIBUNA_BASE16_VARIANT_RFC4648;
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( _BYTE_STREAM_HOST_IS_ENDIAN_BIG )
 	{
 		base16_variant |= LIBUNA_BASE16_VARIANT_ENCODING_UTF16_BIG_ENDIAN;
@@ -162,32 +164,32 @@ void usage_fprint(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain( int argc, wchar_t * const argv[] )
 #else
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcerror_error_t *error                          = NULL;
-	libcfile_file_t *destination_file                 = NULL;
-	libcfile_file_t *source_file                      = NULL;
-	libcstring_system_character_t *option_keys        = NULL;
-	libcstring_system_character_t *option_target_path = NULL;
-	libcstring_system_character_t *source             = NULL;
-	rc4_context_t *context                            = NULL;
-	uint8_t *buffer                                   = NULL;
-	uint8_t *decrypted_data                           = NULL;
-	uint8_t *key_data                                 = NULL;
-	char *program                                     = "rc4crypt";
-	libcstring_system_integer_t option                = 0;
-	size64_t source_size                              = 0;
-	off_t source_offset                               = 0;
-	size_t buffer_size                                = 0;
-	size_t decrypted_data_size                        = 0;
-	size_t key_data_size                              = 0;
-	ssize_t read_count                                = 0;
-	ssize_t write_count                               = 0;
-	int verbose                                       = 0;
+	libcerror_error_t *error               = NULL;
+	libcfile_file_t *destination_file      = NULL;
+	libcfile_file_t *source_file           = NULL;
+	rc4_context_t *context                 = NULL;
+	system_character_t *option_keys        = NULL;
+	system_character_t *option_target_path = NULL;
+	system_character_t *source             = NULL;
+	uint8_t *buffer                        = NULL;
+	uint8_t *decrypted_data                = NULL;
+	uint8_t *key_data                      = NULL;
+	char *program                          = "rc4crypt";
+	system_integer_t option                = 0;
+	size64_t source_size                   = 0;
+	size_t buffer_size                     = 0;
+	size_t decrypted_data_size             = 0;
+	size_t key_data_size                   = 0;
+	ssize_t read_count                     = 0;
+	ssize_t write_count                    = 0;
+	off_t source_offset                    = 0;
+	int verbose                            = 0;
 
 	libcnotify_stream_set(
 	 stderr,
@@ -202,15 +204,15 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "hk:o:s:t:vV" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _SYSTEM_STRING( "hk:o:s:t:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
-			case (libcstring_system_integer_t) '?':
+			case (system_integer_t) '?':
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
+				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind ] );
 
 				usage_fprint(
@@ -218,38 +220,38 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_FAILURE );
 
-			case (libcstring_system_integer_t) 'h':
+			case (system_integer_t) 'h':
 				usage_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );
 
-			case (libcstring_system_integer_t) 'k':
+			case (system_integer_t) 'k':
 				option_keys = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'o':
+			case (system_integer_t) 'o':
 				source_offset = atol( optarg );
 
 				break;
 
-			case (libcstring_system_integer_t) 's':
+			case (system_integer_t) 's':
 				source_size = atol( optarg );
 
 				break;
 
-			case (libcstring_system_integer_t) 't':
+			case (system_integer_t) 't':
 				option_target_path = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'v':
+			case (system_integer_t) 'v':
 				verbose = 1;
 
 				break;
 
-			case (libcstring_system_integer_t) 'V':
+			case (system_integer_t) 'V':
 				assorted_output_copyright_fprint(
 				 stdout );
 
@@ -394,7 +396,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting R4 decrypting data of: %" PRIs_LIBCSTRING_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
+	 "Starting R4 decrypting data of: %" PRIs_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );

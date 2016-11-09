@@ -105,5 +105,5 @@ int checksum_calculate_adler32_simd(
 }
 #endif
 
-#endif
+#endif /* !defined( _ADLER32_H ) */
 

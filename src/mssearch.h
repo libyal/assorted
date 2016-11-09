@@ -68,5 +68,5 @@ int mssearch_decompress_byte_indexed_compressed_data(
 }
 #endif
 
-#endif
+#endif /* !defined( _MSSEARCH_ENCODING_H ) */
 

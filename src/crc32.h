@@ -68,5 +68,5 @@ int crc32_locate_error_offset(
 }
 #endif
 
-#endif
+#endif /* !defined( _CRC32_H ) */
 

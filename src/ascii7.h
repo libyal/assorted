@@ -48,5 +48,5 @@ int ascii7_decompress(
 }
 #endif
 
-#endif
+#endif /* !defined( _ASCII_7BIT_COMPRESSION_H ) */
 

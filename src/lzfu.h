@@ -78,5 +78,5 @@ int lzfu_decompress(
 }
 #endif
 
-#endif
+#endif /* !defined( _LZFU_H ) */
 

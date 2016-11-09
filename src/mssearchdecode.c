@@ -22,7 +22,10 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #if defined( HAVE_STDLIB_H )
 #include <stdlib.h>
@@ -31,7 +34,6 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
 #include "assorted_libuna.h"
 #include "assorted_output.h"
@@ -62,7 +64,7 @@ void usage_fprint(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain( int argc, wchar_t * const argv[] )
 #else
 int main( int argc, char * const argv[] )
@@ -70,32 +72,32 @@ int main( int argc, char * const argv[] )
 {
 	char destination[ 128 ];
 
-	libcerror_error_t *error                    = NULL;
-	libcfile_file_t *source_file                = NULL;
-	libcstring_system_character_t *source       = NULL;
-	libcstring_system_character_t *value_string = NULL;
-	uint8_t *buffer                             = NULL;
-	uint8_t *decoded_data                       = NULL;
-	uint8_t *narrow_value_string                = NULL;
-	uint8_t *uncompressed_data                  = NULL;
-	uint8_t *value_utf16_stream                 = NULL;
-	static char *function                       = "main";
-	char *program                               = "mssearchdecode";
-	libcstring_system_integer_t option          = 0;
-	size64_t source_size                        = 0;
-	off_t source_offset                         = 0;
-	size_t buffer_size                          = 0;
-	size_t decoded_data_size                    = 0;
-	size_t narrow_value_string_size             = 0;
-	size_t uncompressed_data_size               = 0;
-	ssize_t read_count                          = 0;
-	size_t value_string_size                    = 0;
-	size_t value_utf16_stream_size              = 0;
-	uint8_t compression_type                    = 0;
-	int ascii_codepage                          = LIBUNA_CODEPAGE_WINDOWS_1252;
-	int print_count                             = 0;
-	int result                                  = 0;
-	int verbose                                 = 0;
+	libcerror_error_t *error         = NULL;
+	libcfile_file_t *source_file     = NULL;
+	system_character_t *source       = NULL;
+	system_character_t *value_string = NULL;
+	uint8_t *buffer                  = NULL;
+	uint8_t *decoded_data            = NULL;
+	uint8_t *narrow_value_string     = NULL;
+	uint8_t *uncompressed_data       = NULL;
+	uint8_t *value_utf16_stream      = NULL;
+	static char *function            = "main";
+	char *program                    = "mssearchdecode";
+	system_integer_t option          = 0;
+	size64_t source_size             = 0;
+	size_t buffer_size               = 0;
+	size_t decoded_data_size         = 0;
+	size_t narrow_value_string_size  = 0;
+	size_t uncompressed_data_size    = 0;
+	size_t value_string_size         = 0;
+	size_t value_utf16_stream_size   = 0;
+	ssize_t read_count               = 0;
+	off_t source_offset              = 0;
+	uint8_t compression_type         = 0;
+	int ascii_codepage               = LIBUNA_CODEPAGE_WINDOWS_1252;
+	int print_count                  = 0;
+	int result                       = 0;
+	int verbose                      = 0;
 
 	libcnotify_stream_set(
 	 stderr,
@@ -110,7 +112,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "ho:s:vV" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _SYSTEM_STRING( "ho:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -118,7 +120,7 @@ int main( int argc, char * const argv[] )
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
+				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind ] );
 
 				usage_fprint(
@@ -269,7 +271,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	print_count = libcstring_narrow_string_snprintf(
+	print_count = narrow_string_snprintf(
 	               destination,
 	               128,
 	               "%s.mssearch.decoded",
@@ -287,7 +289,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting MS Search decoding data of: %" PRIs_LIBCSTRING_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
+	 "Starting MS Search decoding data of: %" PRIs_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );
@@ -511,7 +513,7 @@ int main( int argc, char * const argv[] )
 
 			decoded_data = NULL;
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_size_from_utf16_stream(
 				  value_utf16_stream,
 				  value_utf16_stream_size,
@@ -537,7 +539,7 @@ int main( int argc, char * const argv[] )
 
 				goto on_error;
 			}
-			value_string = libcstring_system_string_allocate(
+			value_string = system_string_allocate(
 					value_string_size );
 
 			if( value_string == NULL )
@@ -551,7 +553,7 @@ int main( int argc, char * const argv[] )
 
 				goto on_error;
 			}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_copy_from_utf16_stream(
 				  (uint16_t *) value_string,
 				  value_string_size,
@@ -585,7 +587,7 @@ int main( int argc, char * const argv[] )
 			value_utf16_stream = NULL;
 
 			libcnotify_printf(
-			 "%s: decompressed data: %" PRIs_LIBCSTRING_SYSTEM "\n",
+			 "%s: decompressed data: %" PRIs_SYSTEM "\n",
 			 function,
 			 value_string );
 

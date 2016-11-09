@@ -52,5 +52,5 @@ int crc64_calculate_2(
 }
 #endif
 
-#endif
+#endif /* !defined( _CRC64_H ) */
 

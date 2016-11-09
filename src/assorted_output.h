@@ -41,5 +41,5 @@ void assorted_output_version_fprint(
 }
 #endif
 
-#endif
+#endif /* !defined( _ASSORTED_OUTPUT_H ) */
 

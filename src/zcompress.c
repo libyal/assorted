@@ -22,6 +22,8 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
 
 #if defined( HAVE_STDLIB_H )
@@ -35,7 +37,6 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
 #include "assorted_output.h"
 #include "deflate.h"
@@ -69,7 +70,7 @@ void usage_fprint(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain( int argc, wchar_t * const argv[] )
 #else
 int main( int argc, char * const argv[] )
@@ -77,25 +78,25 @@ int main( int argc, char * const argv[] )
 {
 	char destination[ 128 ];
 
-	libcerror_error_t *error              = NULL;
-	libcfile_file_t *destination_file     = NULL;
-	libcfile_file_t *source_file          = NULL;
-	libcstring_system_character_t *source = NULL;
-	uint8_t *buffer                       = NULL;
-	uint8_t *compressed_data              = NULL;
-	char *program                         = "zcompress";
-	libcstring_system_integer_t option    = 0;
-	size64_t source_size                  = 0;
-	off_t source_offset                   = 0;
-	size_t compressed_data_size           = 0;
-	ssize_t read_count                    = 0;
-	ssize_t write_count                   = 0;
-	int compression_level                 = 0;
-	int compression_method                = 2;
-	int print_count                       = 0;
-	int result                            = 0;
-	int verbose                           = 0;
-	uLongf zlib_compressed_data_size      = 0;
+	libcerror_error_t *error          = NULL;
+	libcfile_file_t *destination_file = NULL;
+	libcfile_file_t *source_file      = NULL;
+	system_character_t *source        = NULL;
+	uint8_t *buffer                   = NULL;
+	uint8_t *compressed_data          = NULL;
+	char *program                     = "zcompress";
+	system_integer_t option           = 0;
+	uLongf zlib_compressed_data_size  = 0;
+	size64_t source_size              = 0;
+	size_t compressed_data_size       = 0;
+	ssize_t read_count                = 0;
+	ssize_t write_count               = 0;
+	off_t source_offset               = 0;
+	int compression_level             = 0;
+	int compression_method            = 2;
+	int print_count                   = 0;
+	int result                        = 0;
+	int verbose                       = 0;
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -104,7 +105,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "12ho:s:vV" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _SYSTEM_STRING( "12ho:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -112,7 +113,7 @@ int main( int argc, char * const argv[] )
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
+				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind ] );
 
 				usage_fprint(
@@ -274,7 +275,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	print_count = libcstring_narrow_string_snprintf(
+	print_count = narrow_string_snprintf(
 	               destination,
 	               128,
 	               "%s.zcompressed",

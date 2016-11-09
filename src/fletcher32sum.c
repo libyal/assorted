@@ -22,6 +22,7 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <system_string.h>
 #include <types.h>
 
 #if defined( HAVE_STDLIB_H )
@@ -31,7 +32,6 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_libcstring.h"
 #include "assorted_libcsystem.h"
 #include "assorted_output.h"
 #include "fletcher32.h"
@@ -63,24 +63,24 @@ void usage_fprint(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain( int argc, wchar_t * const argv[] )
 #else
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcerror_error_t *error              = NULL;
-	libcfile_file_t *source_file          = NULL;
-	libcstring_system_character_t *source = NULL;
-	uint8_t *buffer                       = NULL;
-	char *program                         = "fletcher32sum";
-	libcstring_system_integer_t option    = 0;
-	uint32_t fletcher32                   = 0;
-	uint32_t previous_key                 = 0;
-	off_t source_offset                   = 0;
-	size_t source_size                    = 0;
-	ssize_t read_count                    = 0;
-	int verbose                           = 0;
+	libcerror_error_t *error     = NULL;
+	libcfile_file_t *source_file = NULL;
+	system_character_t *source   = NULL;
+	uint8_t *buffer              = NULL;
+	char *program                = "fletcher32sum";
+	system_integer_t option      = 0;
+	size_t source_size           = 0;
+	ssize_t read_count           = 0;
+	off_t source_offset          = 0;
+	uint32_t fletcher32          = 0;
+	uint32_t previous_key        = 0;
+	int verbose                  = 0;
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -89,7 +89,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "hi:o:s:vV" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _SYSTEM_STRING( "hi:o:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -97,7 +97,7 @@ int main( int argc, char * const argv[] )
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
+				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind ] );
 
 				usage_fprint(

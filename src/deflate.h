@@ -166,5 +166,5 @@ int deflate_decompress(
 }
 #endif
 
-#endif
+#endif /* !defined( _DEFLATE_COMPRESSION_H ) */
 
