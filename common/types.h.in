@@ -195,17 +195,43 @@ typedef int64_t off64_t;
  */
 #if !defined( __USE_UNIX98 )
 #define __USE_UNIX98
-#define LIBCSTRING_DEFINITION_UNIX98
+#define ASSORTED_DEFINITION_UNIX98
 #endif
 
 #include <wchar.h>
 
-#if defined( LIBCSTRING_DEFINITION_UNIX98 )
+#if defined( ASSORTED_DEFINITION_UNIX98 )
 #undef __USE_UNIX98
-#undef LIBCSTRING_DEFINITION_UNIX98
+#undef ASSORTED_DEFINITION_UNIX98
 #endif
 
 #endif
+
+#if defined( WINAPI ) && ( defined( _UNICODE ) || defined( UNICODE ) )
+
+#define HAVE_WIDE_SYSTEM_CHARACTER 1
+
+/* The system character type is wide
+ * A system string contains either UTF-16 or UTF-32
+ */
+typedef wchar_t system_character_t;
+typedef wint_t system_integer_t;
+
+#define PRIc_SYSTEM "lc"
+#define PRIs_SYSTEM "ls"
+
+#else
+
+/* The system character type is narrow
+ * A system string contains either UTF-8 or extended ASCII with a codepage
+ */
+typedef char system_character_t;
+typedef int system_integer_t;
+
+#define PRIc_SYSTEM "c"
+#define PRIs_SYSTEM "s"
+
+#endif /* defined( WINAPI ) && ( defined( _UNICODE ) || defined( UNICODE ) ) */
 
 /* Fix for systems without PRI definitions
  */
