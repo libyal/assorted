@@ -60,7 +60,7 @@ void usage_fprint(
 	fprintf( stream, "\t-1:     use the zlib compression method\n" );
 	fprintf( stream, "\t-2:     use the internal compression method (default)\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
-	fprintf( stream, "\t-l:     compression level (default is 0)\n" );
+	fprintf( stream, "\t-l:     compression level (default is -1)\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
@@ -86,17 +86,32 @@ int main( int argc, char * const argv[] )
 	uint8_t *compressed_data          = NULL;
 	char *program                     = "zcompress";
 	system_integer_t option           = 0;
-	uLongf zlib_compressed_data_size  = 0;
 	size64_t source_size              = 0;
 	size_t compressed_data_size       = 0;
 	ssize_t read_count                = 0;
 	ssize_t write_count               = 0;
 	off_t source_offset               = 0;
-	int compression_level             = 0;
+	int compression_level             = Z_DEFAULT_COMPRESSION;
 	int compression_method            = 2;
 	int print_count                   = 0;
 	int result                        = 0;
 	int verbose                       = 0;
+
+#if defined( USE_COMPRESS2 )
+	uLongf zlib_compressed_data_size  = 0;
+
+#else
+	z_stream zlib_stream;
+
+	int zlib_flush                    = Z_FINISH;
+
+#if !defined( USE_DEFLATE_INIT )
+	int zlib_memLevel                 = 8;
+	int zlib_method                   = Z_DEFLATED;
+	int zlib_strategy                 = Z_DEFAULT_STRATEGY;
+	int zlib_windowBits               = 15;
+#endif
+#endif /* defined( USE_COMPRESS2 ) */
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -105,7 +120,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "12ho:s:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "12hl:o:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -326,37 +341,22 @@ int main( int argc, char * const argv[] )
 		}
 		compressed_data_size = (size_t) zlib_compressed_data_size;
 #else
-		z_stream stream;
-
-		int level      = Z_DEFAULT_COMPRESSION;
-		int flush      = Z_FINISH;
-
-#if !defined( USE_DEFLATE_INIT )
-		int memLevel   = 8;
-		int method     = Z_DEFLATED;
-		int strategy   = Z_FIXED;
-		int windowBits = 15;
-#endif
-
-		stream.opaque = Z_NULL;
-		stream.zalloc = Z_NULL;
-		stream.zfree  = Z_NULL;
-
-		level         = Z_NO_COMPRESSION;
-		strategy      = Z_RLE;
+		zlib_stream.opaque = Z_NULL;
+		zlib_stream.zalloc = Z_NULL;
+		zlib_stream.zfree  = Z_NULL;
 
 #if defined( USE_DEFLATE_INIT )
 		if( deflateInit(
-		     &stream,
-		     level ) != Z_OK )
+		     &zlib_stream,
+		     compression_level ) != Z_OK )
 #else
 		if( deflateInit2(
-		     &stream,
-		     level,
-		     method,
-		     windowBits,
-		     memLevel,
-		     strategy ) != Z_OK )
+		     &zlib_stream,
+		     compression_level,
+		     zlib_method,
+		     zlib_windowBits,
+		     zlib_memLevel,
+		     zlib_strategy ) != Z_OK )
 #endif
 		{
 			fprintf(
@@ -365,14 +365,14 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		stream.avail_in  = (uInt) source_size;
-		stream.next_in   = (Bytef *) buffer;
-		stream.avail_out = (uInt) compressed_data_size;
-		stream.next_out  = (Bytef *) compressed_data;
+		zlib_stream.avail_in  = (uInt) source_size;
+		zlib_stream.next_in   = (Bytef *) buffer;
+		zlib_stream.avail_out = (uInt) compressed_data_size;
+		zlib_stream.next_out  = (Bytef *) compressed_data;
 
 		result = deflate(
-			  &stream,
-			  flush );
+			  &zlib_stream,
+			  zlib_flush );
 
 		if( result < 0 )
 		{
@@ -380,12 +380,12 @@ int main( int argc, char * const argv[] )
 			 stderr,
 			 "Unable to compress data - deflate (%d, %s).\n",
 			 result,
-			 stream.msg );
+			 zlib_stream.msg );
 
 			goto on_error;
 		}
 		result = deflateEnd(
-		          &stream );
+		          &zlib_stream );
 
 		if( result != Z_OK )
 		{
@@ -393,11 +393,11 @@ int main( int argc, char * const argv[] )
 			 stderr,
 			 "Unable to compress data - deflateEnd (%d, %s).\n",
 			 result,
-			 stream.msg );
+			 zlib_stream.msg );
 
 			goto on_error;
 		}
-		compressed_data_size = stream.total_out;
+		compressed_data_size = zlib_stream.total_out;
 #endif
 	}
 	else if( compression_method == 2 )
