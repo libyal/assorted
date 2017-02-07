@@ -54,7 +54,7 @@ The file header is 80 bytes in size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 12 | "DB\x00\x00\x00\x00\x00\x00" | Signature
+| 0 | 12 | "ASL DB\x00\x00\x00\x00\x00\x00" | Signature
 | 12 | 4 | 2 | Format version
 | 16 | 8 | | First log entry offset +
 The offset is specified in bytes and relative from the start of the file

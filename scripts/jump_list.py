@@ -38,10 +38,10 @@ def FromFiletime(filetime):
     to be unsigned.
 
     Args:
-      filetime: The 64-bit FILETIME timestamp.
+      filetime (int): 64-bit FILETIME timestamp.
 
   Returns:
-    A datetime object containing the date and time or None.
+    datetime: date and time or None.
   """
   if filetime < 0:
     return None
@@ -58,7 +58,7 @@ class DataRange(object):
     """Initializes the file-like object.
 
     Args:
-      file_object: the parent file-like object.
+      file_object (file): parent file-like object.
     """
     super(DataRange, self).__init__()
     self._current_offset = 0
@@ -73,8 +73,8 @@ class DataRange(object):
     (e.g. a single partition within a full disk image) as a file-like object.
 
     Args:
-      range_offset: the start offset of the data range.
-      range_size: the size of the data range.
+      range_offset (int): start offset of the data range.
+      range_size (int): size of the data range.
 
     Raises:
       ValueError: if the range offset or range size is invalid.
@@ -103,11 +103,11 @@ class DataRange(object):
        all of the remaining data if no size was specified.
 
     Args:
-      size: optional integer value containing the number of bytes to read.
-            Default is all remaining data (None).
+      size (Optional[int]): number of bytes to read, where None represents
+          all remaining data.
 
     Returns:
-      A byte string containing the data read.
+      bytes: data read.
 
     Raises:
       IOError: if the read failed.
@@ -141,9 +141,9 @@ class DataRange(object):
     """Seeks an offset within the file-like object.
 
     Args:
-      offset: the offset to seek.
-      whence: optional value that indicates whether offset is an absolute
-              or relative position within the file. Default is SEEK_SET.
+      offset (int): the offset to seek.
+      whence (Optional[int]): value that indicates whether offset is an absolute
+          or relative position within the file. Default is SEEK_SET.
 
     Raises:
       IOError: if the seek failed.
@@ -181,15 +181,15 @@ class LNKFileEntry(object):
   """Class that contains a LNK file entry.
 
   Attributes:
-    data_size: the size of the LNK file entry data.
-    identifier: the LNK file entry identifier.
+    data_size (int): size of the LNK file entry data.
+    identifier (str): LNK file entry identifier.
   """
 
   def __init__(self, identifier):
     """Initializes the LNK file entry object.
 
     Args:
-      identifier: the LNK file entry identifier.
+      identifier (str): LNK file entry identifier.
     """
     super(LNKFileEntry, self).__init__()
     self._lnk_file = pylnk.file()
@@ -204,7 +204,7 @@ class LNKFileEntry(object):
     """Retrieves the shell items.
 
     Yields:
-      A shell item (instance of pyfswi.item).
+      pyfswi.item: shell item.
     """
     if self._lnk_file.link_target_identifier_data:
       shell_item_list = pyfwsi.item_list()
@@ -218,7 +218,7 @@ class LNKFileEntry(object):
     """Opens the LNK file entry.
 
     Args:
-      file_object: the file-like object that contains the LNK file entry data.
+      file_object (file): file-like object that contains the LNK file entry data.
     """
     self._lnk_file.open_file_object(file_object)
 
@@ -232,8 +232,9 @@ class AutomaticDestinationsFile(object):
   """Class that contains an .automaticDestinations-ms file.
 
   Attributes:
-    entries: list of the LNK file entries.
-    recovered_entries: list of the recovered LNK file entries.
+    entries (list[LNKFileEntry]): list of the LNK file entries.
+    recovered_entries (list[LNKFileEntry]): list of the recovered LNK file
+        entries.
   """
 
   _DEST_LIST_STREAM_HEADER = construct.Struct(
@@ -284,8 +285,7 @@ class AutomaticDestinationsFile(object):
     """Initializes the .automaticDestinations-ms file object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(AutomaticDestinationsFile, self).__init__()
     self._debug = debug
@@ -318,11 +318,11 @@ class AutomaticDestinationsFile(object):
     """Reads a DestList stream entry.
 
     Args:
-      olecf_item: the OLECF item (instance of pyolecf.item).
-      stream_offset: an integer containing the stream offset of the entry.
+      olecf_item (pyolecf.item): OLECF item.
+      stream_offset (int): stream offset of the entry.
 
     Returns:
-      An integer containing the entry data size.
+      int: entry data size.
 
     Raises:
       IOError: if the DestList stream entry cannot be read.
@@ -444,7 +444,7 @@ class AutomaticDestinationsFile(object):
     """Reads the DestList stream header.
 
     Args:
-      olecf_item: the OLECF item (instance of pyolecf.item).
+      olecf_item (pyolecf.item): OLECF item.
 
     Raises:
       IOError: if the DestList stream header cannot be read.
@@ -497,10 +497,10 @@ class AutomaticDestinationsFile(object):
     """Reads a LNK file.
 
     Args:
-      olecf_item: the OLECF item (instance of pyolecf.item).
+      olecf_item (pyolecf.item): OLECF item.
 
     Returns:
-      A LNK file entry (instance of LNKFileEntry).
+      LNKFileEntry: a LNK file entry.
 
     Raises:
       IOError: if the LNK file cannot be read.
@@ -549,7 +549,7 @@ class AutomaticDestinationsFile(object):
     """Opens the .customDestinations-ms file.
 
     Args:
-      filename: the filename.
+      filename (str): the filename.
     """
     stat_object = os.stat(filename)
     self._file_size = stat_object.st_size
@@ -567,10 +567,10 @@ class CustomDestinationsFile(object):
   """Class that contains a .customDestinations-ms file.
 
   Attributes:
-    entries: list of the LNK file entries.
-    recovered_entries: list of the recovered LNK file entries.
+    entries (list[LNKFileEntry]): list of the LNK file entries.
+    recovered_entries (list[LNKFileEntry]): list of the recovered LNK file
+        entries.
   """
-
   _LNK_GUID = (
       b'\x01\x14\x02\x00\x00\x00\x00\x00\xc0\x00\x00\x00\x00\x00\x00\x46')
 
@@ -583,13 +583,13 @@ class CustomDestinationsFile(object):
 
   _HEADER_VALUE_TYPE_0 = construct.Struct(
       u'header_value_type_0',
-      construct.ULInt32(u'number_of_characters'),
+      construct.ULInt16(u'number_of_characters'),
       construct.String(u'string', lambda ctx: ctx.number_of_characters * 2),
-      construct.ULInt32(u'unknown1'))
+      construct.ULInt32(u'number_of_entries'))
 
   _HEADER_VALUE_TYPE_1_OR_2 = construct.Struct(
       u'header_value_type_1_or_2',
-      construct.ULInt32(u'unknown1'))
+      construct.ULInt32(u'number_of_entries'))
 
   _ENTRY_HEADER = construct.Struct(
       u'entry_header',
@@ -605,8 +605,7 @@ class CustomDestinationsFile(object):
     """Initializes the .customDestinations-ms file object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(CustomDestinationsFile, self).__init__()
     self._debug = debug
@@ -669,19 +668,20 @@ class CustomDestinationsFile(object):
       if file_header_struct.header_values_type == 0:
         print(u'Number of characters\t\t\t\t\t\t: {0:d}'.format(
             data_structure_struct.number_of_characters))
+        # TODO: print string.
 
-      print(u'Unknown1\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          data_structure_struct.unknown1))
+      print(u'Number of entries\t\t\t\t\t\t: {0:d}'.format(
+          data_structure_struct.number_of_entries))
       print(u'')
 
   def _ReadLNKFile(self, file_object):
     """Reads a LNK file.
 
     Args:
-      file_object: the file-like object.
+      file_object (file): file-like object.
 
     Returns:
-      A LNK file entry (instance of LNKFileEntry).
+      LNKFileEntry: a LNK file entry.
 
     Raises:
       IOError: if the LNK file cannot be read.
@@ -797,7 +797,7 @@ class CustomDestinationsFile(object):
     """Opens the .customDestinations-ms file.
 
     Args:
-      filename: the filename.
+      filename (str): the filename.
     """
     stat_object = os.stat(filename)
     self._file_size = stat_object.st_size
@@ -823,7 +823,7 @@ def Main():
   """The main program function.
 
   Returns:
-    A boolean containing True if successful or False if not.
+    bool: True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
       u'Extracts information from Windows Jump List files.'))
