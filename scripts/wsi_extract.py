@@ -9,9 +9,11 @@ import logging
 import os
 import sys
 
-import construct
 import pylnk
 import pysigscan
+
+from dtfabric import errors as dtfabric_errors
+from dtfabric import fabric as dtfabric_fabric
 
 from dfvfs.lib import definitions as dfvfs_definitions
 from dfvfs.helpers import volume_scanner as dfvfs_volume_scanner
@@ -20,8 +22,12 @@ from dfvfs.resolver import resolver as dfvfs_resolver
 import hexdump
 
 
+class ParseError(Exception):
+  """Error that is raised when data cannot be parsed."""
+
+
 class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
-  """Class that defines a Windows shell items extractor."""
+  """Windows shell items extractor."""
 
   # TSK metadata files that need special handling.
   _METADATA_FILE_LOCATIONS_TSK = frozenset([
@@ -50,19 +56,79 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       u'/$AttributesFile',
   ])
 
-  _EXTENSION_BLOCK = construct.Struct(
-      u'extension_block',
-      construct.ULInt16(u'size'),
-      construct.ULInt16(u'version'),
-      construct.ULInt32(u'signature'),
-      construct.Bytes(
-          u'data', lambda ctx: 0 if not ctx.size else ctx.size - 8))
+  _DATA_TYPE_FABRIC_DEFINITION = b'\n'.join([
+      b'name: byte',
+      b'type: integer',
+      b'attributes:',
+      b'  format: unsigned',
+      b'  size: 1',
+      b'  units: bytes',
+      b'---',
+      b'name: uint16',
+      b'type: integer',
+      b'attributes:',
+      b'  format: unsigned',
+      b'  size: 2',
+      b'  units: bytes',
+      b'---',
+      b'name: uint32',
+      b'type: integer',
+      b'attributes:',
+      b'  format: unsigned',
+      b'  size: 4',
+      b'  units: bytes',
+      b'---',
+      b'name: uint16le',
+      b'type: integer',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'  format: unsigned',
+      b'  size: 2',
+      b'  units: bytes',
+      b'---',
+      b'name: extension_block',
+      b'type: structure',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'members:',
+      b'- name: size',
+      b'  data_type: uint16',
+      b'- name: version',
+      b'  data_type: uint16',
+      b'- name: signature',
+      b'  data_type: uint32',
+      b'- name: data',
+      b'  type: sequence',
+      b'  element_data_type: byte',
+      (b'  number_of_elements: 0 if extension_block.size == 0 else '
+       b'extension_block.size - 8'),
+      b'---',
+      b'name: shell_item',
+      b'type: structure',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'members:',
+      b'- name: size',
+      b'  data_type: uint16',
+      b'- name: data',
+      b'  type: sequence',
+      b'  element_data_type: byte',
+      (b'  number_of_elements: 0 if shell_item.size == 0 else '
+       b'shell_item.size - 2'),
+  ])
 
-  _SHELL_ITEM = construct.Struct(
-      u'shell_item',
-      construct.ULInt16(u'size'),
-      construct.Bytes(
-          u'data', lambda ctx: 0 if not ctx.size else ctx.size - 2))
+  # TODO: add support for number of elements.
+
+  _DATA_TYPE_FABRIC = dtfabric_fabric.DataTypeFabric(
+      yaml_definition=_DATA_TYPE_FABRIC_DEFINITION)
+
+  # TODO: add functionlity to set byte-order?
+  _UINT16LE = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'uint16le')
+
+  _EXTENSION_BLOCK = _DATA_TYPE_FABRIC.CreateDataTypeMap(
+      u'extension_block')
+
+  _SHELL_ITEM = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'shell_item')
 
   _SIGNATURES = [
       (u'creg', 0, b'CREG'),
@@ -77,10 +143,8 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     """Initializes the Windows shell items extractor object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
-      mediator: a volume scanner mediator (instance of
-                dfvfs.VolumeScannerMediator) or None.
+      debug (Optional[bool]): True if debug information should be printed.
+      mediator (Optional[dfvfs.VolumeScannerMediator]): volume scanner mediator.
     """
     super(WindowsShellItemsExtractor, self).__init__(mediator=mediator)
     self._debug = debug
@@ -90,8 +154,11 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     """Extracts Windows shell items from data.
 
     Args:
-      shell_items_data: a binary string containing the shell items data.
-      output_writer: the output writer (instance of OutputWriter).
+      shell_items_data (bytes): shell items data.
+      output_writer (OutputWriter): output writer.
+
+    Raises:
+      ParseError: if the shell item data cannot be read.
     """
     data_offset = 0
     last_data_offset = 0
@@ -99,11 +166,11 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
 
     while data_offset < data_size:
       try:
-        shell_item_struct = self._SHELL_ITEM.parse(
+        shell_item_struct = self._SHELL_ITEM.MapByteStream(
             shell_items_data[data_offset:])
 
-      except construct.FieldError as exception:
-        raise IOError((
+      except dtfabric_errors.MappingError as exception:
+        raise ParseError((
             u'Unable to parse shell item at offset: 0x{0:08x} '
             u'with error: {1:s}').format(data_offset, exception))
 
@@ -120,8 +187,15 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
 
       output_writer.WriteShellItem(shell_item_data)
 
-      extension_version_offset = construct.ULInt16(u'offset').parse(
-          shell_item_data[-2:])
+      try:
+        extension_version_offset = self._UINT16LE.MapByteStream(
+            shell_item_data[-2:])
+
+      except dtfabric_errors.MappingError as exception:
+        raise ParseError((
+            u'Unable to parse extension block offset at offset: 0x{0:08x} '
+            u'with error: {1:s}').format(
+                data_offset + len(shell_item_data) - 2, exception))
 
       # The extension block signature can be found by the extension
       # version offset.
@@ -134,11 +208,11 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
 
         while extension_block_offset < shell_item_data_size:
           try:
-            extension_block_struct = self._EXTENSION_BLOCK.parse(
+            extension_block_struct = self._EXTENSION_BLOCK.MapByteStream(
                 shell_item_struct.data[extension_block_offset:])
 
-          except construct.FieldError as exception:
-            raise IOError((
+          except dtfabric_errors.MappingError as exception:
+            raise ParseError((
                 u'Unable to parse extension block at offset: 0x{0:08x} '
                 u'with error: {1:s}').format(
                     extension_block_offset, exception))
@@ -157,14 +231,17 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     # TODO: report trailing data.
 
   def _ExtractFromDataStream(
-    self, file_entry, data_stream_name, full_path, output_writer):
+      self, file_entry, data_stream_name, full_path, output_writer):
     """Extracts Windows shell items from a file entry data stream.
 
     Args:
-      file_entry: the file entry (instance of dfvfs.FileEntry).
-      data_stream_name: the data stream name.
-      full_path: a string containing the full path of the file entry.
-      output_writer: the output writer (instance of OutputWriter).
+      file_entry (dfvfs.FileEntry): file entry.
+      data_stream_name (str): data stream name.
+      full_path (str): full path of the file entry.
+      output_writer (OutputWriter): output writer.
+
+    Raises:
+      IOError: if the extraction fails.
     """
     try:
       file_object = file_entry.GetFileObject(data_stream_name=data_stream_name)
@@ -191,15 +268,14 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       file_object.close()
 
   def _ExtractFromFileEntry(
-    self, file_system, file_entry, parent_full_path, output_writer):
+      self, file_system, file_entry, parent_full_path, output_writer):
     """Extracts Windows shell items from a file entry.
 
     Args:
-      file_system: the file system (instance of dfvfs.FileSystem).
-      file_entry: the file entry (instance of dfvfs.FileEntry).
-      parent_full_path: a string containing the full path of the parent
-                        file entry.
-      output_writer: the output writer (instance of OutputWriter).
+      file_system (dfvfs.FileSystem): file system.
+      file_entry (dfvfs.FileEntry): file entry.
+      parent_full_path (str): full path of the parent file entry.
+      output_writer (OutputWriter): output writer.
     """
     full_path = file_system.JoinPath([parent_full_path, file_entry.name])
     for data_stream in file_entry.data_streams:
@@ -222,9 +298,9 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     """Extracts Windows shell items from a file-like object.
 
     Args:
-      file_object: the file-like object.
-      full_path: a string containing the full path of the file entry.
-      output_writer: the output writer (instance of OutputWriter).
+      file_object (dfvfs.FileIO): file-like object.
+      full_path (str): full path of the file entry.
+      output_writer (OutputWriter): output writer.
     """
     signatures = self._GetSignatures(file_object)
 
@@ -243,13 +319,13 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
 
     # TODO: extract WSI from custom destination JumpLists.
 
-  def _ExtractFromLNK(self, file_object, full_path, output_writer):
+  def _ExtractFromLNK(self, file_object, unused_full_path, output_writer):
     """Extracts Windows shell items from a Windows Shortcut file-like object.
 
     Args:
-      file_object: the file-like object.
-      full_path: a string containing the full path of the file entry.
-      output_writer: the output writer (instance of OutputWriter).
+      file_object (dfvfs.FileIO): file-like object.
+      full_path (str): full path of the file entry.
+      output_writer (OutputWriter): output writer.
     """
     lnk_file = pylnk.file()
     lnk_file.open_file_object(file_object)
@@ -264,21 +340,22 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     """Determines the if the file content contains known signatures.
 
     Args:
-      file_object: a file-like object (instance of dfvfs.FileIO).
+      file_object (dfvfs.FileIO): file-like object.
 
     Returns:
-      A list of strings containing the signature identifier or None
-      if no known signature was found.
+      list[str]: signature identifiers or None if no known signatures
+          were found.
     """
     scan_state = pysigscan.scan_state()
     self._file_scanner.scan_file_object(scan_state, file_object)
+    # pylint: disable=not-an-iterable
     return [scan_result.identifier for scan_result in scan_state.scan_results]
 
   def _GetSignatureScanner(self):
-    """Retrieves a signature scanner object.
+    """Retrieves a signature scanner.
 
     Returns:
-      A scanner object (instance of pysigscan.scanner).
+      pysigscan.scanner: signature scanner.
     """
     scanner_object = pysigscan.scanner()
     for identifier, pattern_offset, pattern in self._SIGNATURES:
@@ -292,10 +369,10 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     """Determines if the file entry is a metadata file.
 
     Args:
-      file_entry: a file entry object (instance of dfvfs.FileEntry).
+      file_entry (dfvfs.FileEntry): file entry .
 
     Returns:
-      A boolean value indicating if the file entry is a metadata file.
+      bool: True if the file entry is a metadata file.
     """
     if (file_entry.type_indicator == dfvfs_definitions.TYPE_INDICATOR_TSK and
         file_entry.path_spec.location in self._METADATA_FILE_LOCATIONS_TSK):
@@ -307,9 +384,8 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     """Extracts Windows shell items.
 
     Args:
-      base_path_specs: a list of source path specification (instances
-                       of dfvfs.PathSpec).
-      output_writer: the output writer (instance of OutputWriter).
+      base_path_specs (list[dfvfs.PathSpec]): source path specification.
+      output_writer (OutputWriter): output writer.
     """
     for base_path_spec in base_path_specs:
       file_system = dfvfs_resolver.Resolver.OpenFileSystem(base_path_spec)
@@ -330,7 +406,7 @@ class FileOutputWriter(object):
     """Initializes the output writer object.
 
     Args:
-      output_directory: a string containing the path of the output directory.
+      output_directory (str): path of the output directory.
     """
     super(FileOutputWriter, self).__init__()
     self._output_directory = output_directory
@@ -343,7 +419,7 @@ class FileOutputWriter(object):
     """Opens the output writer object.
 
     Returns:
-      A boolean containing True if successful or False if not.
+      bool: True if successful or False if not.
     """
     return True
 
@@ -351,7 +427,7 @@ class FileOutputWriter(object):
     """Writes a shell item.
 
     Args:
-      shell_item_data: a binary string containing the shell item data.
+      shell_item_data (bytes): shell item data.
     """
     hash_context = hashlib.md5(shell_item_data)
     digest_hash = hash_context.hexdigest()
@@ -372,7 +448,7 @@ class StdoutOutputWriter(object):
     """Opens the output writer object.
 
     Returns:
-      A boolean containing True if successful or False if not.
+      bool: True if successful or False if not.
     """
     return True
 
@@ -380,7 +456,7 @@ class StdoutOutputWriter(object):
     """Writes a shell item.
 
     Args:
-      shell_item_data: a binary string containing the shell item data.
+      shell_item_data (bytes): shell item data.
     """
     print(hexdump.Hexdump(shell_item_data))
 
@@ -389,7 +465,7 @@ def Main():
   """The main program function.
 
   Returns:
-    A boolean containing True if successful or False if not.
+    bool: True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
       u'Extracts Windows Shell items from the source.'))
@@ -455,15 +531,17 @@ def Main():
     print(u'')
     print(u'Completed.')
 
-  except KeyboardInterrupt:
-    return_value = False
+    return_value = True
 
+  except KeyboardInterrupt:
     print(u'')
     print(u'Aborted by user.')
 
+    return_value = False
+
   output_writer.Close()
 
-  return True
+  return return_value
 
 
 if __name__ == '__main__':

@@ -12,25 +12,29 @@ import sys
 
 import construct
 
+from dtfabric import errors as dtfabric_errors
+from dtfabric import fabric as dtfabric_fabric
+from dtfabric import runtime as dtfabric_runtime
+
 import hexdump
 
 
 def FromFiletime(filetime):
   """Converts a FILETIME timestamp into a Python datetime object.
 
-    The FILETIME is mainly used in Windows file formats and NTFS.
+  The FILETIME is mainly used in Windows file formats and NTFS.
 
-    The FILETIME is a 64-bit value containing:
-      100th nano seconds since 1601-01-01 00:00:00
+  The FILETIME is a 64-bit value containing 100th nano seconds since
+  1601-01-01 00:00:00
 
-    Technically FILETIME consists of 2 x 32-bit parts and is presumed
-    to be unsigned.
+  Technically FILETIME consists of 2 x 32-bit parts and is presumed
+  to be unsigned.
 
-    Args:
-      filetime: The 64-bit FILETIME timestamp.
+  Args:
+    filetime (int): 64-bit FILETIME timestamp.
 
   Returns:
-    A datetime object containing the date and time or None.
+    datetime.datetime: date and time or None.
   """
   if filetime < 0:
     return None
@@ -40,29 +44,194 @@ def FromFiletime(filetime):
       microseconds=timestamp)
 
 
-class IndexBinaryTreePage(object):
-  """Class that contains an index binary-tree page.
+class ParseError(Exception):
+  """Error that is raised when data cannot be parsed."""
+
+
+class BinaryDataFormat(object):
+  """Binary data format."""
+
+  def __init__(self, debug=False):
+    """Initializes a binary data format.
+
+    Args:
+      debug (Optional[bool]): True if debug information should be printed.
+    """
+    super(BinaryDataFormat, self).__init__()
+    self._debug = debug
+
+  def _DebugPrintData(self, description, data):
+    """Prints data debug information.
+
+    Args:
+      description (str): description.
+      data (bytes): data.
+    """
+    print(u'{0:s}:'.format(description))
+    print(hexdump.Hexdump(data))
+
+  def _DebugPrintValue(self, description, value):
+    """Prints a value debug information.
+
+    Args:
+      description (str): description.
+      value (object): value.
+    """
+    alignment = 8 - (len(description) / 8) + 1
+    text = u'{0:s}{1:s}: {2!s}'.format(description, u'\t' * alignment, value)
+    print(text)
+
+  def _ReadStructure(
+      self, file_object, file_offset, data_size, data_type_map, description):
+    """Reads a structure.
+
+    Args:
+      file_object (file): a file-like object.
+      file_offset (int): offset of the data relative from the start of
+          the file-like object.
+      data_size (int): data size of the structure.
+      data_type_map (dtfabric.DataTypeMap): data type map of the structure.
+      description (str): description of the structure.
+
+    Returns:
+      object: structure values object.
+
+    Raises:
+      ParseError: if the structure cannot be read.
+    """
+    file_object.seek(file_offset, os.SEEK_SET)
+
+    if self._debug:
+      print(u'Reading {0:s} at offset: 0x{1:08x}'.format(
+          description, file_offset))
+
+    try:
+      data = file_object.read(data_size)
+    except IOError as exception:
+      raise ParseError((
+          u'Unable to read {0:s} data at offset: 0x{1:08x} with error: '
+          u'{2:s}').format(description, file_offset, exception))
+
+    if len(data) != data_size:
+      raise ParseError((
+          u'Unable to read {0:s} data at offset: 0x{1:08x} with error: '
+          u'missing data').format(description, file_offset))
+
+    if self._debug:
+      data_description = u'{0:s} data'.format(description.title())
+      self._DebugPrintData(data_description, data)
+
+    try:
+      return data_type_map.MapByteStream(data)
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError((
+          u'Unable to read {0:s} at offset: 0x{1:08x} with error: '
+          u'{2:s}').format(description, file_offset, exception))
+
+
+class IndexBinaryTreePage(BinaryDataFormat):
+  """Index binary-tree page.
 
   Attributes:
-    keys: a list of strings containing index binary-tree keys.
-    page_type: an integer containing the page type.
-    root_page_number: an integer containing the root page number.
-    sub_pages: a list of integers containing the sub page numbers.
+    keys (list[str]): index binary-tree keys.
+    page_type (int): page type.
+    root_page_number (int): root page number.
+    sub_pages (list[int]): sub page numbers.
   """
 
-  PAGE_SIZE = 8192
+  _DATA_TYPE_FABRIC_DEFINITION = b'\n'.join([
+      b'name: uint16',
+      b'type: integer',
+      b'attributes:',
+      b'  format: unsigned',
+      b'  size: 2',
+      b'  units: bytes',
+      b'---',
+      b'name: uint32',
+      b'type: integer',
+      b'attributes:',
+      b'  format: unsigned',
+      b'  size: 4',
+      b'  units: bytes',
+      b'---',
+      b'name: uint16le',
+      b'type: integer',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'  format: unsigned',
+      b'  size: 2',
+      b'  units: bytes',
+      b'---',
+      b'name: uint32le',
+      b'type: integer',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'  format: unsigned',
+      b'  size: 4',
+      b'  units: bytes',
+      b'---',
+      b'name: cim_page_header',
+      b'type: structure',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'members:',
+      b'- name: page_type',
+      b'  data_type: uint32',
+      b'- name: mapped_page_number',
+      b'  data_type: uint32',
+      b'- name: unknown1',
+      b'  data_type: uint32',
+      b'- name: root_page_number',
+      b'  data_type: uint32',
+      b'- name: number_of_keys',
+      b'  data_type: uint32',
+      b'---',
+      b'name: cim_page_offsets',
+      b'type: sequence',
+      b'element_data_type: uint16le',
+      b'number_of_elements: cim_page_header.number_of_keys',
+      b'---',
+      b'name: cim_page_subpages',
+      b'type: sequence',
+      b'element_data_type: uint32le',
+      b'number_of_elements: cim_page_header.number_of_keys + 1',
+      b'---',
+      b'name: cim_page_key',
+      b'type: structure',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'members:',
+      b'- name: number_of_segments',
+      b'  data_type: uint16',
+      b'- name: segments',
+      b'  type: sequence',
+      b'  element_data_type: uint16',
+      b'  number_of_elements: cim_page_key.number_of_segments',
+      b'---',
+      b'name: cim_offsets',
+      b'type: sequence',
+      b'element_data_type: uint16le',
+      b'number_of_elements: number_of_offsets',
+  ])
 
-  _KEY_SEGMENT_SEPARATOR = u'\\'
+  _DATA_TYPE_FABRIC = dtfabric_fabric.DataTypeFabric(
+      yaml_definition=_DATA_TYPE_FABRIC_DEFINITION)
 
-  _PAGE_HEADER = construct.Struct(
-      u'page_header',
-      construct.ULInt32(u'page_type'),
-      construct.ULInt32(u'mapped_page_number'),
-      construct.ULInt32(u'unknown2'),
-      construct.ULInt32(u'root_page_number'),
-      construct.ULInt32(u'number_of_keys'))
+  _UINT16LE = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'uint16le')
 
-  _PAGE_KEY_NUMBER_OF_SEGMENTS = construct.ULInt16(u'number_of_segments')
+  _UINT16LE_SIZE = _UINT16LE.GetByteSize()
+
+  _PAGE_HEADER = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_page_header')
+
+  _PAGE_HEADER_SIZE = _PAGE_HEADER.GetByteSize()
+
+  _PAGE_KEY_OFFSETS = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_page_offsets')
+
+  _PAGE_SUBPAGES = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_page_subpages')
+
+  _PAGE_KEY = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_page_key')
+
+  _OFFSETS = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_offsets')
 
   _PAGE_TYPES = {
       0xaccc: u'Is active',
@@ -70,15 +239,17 @@ class IndexBinaryTreePage(object):
       0xbadd: u'Is deleted',
   }
 
+  _KEY_SEGMENT_SEPARATOR = u'\\'
+
+  PAGE_SIZE = 8192
+
   def __init__(self, debug=False):
-    """Initializes an index binary-tree page object.
+    """Initializes an index binary-tree page.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
-    super(IndexBinaryTreePage, self).__init__()
-    self._debug = debug
+    super(IndexBinaryTreePage, self).__init__(debug=debug)
     self._key_offsets = None
     self._number_of_keys = None
     self._page_key_segments = []
@@ -90,211 +261,299 @@ class IndexBinaryTreePage(object):
     self.root_page_number = None
     self.sub_pages = []
 
+  def _DebugPrintHeader(self, page_header):
+    """Prints page header debug information.
+
+    Args:
+      page_header (cim_page_header): page header.
+    """
+    page_type_string = self._PAGE_TYPES.get(page_header.page_type, u'Unknown')
+    value_string = u'0x{0:04x} ({1:s})'.format(
+        page_header.page_type, page_type_string)
+    self._DebugPrintValue(u'Page type', value_string)
+
+    value_string = u'{0:d}'.format(page_header.mapped_page_number)
+    self._DebugPrintValue(u'Mapped page number', value_string)
+
+    value_string = u'0x{0:08x}'.format(page_header.unknown1)
+    self._DebugPrintValue(u'Unknown1', value_string)
+
+    value_string = u'{0:d}'.format(page_header.root_page_number)
+    self._DebugPrintValue(u'Root page number', value_string)
+
+    value_string = u'{0:d}'.format(page_header.number_of_keys)
+    self._DebugPrintValue(u'Number of keys', value_string)
+
+    print(u'')
+
+  def _DebugPrintKeyOffsets(self, key_offsets):
+    """Prints key offsets debug information.
+
+    Args:
+      key_offsets (list[int]): key offsets.
+    """
+    for index, key_offset in enumerate(key_offsets):
+      description = u'Page key: {0:d} offset'.format(index)
+      value_string = u'0x{0:04x}'.format(key_offset)
+      self._DebugPrintValue(description, value_string)
+
+    print(u'')
+
+  def _DebugPrintPageNumber(
+      self, description, page_number, unavailable_page_numbers=None):
+    """Prints a page number debug information.
+
+    Args:
+      description (str): description.
+      page_number (int): page number.
+      unavailable_page_numbers (Optional[set[int]]): unavailable page numbers.
+    """
+    if not unavailable_page_numbers:
+      unavailable_page_numbers = set()
+
+    if page_number in unavailable_page_numbers:
+      value_string = u'0x{0:08x} (unavailable)'.format(page_number)
+    else:
+      value_string = u'{0:d}'.format(page_number)
+
+    self._DebugPrintValue(description, value_string)
+
   def _ReadHeader(self, file_object):
     """Reads a page header.
 
     Args:
-      file_object: a file-like object.
+      file_object (file): a file-like object.
+
+    Returns:
+      cim_page_header: page header.
 
     Raises:
-      IOError: if the page header cannot be read.
+      ParseError: if the page header cannot be read.
     """
     file_offset = file_object.tell()
-    if self._debug:
-      print(u'Reading page header at offset: 0x{0:08x}'.format(file_offset))
 
-    page_header_data = file_object.read(self._PAGE_HEADER.sizeof())
-
-    try:
-      page_header_struct = self._PAGE_HEADER.parse(page_header_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse page header at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
-
-    self.page_type = page_header_struct.get(u'page_type')
-    self.root_page_number = page_header_struct.get(u'root_page_number')
-    self._number_of_keys = page_header_struct.get(u'number_of_keys')
+    page_header = self._ReadStructure(
+        file_object, file_offset, self._PAGE_HEADER_SIZE, self._PAGE_HEADER,
+        u'page header')
 
     if self._debug:
-      print(u'Page header data:')
-      print(hexdump.Hexdump(page_header_data))
+      self._DebugPrintHeader(page_header)
 
-    if self._debug:
-      print(u'Page type\t\t\t\t\t\t\t\t: 0x{0:04x} ({1:s})'.format(
-          self.page_type, self._PAGE_TYPES.get(self.page_type, u'Unknown')))
-      print(u'Mapped page number\t\t\t\t\t\t\t: {0:d}'.format(
-          page_header_struct.get(u'mapped_page_number')))
-      print(u'Unknown2\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          page_header_struct.get(u'unknown2')))
-      print(u'Root page number\t\t\t\t\t\t\t: {0:d}'.format(
-          self.root_page_number))
-      print(u'Number of keys\t\t\t\t\t\t\t\t: {0:d}'.format(
-          self._number_of_keys))
-      print(u'')
+    self.page_type = page_header.page_type
+    self.root_page_number = page_header.root_page_number
+    self._number_of_keys = page_header.number_of_keys
 
-  def _ReadKeyOffsets(self, file_object):
+    return page_header
+
+  def _ReadKeyOffsets(self, page_header, file_object):
     """Reads page key offsets.
 
     Args:
-      file_object: a file-like object.
+      page_header (cim_page_header): page header.
+      file_object (file): a file-like object.
 
     Raises:
-      IOError: if the page key offsets cannot be read.
+      ParseError: if the page key offsets cannot be read.
     """
-    if self._number_of_keys == 0:
+    if page_header.number_of_keys == 0:
       return
 
     file_offset = file_object.tell()
     if self._debug:
-      print(u'Reading page keys offsets at offset: 0x{0:08x}'.format(
+      print(u'Reading page key offsets at offset: 0x{0:08x}'.format(
           file_offset))
 
-    offsets_data_size = self._number_of_keys * 2
+    offsets_data_size = page_header.number_of_keys * 2
     offsets_data = file_object.read(offsets_data_size)
 
     if self._debug:
-      print(u'Page keys offsets data:')
-      print(hexdump.Hexdump(offsets_data))
+      self._DebugPrintData(u'Page key offsets data', offsets_data)
+
+    context = dtfabric_runtime.DataTypeMapContext(values={
+        u'cim_page_header': page_header})
 
     try:
-      self._key_offsets = construct.Array(
-          self._number_of_keys, construct.ULInt16(u'offset')).parse(
-              offsets_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse page keys offsets at offset: 0x{0:08x} '
+      self._key_offsets = self._PAGE_KEY_OFFSETS.MapByteStream(
+          offsets_data, context=context)
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError((
+          u'Unable to parse page key offsets at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
     if self._debug:
-      for index in range(self._number_of_keys):
-        print(u'Page key: {0:d} offset\t\t\t\t\t\t\t: 0x{1:04x}'.format(
-            index, self._key_offsets[index]))
-      print(u'')
+      self._DebugPrintKeyOffsets(self._key_offsets)
 
   def _ReadKeyData(self, file_object):
     """Reads page key data.
 
     Args:
-      file_object: a file-like object.
+      file_object (file): a file-like object.
 
     Raises:
-      IOError: if the page key data cannot be read.
+      ParseError: if the page key data cannot be read.
     """
     file_offset = file_object.tell()
     if self._debug:
-      print(u'Reading page keys data at offset: 0x{0:08x}'.format(file_offset))
+      print(u'Reading page key data at offset: 0x{0:08x}'.format(file_offset))
+
+    size_data = file_object.read(self._UINT16LE_SIZE)
 
     try:
-      data_size = construct.ULInt16(u'data_size').parse_stream(file_object)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse page keys data size at offset: 0x{0:08x} '
+      data_size = self._UINT16LE.MapByteStream(size_data)
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError((
+          u'Unable to parse page key data size at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
+    if self._debug:
+      value_string = u'{0:d} ({1:d} bytes)'.format(data_size, data_size * 2)
+      self._DebugPrintValue(u'Page key data size', value_string)
+
     if data_size == 0:
+      if self._debug:
+        self._DebugPrintData(u'Page key data', size_data)
       return
 
-    data_size *= 2
+    key_data = file_object.read(data_size * 2)
 
     if self._debug:
-      print(u'Page keys data size\t\t\t\t\t\t\t: {0:d} bytes'.format(
-          data_size))
+      self._DebugPrintData(u'Page key data', b''.join([size_data, key_data]))
 
-    data = file_object.read(data_size)
-
-    if self._debug:
-      print(u'Page keys data:')
-      print(hexdump.Hexdump(data))
-
-    for index in range(len(self._key_offsets)):
-      page_key_offset = self._key_offsets[index] * 2
-      page_key_size = page_key_offset + 2
-
-      try:
-        number_of_segments = self._PAGE_KEY_NUMBER_OF_SEGMENTS.parse(
-            data[page_key_offset:page_key_size])
-      except construct.FieldError as exception:
-        raise IOError((
-            u'Unable to parse page key: {0:d} data size '
-            u'with error: {1:s}').format(index, exception))
-
-      page_key_size = page_key_offset + (number_of_segments * 2) + 2
+    for index, key_offset in enumerate(self._key_offsets):
+      page_key_offset = key_offset * 2
 
       if self._debug:
-        print(u'Page key: {0:d} data:'.format(index))
-        print(hexdump.Hexdump(data[page_key_offset:page_key_size]))
-
-      page_key_offset += 2
+        description = u'Page key: {0:d} offset'.format(index)
+        value_string = u'{0:d} (0x{0:08x})'.format(page_key_offset)
+        self._DebugPrintValue(description, value_string)
 
       try:
-        page_key_segments = construct.Array(
-            number_of_segments, construct.ULInt16(u'segment_index')).parse(
-                data[page_key_offset:page_key_size])
-      except construct.FieldError as exception:
-        raise IOError((
-            u'Unable to parse page key: {0:d} segments '
-            u'with error: {1:s}').format(index, exception))
+        page_key = self._PAGE_KEY.MapByteStream(key_data[page_key_offset:])
+      except dtfabric_errors.MappingError as exception:
+        raise ParseError(
+            u'Unable to parse page key: {0:d} with error: {1:s}'.format(
+                index, exception))
 
-      self._page_key_segments.append(page_key_segments)
+      page_key_size = page_key_offset + 2 + (page_key.number_of_segments * 2)
 
       if self._debug:
-        print(
-            u'Page key: {0:d} number of segments\t\t\t\t\t\t: {1:d}'.format(
-                index, number_of_segments))
-        page_key_segments_string = u', '.join([
+        description = u'Page key: {0:d} data:'.format(index)
+        self._DebugPrintData(
+            description, key_data[page_key_offset:page_key_size])
+
+      self._page_key_segments.append(page_key.segments)
+
+      if self._debug:
+        description = u'Page key: {0:d} number of segments'.format(index)
+        value_string = u'{0:d}'.format(page_key.number_of_segments)
+        self._DebugPrintValue(description, value_string)
+
+        description = u'Page key: {0:d} segments'.format(index)
+        value_string = u', '.join([
             u'{0:d}'.format(segment_index)
-            for segment_index in page_key_segments])
-        print(u'Page key: {0:d} segments\t\t\t\t\t\t\t: {1:s}'.format(
-            index, page_key_segments_string))
+            for segment_index in page_key.segments])
+        self._DebugPrintValue(description, value_string)
+
         print(u'')
+
+  def _ReadOffsetsTable(self, file_object, file_offset, description):
+    """Reads an offsets table.
+
+    Args:
+      file_object (file): a file-like object.
+      file_offset (int): offset of the data relative from the start of
+          the file-like object.
+      description (str): description of the offsets table.
+
+    Returns:
+      tuple[int, ...]: offsets number array.
+
+    Raises:
+      ParseError: if the offsets table cannot be read.
+    """
+    if self._debug:
+      print(u'Reading {0:s} at offset: 0x{1:08x}'.format(
+          description, file_offset))
+
+    try:
+      number_of_offsets_data = file_object.read(self._UINT16LE_SIZE)
+    except IOError as exception:
+      raise ParseError((
+          u'Unable to read number of offsets data at offset: 0x{0:08x} '
+          u'with error: {1:s}').format(file_offset, exception))
+
+    if len(number_of_offsets_data) != self._UINT16LE_SIZE:
+      raise ParseError((
+          u'Unable to read number of offsets data at offset: 0x{0:08x} '
+          u'with error: missing data').format(file_offset))
+
+    try:
+      number_of_offsets = self._UINT16LE.MapByteStream(number_of_offsets_data)
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError((
+          u'Unable to parse number of offsets at offset: 0x{0:08x} with error '
+          u'error: {1:s}').format(file_offset, exception))
+
+    if number_of_offsets == 0:
+      offsets_data = b''
+    else:
+      offsets_data_size = number_of_offsets * self._UINT16LE_SIZE
+
+      try:
+        offsets_data = file_object.read(offsets_data_size)
+      except IOError as exception:
+        raise ParseError((
+            u'Unable to read offsets data at offset: 0x{0:08x} with error: '
+            u'{1:s}').format(file_offset, exception))
+
+      if len(offsets_data) != offsets_data_size:
+        raise ParseError((
+            u'Unable to read offsets data at offset: 0x{0:08x} with error: '
+            u'missing data').format(file_offset))
+
+    if self._debug:
+      data_description = u'{0:s} data'.format(description.title())
+      self._DebugPrintData(data_description, b''.join([
+          number_of_offsets_data, offsets_data]))
+
+      value_string = u'{0:d}'.format(number_of_offsets)
+      self._DebugPrintValue(u'Number of offsets', value_string)
+
+    if not offsets_data:
+      offsets = tuple()
+    else:
+      context = dtfabric_runtime.DataTypeMapContext(values={
+          u'number_of_offsets': number_of_offsets})
+
+      try:
+        offsets = self._OFFSETS.MapByteStream(offsets_data, context=context)
+
+      except dtfabric_errors.MappingError as exception:
+        raise ParseError((
+            u'Unable to parse offsets data at offset: 0x{0:08x} with error: '
+            u'{1:s}').format(file_offset, exception))
+
+    return offsets
 
   def _ReadValueOffsets(self, file_object):
     """Reads page value offsets.
 
     Args:
-      file_object: a file-like object.
+      file_object (file): a file-like object.
 
     Raises:
-      IOError: if the page value offsets cannot be read.
+      ParseError: if the page value offsets cannot be read.
     """
     file_offset = file_object.tell()
-    if self._debug:
-      print(u'Reading page value offsets at offset: 0x{0:08x}'.format(
-          file_offset))
-
-    try:
-      number_of_offsets = construct.ULInt16(u'number_of_offsets').parse_stream(
-          file_object)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse number of page value offsets at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
+    offset_array = self._ReadOffsetsTable(
+        file_object, file_offset, u'page value offsets')
 
     if self._debug:
-      print(u'Number of offsets\t\t\t\t\t\t\t: {0:d}'.format(number_of_offsets))
+      for index, offset in enumerate(offset_array):
+        description = u'Page value: {0:d} offset'.format(index)
+        value_string = u'0x{0:04x}'.format(offset)
+        self._DebugPrintValue(description, value_string)
 
-    if number_of_offsets == 0:
-      return
-
-    offsets_data = file_object.read(number_of_offsets * 2)
-
-    if self._debug:
-      print(u'Page value offsets:')
-      print(hexdump.Hexdump(offsets_data))
-
-    try:
-      offset_array = construct.Array(
-          number_of_offsets, construct.ULInt16(u'offset')).parse(offsets_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse page value offsets at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
-
-    if self._debug:
-      for index in range(number_of_offsets):
-        print(u'Page value: {0:d} offset\t\t\t\t\t\t\t: 0x{1:04x}'.format(
-            index, offset_array[index]))
       print(u'')
 
     self._page_value_offsets = offset_array
@@ -303,57 +562,62 @@ class IndexBinaryTreePage(object):
     """Reads page value data.
 
     Args:
-      file_object: a file-like object.
+      file_object (file): a file-like object.
 
     Raises:
-      IOError: if the page value data cannot be read.
+      ParseError: if the page value data cannot be read.
     """
     file_offset = file_object.tell()
     if self._debug:
       print(u'Reading page value data at offset: 0x{0:08x}'.format(file_offset))
 
+    size_data = file_object.read(self._UINT16LE_SIZE)
+
     try:
-      data_size = construct.ULInt16(u'data_size').parse_stream(file_object)
-    except construct.FieldError as exception:
-      raise IOError((
+      data_size = self._UINT16LE.MapByteStream(size_data)
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError((
           u'Unable to parse page value data size at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
     if self._debug:
-      print(u'Page value data size\t\t\t\t\t\t\t: {0:d} bytes'.format(
-          data_size))
+      value_string = u'{0:d} bytes'.format(data_size)
+      self._DebugPrintValue(u'Page value data size', value_string)
 
     if data_size == 0:
+      self._DebugPrintData(u'Page value data', size_data)
       return
 
-    data = file_object.read(data_size)
+    value_data = file_object.read(data_size)
 
     if self._debug:
-      print(u'Page value data:')
-      print(hexdump.Hexdump(data))
+      self._DebugPrintData(u'Page value data', b''.join([
+          size_data, value_data]))
 
-    for index in range(len(self._page_value_offsets)):
-      page_value_offset = self._page_value_offsets[index]
+    for index, page_value_offset in enumerate(self._page_value_offsets):
       # TODO: determine size
 
       value_string = construct.CString(u'string').parse(
-          data[page_value_offset:])
+          value_data[page_value_offset:])
+
       if self._debug:
-        print(u'Page value: {0:d} data: {1:s}'.format(index, value_string))
+        description = u'Page value: {0:d} data'.format(index)
+        self._DebugPrintValue(description, value_string)
 
       self._page_values.append(value_string)
 
     if self._debug and self._page_value_offsets:
       print(u'')
 
-  def _ReadSubPages(self, file_object):
+  def _ReadSubPages(self, page_header, file_object):
     """Reads sub pages data.
 
     Args:
-      file_object: a file-like object.
+      page_header (cim_page_header): page header.
+      file_object (file): a file-like object.
 
     Raises:
-      IOError: if the sub pages data cannot be read.
+      ParseError: if the sub pages cannot be read.
     """
     file_offset = file_object.tell()
     if self._debug:
@@ -361,34 +625,33 @@ class IndexBinaryTreePage(object):
 
     number_of_entries = self._number_of_keys + 1
     entries_data_size = number_of_entries * 4
+
     entries_data = file_object.read(entries_data_size)
 
     if self._debug:
-      print(u'Sub pages array data:')
-      print(hexdump.Hexdump(entries_data))
+      self._DebugPrintData(u'Sub pages array data', entries_data)
+
+    context = dtfabric_runtime.DataTypeMapContext(values={
+        u'cim_page_header': page_header})
 
     try:
-      sub_pages_array = construct.Array(
-          number_of_entries, construct.ULInt32(u'page_number')).parse(
-              entries_data)
-    except construct.FieldError as exception:
-      raise IOError((
+      sub_pages_array = self._PAGE_SUBPAGES.MapByteStream(
+          entries_data, context=context)
+
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError((
           u'Unable to parse sub pages at offset: 0x{0:08x} '
           u'with error: {1:s}').format(file_offset, exception))
 
-    for index in range(number_of_entries):
-      page_number = sub_pages_array[index]
+    for index, page_number in enumerate(sub_pages_array):
       if page_number not in (0, 0xffffffff):
         self.sub_pages.append(page_number)
 
       if self._debug:
-        if page_number in (0, 0xffffffff):
-          print((
-              u'Sub page: {0:d} mapped page number\t\t\t\t\t\t: 0x{1:08x} '
-              u'(unavailable)').format(index, page_number))
-        else:
-          print(u'Sub page: {0:d} mapped page number\t\t\t\t\t\t: {1:d}'.format(
-              index, page_number))
+        description = u'Sub page: {0:d} mapped page number'.format(index)
+        self._DebugPrintPageNumber(
+            description, page_number,
+            unavailable_page_numbers=set([0, 0xffffffff]))
 
     if self._debug:
       print(u'')
@@ -397,12 +660,11 @@ class IndexBinaryTreePage(object):
     """Reads a page.
 
     Args:
-      file_object: a file-like object.
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
+      file_object (file): a file-like object.
+      file_offset (int): offset of the page relative from the start of the file.
 
     Raises:
-      IOError: if the page cannot be read.
+      ParseError: if the page cannot be read.
     """
     file_object.seek(file_offset, os.SEEK_SET)
 
@@ -410,18 +672,17 @@ class IndexBinaryTreePage(object):
       print(u'Reading index binary-tree page at offset: 0x{0:08x}'.format(
           file_offset))
 
-    self._ReadHeader(file_object)
+    page_header = self._ReadHeader(file_object)
 
-    if self._number_of_keys > 0:
-      array_data_size = self._number_of_keys * 4
+    if page_header.number_of_keys > 0:
+      array_data_size = page_header.number_of_keys * 4
       array_data = file_object.read(array_data_size)
 
       if self._debug:
-        print(u'Unknown array data:')
-        print(hexdump.Hexdump(array_data))
+        self._DebugPrintData(u'Unknown array data', array_data)
 
-    self._ReadSubPages(file_object)
-    self._ReadKeyOffsets(file_object)
+    self._ReadSubPages(page_header, file_object)
+    self._ReadKeyOffsets(page_header, file_object)
     self._ReadKeyData(file_object)
     self._ReadValueOffsets(file_object)
     self._ReadValueData(file_object)
@@ -431,8 +692,7 @@ class IndexBinaryTreePage(object):
     trailing_data = file_object.read(trailing_data_size)
 
     if self._debug:
-      print(u'Trailing data:')
-      print(hexdump.Hexdump(trailing_data))
+      self._DebugPrintData(u'Trailing data', trailing_data)
 
     self.keys = []
     for page_key_segments in self._page_key_segments:
@@ -448,15 +708,14 @@ class IndexBinaryTreePage(object):
 
 
 class IndexBinaryTreeFile(object):
-  """Class that contains an index binary-tree (Index.btr) file."""
+  """An index binary-tree (Index.btr) file."""
 
   def __init__(self, index_mapping_file, debug=False):
-    """Initializes an index binary-tree file object.
+    """Initializes an index binary-tree file.
 
     Args:
       index_mapping_file: an index mapping file (instance of MappingFile).
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(IndexBinaryTreeFile, self).__init__()
     self._debug = debug
@@ -472,10 +731,10 @@ class IndexBinaryTreeFile(object):
     """Retrieves a specific page.
 
     Args:
-      page_number: an integer containing the page number.
+      page_number (int): page number.
 
     Returns:
-      An index binary-tree page (instance of IndexBinaryTreePage) or None.
+      IndexBinaryTreePage: an index binary-tree page or None.
     """
     file_offset = page_number * IndexBinaryTreePage.PAGE_SIZE
     if file_offset >= self._file_size:
@@ -488,14 +747,10 @@ class IndexBinaryTreeFile(object):
     """Reads a page.
 
     Args:
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
+      file_offset (int): offset of the page relative from the start of the file.
 
     Return:
-      An index binary-tree page (instance of IndexBinaryTreePage).
-
-    Raises:
-      IOError: if the page cannot be read.
+      IndexBinaryTreePage: an index binary-tree page.
     """
     index_page = IndexBinaryTreePage(debug=self._debug)
     index_page.ReadPage(self._file_object, file_offset)
@@ -511,7 +766,7 @@ class IndexBinaryTreeFile(object):
     """Retrieves the first mapped page.
 
     Returns:
-      An index binary-tree page (instance of IndexBinaryTreePage) or None.
+      IndexBinaryTreePage: an index binary-tree page or None.
     """
     if not self._first_mapped_page:
       page_number = self._index_mapping_file.mappings[0]
@@ -535,10 +790,10 @@ class IndexBinaryTreeFile(object):
     """Retrieves a specific mapped page.
 
     Args:
-      page_number: an integer containing the page number.
+      page_number (int): page number.
 
     Returns:
-      An index binary-tree page (instance of IndexBinaryTreePage) or None.
+      IndexBinaryTreePage: an index binary-tree page or None.
     """
     mapped_page_number = self._index_mapping_file.mappings[page_number]
 
@@ -555,7 +810,7 @@ class IndexBinaryTreeFile(object):
     """Retrieves the root page.
 
     Returns:
-      An index binary-tree page (instance of IndexBinaryTreePage) or None.
+      IndexBinaryTreePage: an index binary-tree page or None.
     """
     if not self._root_page:
       first_mapped_page = self.GetFirstMappedPage()
@@ -580,7 +835,7 @@ class IndexBinaryTreeFile(object):
     """Opens the index binary-tree file.
 
     Args:
-      filename: a string containing the filename.
+      filename (str): name of the file.
     """
     stat_object = os.stat(filename)
     self._file_size = stat_object.st_size
@@ -595,37 +850,85 @@ class IndexBinaryTreeFile(object):
         file_offset += IndexBinaryTreePage.PAGE_SIZE
 
 
-class MappingFile(object):
-  """Class that contains mappings (*.map) file.
+class MappingFile(BinaryDataFormat):
+  """Mappings (*.map) file.
 
   Attributes:
-    data_size: an integer containing the data size of the mappings file.
-    mapping: a list of integers containing the mappings to page
-             numbers in the index binary-tree or objects data file.
+    data_size (int): data size of the mappings file.
+    mapping (list[int]): mappings to page numbers in the index binary-tree
+        or objects data file.
   """
 
+  _DATA_TYPE_FABRIC_DEFINITION = b'\n'.join([
+      b'name: uint32',
+      b'type: integer',
+      b'attributes:',
+      b'  format: unsigned',
+      b'  size: 4',
+      b'  units: bytes',
+      b'---',
+      b'name: uint32le',
+      b'type: integer',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'  format: unsigned',
+      b'  size: 4',
+      b'  units: bytes',
+      b'---',
+      b'name: cim_map_footer',
+      b'type: structure',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'members:',
+      b'- name: signature',
+      b'  data_type: uint32',
+      b'---',
+      b'name: cim_map_header',
+      b'type: structure',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'members:',
+      b'- name: signature',
+      b'  data_type: uint32',
+      b'- name: format_version',
+      b'  data_type: uint32',
+      b'- name: number_of_pages',
+      b'  data_type: uint32',
+      b'---',
+      b'name: cim_map_page_numbers',
+      b'type: sequence',
+      b'element_data_type: uint32le',
+      b'number_of_elements: number_of_entries',
+  ])
+
+  _DATA_TYPE_FABRIC = dtfabric_fabric.DataTypeFabric(
+      yaml_definition=_DATA_TYPE_FABRIC_DEFINITION)
+
+  _UINT32LE = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'uint32le')
+
+  _UINT32LE_SIZE = _UINT32LE.GetByteSize()
+
   _FOOTER_SIGNATURE = 0x0000dcba
+
+  _FILE_FOOTER = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_map_footer')
+
+  _FILE_FOOTER_SIZE = _FILE_FOOTER.GetByteSize()
+
   _HEADER_SIGNATURE = 0x0000abcd
 
-  _FILE_FOOTER = construct.Struct(
-      u'file_footer',
-      construct.ULInt32(u'signature'))
+  _FILE_HEADER = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_map_header')
 
-  _FILE_HEADER = construct.Struct(
-      u'file_header',
-      construct.ULInt32(u'signature'),
-      construct.ULInt32(u'format_version'),
-      construct.ULInt32(u'number_of_pages'))
+  _FILE_HEADER_SIZE = _FILE_HEADER.GetByteSize()
+
+  _PAGE_NUMBERS = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'cim_map_page_numbers')
 
   def __init__(self, debug=False):
-    """Initializes a mappings file object.
+    """Initializes a mappings file.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
-    super(MappingFile, self).__init__()
-    self._debug = debug
+    super(MappingFile, self).__init__(debug=debug)
     self._file_object = None
     self._file_object_opened_in_object = False
     self._file_size = 0
@@ -633,178 +936,211 @@ class MappingFile(object):
     self.data_size = 0
     self.mappings = []
 
+  def _DebugPrintFooter(self, file_footer):
+    """Prints file footer debug information.
+
+    Args:
+      file_footer (cim_map_footer): file footer.
+    """
+    value_string = u'0x{0:08x}'.format(file_footer.signature)
+    self._DebugPrintValue(u'Signature', value_string)
+
+    print(u'')
+
+  def _DebugPrintHeader(self, file_header):
+    """Prints file header debug information.
+
+    Args:
+      file_header (cim_map_header): file header.
+    """
+    value_string = u'0x{0:08x}'.format(file_header.signature)
+    self._DebugPrintValue(u'Signature', value_string)
+
+    value_string = u'0x{0:08x}'.format(file_header.format_version)
+    self._DebugPrintValue(u'Format version', value_string)
+
+    value_string = u'{0:d}'.format(file_header.number_of_pages)
+    self._DebugPrintValue(u'Signature', value_string)
+
+    print(u'')
+
+  def _DebugPrintPageNumber(
+      self, description, page_number, unavailable_page_numbers=None):
+    """Prints a page number debug information.
+
+    Args:
+      description (str): description.
+      page_number (int): page number.
+      unavailable_page_numbers (Optional[set[int]]): unavailable page numbers.
+    """
+    if not unavailable_page_numbers:
+      unavailable_page_numbers = set()
+
+    if page_number in unavailable_page_numbers:
+      value_string = u'0x{0:08x} (unavailable)'.format(page_number)
+    else:
+      value_string = u'{0:d}'.format(page_number)
+
+    self._DebugPrintValue(description, value_string)
+
   def _ReadFileFooter(self):
     """Reads the file footer.
 
     Raises:
-      IOError: if the file footer cannot be read.
+      ParseError: if the file footer cannot be read.
     """
-    file_footer_data = self._file_object.read(self._FILE_FOOTER.sizeof())
+    file_offset = self._file_object.tell()
+
+    file_footer = self._ReadStructure(
+        self._file_object, file_offset, self._FILE_FOOTER_SIZE,
+        self._FILE_FOOTER, u'file footer')
 
     if self._debug:
-      print(u'File footer data:')
-      print(hexdump.Hexdump(file_footer_data))
+      self._DebugPrintFooter(file_footer)
 
-    try:
-      file_footer_struct = self._FILE_FOOTER.parse(file_footer_data)
-    except construct.FieldError as exception:
-      file_offset = self._file_object.tell()
-      raise IOError((
-          u'Unable to parse file footer at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
-
-    signature = file_footer_struct.get(u'signature')
-
-    if self._debug:
-      print(u'Signature\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(signature))
-
-    if signature != self._FOOTER_SIGNATURE:
-      raise IOError(
-          u'Unsupported file footer signature: 0x{0:08x}'.format(signature))
-
-    if self._debug:
-      print(u'')
+    if file_footer.signature != self._FOOTER_SIGNATURE:
+      raise ParseError(u'Unsupported file footer signature: 0x{0:08x}'.format(
+          file_footer.signature))
 
   def _ReadFileHeader(self, file_offset=0):
     """Reads the file header.
 
     Args:
-      file_offset: optional integer containing the offset of the mappings file
-                   relative from the start of the file.
+      file_offset (int): offset of the mappings file header relative from the
+          start of the file.
 
     Raises:
-      IOError: if the file header cannot be read.
+      ParseError: if the file header cannot be read.
     """
-    self._file_object.seek(file_offset, os.SEEK_SET)
+    file_header = self._ReadStructure(
+        self._file_object, file_offset, self._FILE_HEADER_SIZE,
+        self._FILE_HEADER, u'file header')
 
     if self._debug:
-      print(u'Reading file header at offset: 0x{0:08x}'.format(file_offset))
+      self._DebugPrintHeader(file_header)
 
-    file_header_data = self._file_object.read(self._FILE_HEADER.sizeof())
-
-    if self._debug:
-      print(u'File header data:')
-      print(hexdump.Hexdump(file_header_data))
-
-    try:
-      file_header_struct = self._FILE_HEADER.parse(file_header_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse file header at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
-
-    signature = file_header_struct.get(u'signature')
-    format_version = file_header_struct.get(u'format_version')
-    number_of_pages = file_header_struct.get(u'number_of_pages')
-
-    if self._debug:
-      print(u'Signature\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(signature))
-      print(u'Format version\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(format_version))
-      print(u'Number of pages\t\t\t\t\t\t\t\t: {0:d}'.format(number_of_pages))
-
-    if signature != self._HEADER_SIGNATURE:
-      raise IOError(
-          u'Unsupported file header signature: 0x{0:08x}'.format(signature))
-
-    if self._debug:
-      print(u'')
+    if file_header.signature != self._HEADER_SIGNATURE:
+      raise ParseError(u'Unsupported file header signature: 0x{0:08x}'.format(
+          file_header.signature))
 
   def _ReadMappings(self):
     """Reads the mappings.
 
     Raises:
-      IOError: if the mappings cannot be read.
+      ParseError: if the mappings cannot be read.
     """
     file_offset = self._file_object.tell()
-    if self._debug:
-      print(u'Reading mappings at offset: 0x{0:08x}'.format(file_offset))
-
-    try:
-      number_of_entries = construct.ULInt32(u'number_of_entries').parse_stream(
-          self._file_object)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse number of mapping entries at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
+    mappings_array = self._ReadPageNumbersTable(
+        self._file_object, file_offset, u'mappings')
 
     if self._debug:
-      print(u'Number of entries\t\t\t\t\t\t\t: {0:d}'.format(number_of_entries))
+      for index, page_number in enumerate(mappings_array):
+        description = u'Mapping entry: {0:d} page number'.format(index)
+        self._DebugPrintPageNumber(
+            description, page_number,
+            unavailable_page_numbers=set([0xffffffff]))
 
-    entries_data = self._file_object.read(number_of_entries * 4)
-
-    if self._debug:
-      print(u'Entries data:')
-      print(hexdump.Hexdump(entries_data))
-
-    try:
-      mappings_array = construct.Array(
-          number_of_entries, construct.ULInt32(u'page_number')).parse(
-              entries_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse mapping entries at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
-
-    if self._debug:
-      for index in range(number_of_entries):
-        page_number = mappings_array[index]
-        if page_number == 0xffffffff:
-          print((
-              u'Mapping entry: {0:d} page number\t\t\t\t\t\t: 0x{1:08x} '
-              u'(unavailable)').format(index, page_number))
-        else:
-          print(u'Mapping entry: {0:d} page number\t\t\t\t\t\t: {1:d}'.format(
-              index, page_number))
       print(u'')
 
     self.mappings = mappings_array
+
+  def _ReadPageNumbersTable(self, file_object, file_offset, description):
+    """Reads a page numbers table.
+
+    Args:
+      file_object (file): a file-like object.
+      file_offset (int): offset of the data relative from the start of
+          the file-like object.
+      description (str): description of the page numbers table.
+
+    Returns:
+      tuple[int, ...]: page number array.
+
+    Raises:
+      ParseError: if the page numbers table cannot be read.
+    """
+    if self._debug:
+      print(u'Reading {0:s} at offset: 0x{1:08x}'.format(
+          description, file_offset))
+
+    try:
+      number_of_entries_data = file_object.read(self._UINT32LE_SIZE)
+    except IOError as exception:
+      raise ParseError((
+          u'Unable to read number of entries data at offset: 0x{0:08x} '
+          u'with error: {1:s}').format(file_offset, exception))
+
+    if len(number_of_entries_data) != self._UINT32LE_SIZE:
+      raise ParseError((
+          u'Unable to read number of entries data at offset: 0x{0:08x} '
+          u'with error: missing data').format(file_offset))
+
+    try:
+      number_of_entries = self._UINT32LE.MapByteStream(number_of_entries_data)
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError((
+          u'Unable to parse number of entries at offset: 0x{0:08x} with error '
+          u'error: {1:s}').format(file_offset, exception))
+
+    if number_of_entries == 0:
+      entries_data = b''
+    else:
+      entries_data_size = number_of_entries * self._UINT32LE_SIZE
+
+      try:
+        entries_data = file_object.read(entries_data_size)
+      except IOError as exception:
+        raise ParseError((
+            u'Unable to read entries data at offset: 0x{0:08x} with error: '
+            u'{1:s}').format(file_offset, exception))
+
+      if len(entries_data) != entries_data_size:
+        raise ParseError((
+            u'Unable to read entries data at offset: 0x{0:08x} with error: '
+            u'missing data').format(file_offset))
+
+    if self._debug:
+      data_description = u'{0:s} data'.format(description.title())
+      self._DebugPrintData(data_description, b''.join([
+          number_of_entries_data, entries_data]))
+
+      value_string = u'{0:d}'.format(number_of_entries)
+      self._DebugPrintValue(u'Number of entries', value_string)
+
+    if not entries_data:
+      page_numbers = tuple()
+    else:
+      context = dtfabric_runtime.DataTypeMapContext(values={
+          u'number_of_entries': number_of_entries})
+
+      try:
+        page_numbers = self._PAGE_NUMBERS.MapByteStream(
+            entries_data, context=context)
+
+      except dtfabric_errors.MappingError as exception:
+        raise ParseError((
+            u'Unable to parse entries data at offset: 0x{0:08x} with error: '
+            u'{1:s}').format(file_offset, exception))
+
+    return page_numbers
 
   def _ReadUnknownEntries(self):
     """Reads unknown entries.
 
     Raises:
-      IOError: if the unknown entries cannot be read.
+      ParseError: if the unknown entries cannot be read.
     """
     file_offset = self._file_object.tell()
-    if self._debug:
-      print(u'Reading unknown entries at offset: 0x{0:08x}'.format(file_offset))
-
-    try:
-      number_of_entries = construct.ULInt32(u'number_of_entries').parse_stream(
-          self._file_object)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse number of unknown entries at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
+    unknown_entries_array = self._ReadPageNumbersTable(
+        self._file_object, file_offset, u'unknown entries')
 
     if self._debug:
-      print(u'Number of entries\t\t\t\t\t\t\t: {0:d}'.format(number_of_entries))
+      for index, page_number in enumerate(unknown_entries_array):
+        description = u'Unknown entry: {0:d} page number'.format(index)
+        self._DebugPrintPageNumber(
+            description, page_number,
+            unavailable_page_numbers=set([0xffffffff]))
 
-    entries_data = self._file_object.read(number_of_entries * 4)
-
-    if self._debug:
-      print(u'Entries data:')
-      print(hexdump.Hexdump(entries_data))
-
-    try:
-      unknown_entries_array = construct.Array(
-          number_of_entries, construct.ULInt32(u'page_number')).parse(
-              entries_data)
-    except construct.FieldError as exception:
-      raise IOError((
-          u'Unable to parse unknown entries at offset: 0x{0:08x} '
-          u'with error: {1:s}').format(file_offset, exception))
-
-    if self._debug:
-      for index in range(number_of_entries):
-        page_number = unknown_entries_array[index]
-        if page_number == 0xffffffff:
-          print((
-              u'Unknown entry: {0:d} page number\t\t\t\t\t\t: 0x{1:08x} '
-              u'(unavailable)').format(index, page_number))
-        else:
-          print(u'Unknown entry: {0:d} page number\t\t\t\t\t\t: {1:d}'.format(
-              index, page_number))
       print(u'')
 
   def Close(self):
@@ -817,9 +1153,9 @@ class MappingFile(object):
     """Opens the mappings file.
 
     Args:
-      filename: a string containing the filename.
-      file_offset: optional integer containing the offset of the mappings file
-                   relative from the start of the file.
+      filename (str): name of the file.
+      file_offset (Optional[int]): offset of the mappings file relative from
+          the start of the file.
     """
     stat_object = os.stat(filename)
     self._file_size = stat_object.st_size
@@ -836,60 +1172,31 @@ class MappingFile(object):
 
 
 class PropertyDescriptor(object):
-  """Class that contains a property descriptor.
+  """A property descriptor.
 
   Attributes:
-    definition_offset: an integer containing the definiton offset of
-                       the property.
-    name_offset: an integer containing the name offset of the property.
+    definition_offset (int): offset of the property definition.
+    name_offset (int): offset of the property name.
   """
 
   def __init__(self, name_offset, definition_offset):
-    """Initializes a property descriptor object.
+    """Initializes a property descriptor.
 
     Args:
-      name_offset: an integer containing the name offset of the property.
-      definition_offset: an integer containing the definition offset of
-                         the property.
+      name_offset (int): offset of the property name.
+      definition_offset (int): offset of the property definition.
     """
     super(PropertyDescriptor, self).__init__()
     self.definition_offset = definition_offset
     self.name_offset = name_offset
 
 
-class ObjectDescriptor(object):
-  """Class that contains an object descriptor.
-
-  Attributes:
-    data_checksum: an integer containing the checksum of the object record data.
-    data_offset: an integer containing the data offset of the object record.
-    data_size: an integer containing the data size of the object record.
-    identifier: an integer containing the identifier of the object record.
-  """
-
-  def __init__(self, identifier, data_offset, data_size, data_checksum):
-    """Initializes an object descriptor object.
-
-    Args:
-      identifier: an integer containing the identifier of the object record.
-      data_offset: an integer containing the data offset of the object record.
-      data_size: an integer containing the data size of the object record.
-      data_checksum: an integer containing the checksum of the object record
-                     data.
-    """
-    super(ObjectDescriptor, self).__init__()
-    self.data_checksum = data_checksum
-    self.data_offset = data_offset
-    self.data_size = data_size
-    self.identifier = identifier
-
-
 class ObjectRecord(object):
-  """Class that contains an object record.
+  """An object record.
 
   Attributes:
-    data_type: a string containg the object record data type.
-    data: a byte string containg the object record data.
+    data_type (str): object record data type.
+    data (bytes): object record data.
   """
 
   _CLASS_DEFINITION_OBJECT_RECORD = construct.Struct(
@@ -1064,7 +1371,7 @@ class ObjectRecord(object):
       object_record_data: a binary string containing the object record data.
 
     Raises:
-      IOError: if the object record cannot be read.
+      ParseError: if the object record cannot be read.
     """
     if self._debug:
       print(u'Reading class definition object record.')
@@ -1073,20 +1380,20 @@ class ObjectRecord(object):
       class_definition_struct = self._CLASS_DEFINITION_OBJECT_RECORD.parse(
           object_record_data)
     except construct.FieldError as exception:
-      raise IOError((
+      raise ParseError((
           u'Unable to parse class definition object record with '
           u'error: {0:s}').format(exception))
 
     try:
-      utf16_stream = class_definition_struct.get(u'super_class_name_string')
+      utf16_stream = class_definition_struct.super_class_name_string
       super_class_name_string = utf16_stream.decode(u'utf-16-le')
     except UnicodeDecodeError as exception:
       super_class_name_string = u''
 
-    super_class_name_string_size = class_definition_struct.get(
-        u'super_class_name_string_size')
-    date_time = class_definition_struct.get(u'date_time')
-    data_size = class_definition_struct.get(u'data_size')
+    super_class_name_string_size = (
+        class_definition_struct.super_class_name_string_size)
+    date_time = class_definition_struct.date_time
+    data_size = class_definition_struct.data_size
 
     if self._debug:
       print(u'Super class name string size\t\t\t\t\t\t: {0:d}'.format(
@@ -1114,11 +1421,10 @@ class ObjectRecord(object):
     """Reads a class definition header.
 
     Args:
-      class_definition_data: a binary string containing the class
-                             definition data.
+      class_definition_data (bytes): class definition data.
 
     Raises:
-      IOError: if the class definition cannot be read.
+      ParseError: if the class definition cannot be read.
     """
     if self._debug:
       print(u'Reading class definition header.')
@@ -1127,21 +1433,19 @@ class ObjectRecord(object):
       class_definition_header_struct = self._CLASS_DEFINITION_HEADER.parse(
           class_definition_data)
     except construct.FieldError as exception:
-      raise IOError((
+      raise ParseError((
           u'Unable to parse class definition header with error: {0:s}').format(
               exception))
 
-    number_of_property_descriptors = class_definition_header_struct.get(
-        u'number_of_property_descriptors')
-    property_descriptors_array = class_definition_header_struct.get(
-        u'property_descriptors')
+    number_of_property_descriptors = (
+        class_definition_header_struct.number_of_property_descriptors)
+    property_descriptors_array = (
+        class_definition_header_struct.property_descriptors)
 
     property_descriptors = []
     for index in range(number_of_property_descriptors):
-      property_name_offset = property_descriptors_array[index].get(
-          u'name_offset')
-      property_data_offset = property_descriptors_array[index].get(
-          u'data_offset')
+      property_name_offset = property_descriptors_array[index].name_offset
+      property_data_offset = property_descriptors_array[index].data_offset
 
       property_descriptor = PropertyDescriptor(
           property_name_offset, property_data_offset)
@@ -1149,25 +1453,25 @@ class ObjectRecord(object):
 
     if self._debug:
       print(u'Unknown1\t\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'unknown1')))
+          class_definition_header_struct.unknown1))
 
       print(u'Class name offset\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          class_definition_header_struct.get(u'class_name_offset')))
+          class_definition_header_struct.class_name_offset))
       print(u'Default value size\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'default_value_size')))
+          class_definition_header_struct.default_value_size))
 
       print(u'Super class name block size\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'super_class_name_block_size')))
+          class_definition_header_struct.super_class_name_block_size))
       print(u'Super class name block data:')
-      super_class_name_block_data = class_definition_header_struct.get(
-          u'super_class_name_block_data')
+      super_class_name_block_data = (
+          class_definition_header_struct.super_class_name_block_data)
       print(hexdump.Hexdump(super_class_name_block_data))
 
       print(u'Qualifiers block size\t\t\t\t\t\t\t: {0:d}'.format(
-          class_definition_header_struct.get(u'qualifiers_block_size')))
+          class_definition_header_struct.qualifiers_block_size))
       print(u'Qualifiers block data:')
-      qualifiers_block_data = class_definition_header_struct.get(
-          u'qualifiers_block_data')
+      qualifiers_block_data = (
+          class_definition_header_struct.qualifiers_block_data)
       print(hexdump.Hexdump(qualifiers_block_data))
 
       print(u'Number of property descriptors\t\t\t\t\t\t: {0:d}'.format(
@@ -1181,12 +1485,12 @@ class ObjectRecord(object):
                    index, property_descriptor.definition_offset))
 
       print(u'Default value data:')
-      default_value_data = class_definition_header_struct.get(
-          u'default_value_data')
+      default_value_data = (
+          class_definition_header_struct.default_value_data)
       print(hexdump.Hexdump(default_value_data))
 
-      properties_block_size = class_definition_header_struct.get(
-          u'properties_block_size')
+      properties_block_size = (
+          class_definition_header_struct.properties_block_size)
       print(u'Properties block size\t\t\t\t\t\t\t: {0:d} (0x{1:08x})'.format(
           properties_block_size & 0x7fffffff, properties_block_size))
 
@@ -1204,8 +1508,8 @@ class ObjectRecord(object):
 
       print(u'')
 
-    properties_block_data = class_definition_header_struct.get(
-        u'properties_block_data')
+    properties_block_data = (
+        class_definition_header_struct.properties_block_data)
     self._ReadClassDefinitionProperties(
         properties_block_data, property_descriptors)
 
@@ -1213,11 +1517,10 @@ class ObjectRecord(object):
     """Reads a class definition methods.
 
     Args:
-      class_definition_data: a binary string containing the class
-                             definition data.
+      class_definition_data (bytes): class definition data.
 
     Raises:
-      IOError: if the class definition cannot be read.
+      ParseError: if the class definition cannot be read.
     """
     if self._debug:
       print(u'Reading class definition methods.')
@@ -1226,7 +1529,7 @@ class ObjectRecord(object):
       class_definition_methods_struct = self._CLASS_DEFINITION_METHODS.parse(
           class_definition_data)
     except construct.FieldError as exception:
-      raise IOError((
+      raise ParseError((
           u'Unable to parse class definition methods with error: {0:s}').format(
               exception))
 
@@ -1251,7 +1554,7 @@ class ObjectRecord(object):
                             PropertyDescriptor).
 
     Raises:
-      IOError: if the class definition properties cannot be read.
+      ParseError: if the class definition properties cannot be read.
     """
     if self._debug:
       print(u'Reading class definition properties.')
@@ -1267,7 +1570,7 @@ class ObjectRecord(object):
       try:
         property_name_struct = self._PROPERTY_NAME.parse(property_name_data)
       except construct.FieldError as exception:
-        raise IOError((
+        raise ParseError((
             u'Unable to parse property name with error: {0:s}').format(
                 exception))
 
@@ -1288,7 +1591,7 @@ class ObjectRecord(object):
         property_definition_struct = self._PROPERTY_DEFINITION.parse(
             property_definition_data)
       except construct.FieldError as exception:
-        raise IOError((
+        raise ParseError((
             u'Unable to parse property definition with error: {0:s}').format(
                 exception))
 
@@ -1335,7 +1638,7 @@ class ObjectRecord(object):
       object_record_data: a binary string containing the object record data.
 
     Raises:
-      IOError: if the object record cannot be read.
+      ParseError: if the object record cannot be read.
     """
     if self._debug:
       print(u'Reading interface object record.')
@@ -1343,7 +1646,7 @@ class ObjectRecord(object):
     try:
       interface_struct = self._INTERFACE_OBJECT_RECORD.parse(object_record_data)
     except construct.FieldError as exception:
-      raise IOError(
+      raise ParseError(
           u'Unable to parse interace object record with error: {0:s}'.format(
               exception))
 
@@ -1379,7 +1682,7 @@ class ObjectRecord(object):
       object_record_data: a binary string containing the object record data.
 
     Raises:
-      IOError: if the object record cannot be read.
+      ParseError: if the object record cannot be read.
     """
     if self._debug:
       print(u'Reading registration object record.')
@@ -1388,7 +1691,7 @@ class ObjectRecord(object):
       registration_struct = self._REGISTRATION_OBJECT_RECORD.parse(
           object_record_data)
     except construct.FieldError as exception:
-      raise IOError((
+      raise ParseError((
           u'Unable to parse registration object record with '
           u'error: {0:s}').format(exception))
 
@@ -1454,33 +1757,55 @@ class ObjectRecord(object):
         self._ReadRegistration(self.data)
 
 
-class ObjectsDataPage(object):
-  """Class that contains an objects data page.
+class ObjectsDataPage(BinaryDataFormat):
+  """An objects data page.
 
   Attributes:
-    page_offset: an integer containing the page offset or None.
+    page_offset (int): page offset or None.
   """
 
+  _DATA_TYPE_FABRIC_DEFINITION = b'\n'.join([
+      b'name: uint32',
+      b'type: integer',
+      b'attributes:',
+      b'  format: unsigned',
+      b'  size: 4',
+      b'  units: bytes',
+      b'---',
+      b'name: cim_object_descriptor',
+      b'type: structure',
+      b'attributes:',
+      b'  byte_order: little-endian',
+      b'members:',
+      b'- name: identifier',
+      b'  data_type: uint32',
+      b'- name: data_offset',
+      b'  data_type: uint32',
+      b'- name: data_size',
+      b'  data_type: uint32',
+      b'- name: data_checksum',
+      b'  data_type: uint32',
+  ])
+
+  _DATA_TYPE_FABRIC = dtfabric_fabric.DataTypeFabric(
+      yaml_definition=_DATA_TYPE_FABRIC_DEFINITION)
+
+  _OBJECT_DESCRIPTOR = _DATA_TYPE_FABRIC.CreateDataTypeMap(
+      u'cim_object_descriptor')
+
+  _OBJECT_DESCRIPTOR_SIZE = _OBJECT_DESCRIPTOR.GetByteSize()
+
+  _EMPTY_OBJECT_DESCRIPTOR = b'\x00' * _OBJECT_DESCRIPTOR_SIZE
+
   PAGE_SIZE = 8192
-
-  _OBJECT_DESCRIPTOR = construct.Struct(
-      u'object_descriptor',
-      construct.ULInt32(u'identifier'),
-      construct.ULInt32(u'data_offset'),
-      construct.ULInt32(u'data_size'),
-      construct.ULInt32(u'data_checksum'))
-
-  _EMPTY_OBJECT_DESCRIPTOR = b'\x00' * _OBJECT_DESCRIPTOR.sizeof()
 
   def __init__(self, debug=False):
     """Initializes an objects data page object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
-    super(ObjectsDataPage, self).__init__()
-    self._debug = debug
+    super(ObjectsDataPage, self).__init__(debug=debug)
     self._object_descriptors = []
 
     self.page_offset = None
@@ -1489,62 +1814,63 @@ class ObjectsDataPage(object):
     """Reads an object descriptor.
 
     Args:
-      file_object: a file-like object.
+      file_object (file): a file-like object.
 
     Returns:
-      An object descriptor (instance of ObjectDescriptor) or None.
+      cim_object_descriptor: an object descriptor or None.
 
     Raises:
-      IOError: if the object descriptor cannot be read.
+      ParseError: if the object descriptor cannot be read.
     """
     file_offset = file_object.tell()
     if self._debug:
       print(u'Reading object descriptor at offset: 0x{0:08x}'.format(
           file_offset))
 
-    object_descriptor_data = file_object.read(
-        self._OBJECT_DESCRIPTOR.sizeof())
+    object_descriptor_data = file_object.read(self._OBJECT_DESCRIPTOR_SIZE)
 
     if self._debug:
-      print(u'Object descriptor data:')
-      print(hexdump.Hexdump(object_descriptor_data))
+      self._DebugPrintData(u'Object descriptor data', object_descriptor_data)
 
     # The last object descriptor (terminator) is filled with 0-byte values.
     if object_descriptor_data == self._EMPTY_OBJECT_DESCRIPTOR:
       return
 
     try:
-      object_descriptor_struct = self._OBJECT_DESCRIPTOR.parse(
+      object_descriptor = self._OBJECT_DESCRIPTOR.MapByteStream(
           object_descriptor_data)
-    except construct.FieldError as exception:
-      raise IOError(
+    except dtfabric_errors.MappingError as exception:
+      raise ParseError(
           u'Unable to parse object descriptor with error: {0:s}'.format(
               exception))
 
-    identifier = object_descriptor_struct.get(u'identifier')
-    data_offset = object_descriptor_struct.get(u'data_offset')
-    data_size = object_descriptor_struct.get(u'data_size')
-    data_checksum = object_descriptor_struct.get(u'data_checksum')
-
     if self._debug:
-      print(u'Identifier\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(
-          identifier))
-      print(u'Data offset\t\t\t\t\t\t\t\t: 0x{0:08x} (0x{1:08x})'.format(
-          data_offset, file_offset + data_offset))
-      print(u'Data size\t\t\t\t\t\t\t\t: {0:d}'.format(data_size))
-      print(u'Checksum\t\t\t\t\t\t\t\t: 0x{0:08x}'.format(data_checksum))
+      value_string = u'0x{0:08x}'.format(object_descriptor.identifier)
+      self._DebugPrintValue(u'Identifier', value_string)
+
+      value_string = u'0x{0:08x} (0x{1:08x})'.format(
+          object_descriptor.data_offset,
+          file_offset + object_descriptor.data_offset)
+      self._DebugPrintValue(u'Data offset', value_string)
+
+      value_string = u'{0:d}'.format(object_descriptor.data_size)
+      self._DebugPrintValue(u'Data size', value_string)
+
+      value_string = u'0x{0:08x}'.format(object_descriptor.data_checksum)
+      self._DebugPrintValue(u'Checksum', value_string)
+
       print(u'')
 
-    return ObjectDescriptor(identifier, data_offset, data_size, data_checksum)
+    return object_descriptor
 
   def _ReadObjectDescriptors(self, file_object):
     """Reads object descriptors.
 
     Args:
-      file_object: a file-like object.
+      file_object (file): a file-like object.
 
     Raises:
-      IOError: if the object descriptor cannot be read.
+      ParseError: if the object descriptor cannot be read.
     """
     while True:
       object_descriptor = self._ReadObjectDescriptor(file_object)
@@ -1561,7 +1887,7 @@ class ObjectsDataPage(object):
       data_size: an integer containing the object record data size.
 
     Returns:
-      An object descriptor (instance of ObjectDescriptor) or None.
+      cim_object_descriptor: an object descriptor or None.
     """
     object_descriptor_match = None
     for object_descriptor in self._object_descriptors:
@@ -1583,13 +1909,12 @@ class ObjectsDataPage(object):
     """Reads a page.
 
     Args:
-      file_object: a file-like object.
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
-      data_page: optional boolean value to indicate the page is a data page.
+      file_object (file): a file-like object.
+      file_offset (int): offset of the page relative from the start of the file.
+      data_page (Optional[bool]): True if the page is a data page.
 
     Raises:
-      IOError: if the page cannot be read.
+      ParseError: if the page cannot be read.
     """
     file_object.seek(file_offset, os.SEEK_SET)
 
@@ -1606,16 +1931,16 @@ class ObjectsDataPage(object):
     """Reads the data of an object record.
 
     Args:
-      file_object: a file-like object.
-      data_offset: integer containing the offset of the object record data
-                   relative from the start of the page.
-      data_size: an integer containing the object record data size.
+      file_object (file): a file-like object.
+      data_offset (int): offset of the object record data relative from
+          the start of the page.
+      data_size (int): object record data size.
 
     Returns:
-      A binary string containing the object record data.
+      bytes: object record data.
 
     Raises:
-      IOError: if the object record cannot be read.
+      ParseError: if the object record cannot be read.
     """
     # Make the offset relative to the start of the file.
     file_offset = self.page_offset + data_offset
@@ -1636,7 +1961,7 @@ class ObjectsDataPage(object):
 
 
 class ObjectsDataFile(object):
-  """Class that contains an objects data (Objects.data) file."""
+  """An objects data (Objects.data) file."""
 
   _KEY_SEGMENT_SEPARATOR = u'\\'
   _KEY_VALUE_SEPARATOR = u'.'
@@ -1650,8 +1975,7 @@ class ObjectsDataFile(object):
 
     Args:
       objects_mapping_file: an objects mapping file (instance of MappingFile).
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(ObjectsDataFile, self).__init__()
     self._debug = debug
@@ -1665,11 +1989,11 @@ class ObjectsDataFile(object):
     """Retrieves the key values from the key.
 
     Args:
-      key: a string containing the CIM key.
+      key (str): a CIM key.
 
     Returns:
-      An tuple containing the string of the key name, and integers
-      containing the page number, record identififer and data size or None.
+      tuple[str, int, int, int]: name of the key, corresponding page number,
+          record identifier and record data size or None.
     """
     _, _, key = key.rpartition(self._KEY_SEGMENT_SEPARATOR)
 
@@ -1706,11 +2030,11 @@ class ObjectsDataFile(object):
     """Retrieves a specific page.
 
     Args:
-      page_number: an integer containing the page number.
-      data_page: optional boolean value to indicate the page is a data page.
+      page_number (int): page number.
+      data_page (Optional[bool]): True if the page is a data page.
 
     Returns:
-      An objects data page (instance of ObjectsDataPage) or None.
+      ObjectsDataPage: objects data page or None.
     """
     file_offset = page_number * ObjectsDataPage.PAGE_SIZE
     if file_offset >= self._file_size:
@@ -1723,15 +2047,14 @@ class ObjectsDataFile(object):
     """Reads a page.
 
     Args:
-      file_offset: integer containing the offset of the page relative
-                   from the start of the file.
-      data_page: optional boolean value to indicate the page is a data page.
+      file_offset (int): offset of the page relative from the start of the file.
+      data_page (Optional[bool]): True if the page is a data page.
 
     Return:
-      An objects data page (instance of ObjectsDataPage).
+      ObjectsDataPage: objects data page or None.
 
     Raises:
-      IOError: if the page cannot be read.
+      ParseError: if the page cannot be read.
     """
     objects_page = ObjectsDataPage(debug=self._debug)
     objects_page.ReadPage(self._file_object, file_offset, data_page=data_page)
@@ -1747,11 +2070,11 @@ class ObjectsDataFile(object):
     """Retrieves a specific mapped page.
 
     Args:
-      page_number: an integer containing the page number.
-      data_page: optional boolean value to indicate the page is a data page.
+      page_number (int): page number.
+      data_page (Optional[bool]): True if the page is a data page.
 
     Returns:
-      An objects data page (instance of ObjectsDataPage) or None.
+      ObjectsDataPage: objects data page or None.
     """
     mapped_page_number = self._objects_mapping_file.mappings[page_number]
 
@@ -1768,10 +2091,10 @@ class ObjectsDataFile(object):
     """Retrieves a specific object record.
 
     Args:
-      key: a string containing the CIM key.
+      key (str): a CIM key.
 
     Returns:
-      An object record (instance of ObjectRecord) or None.
+      ObjectRecord: an object record or None.
     """
     key, page_number, record_identifier, data_size = self._GetKeyValues(key)
 
@@ -1816,7 +2139,7 @@ class ObjectsDataFile(object):
     """Opens the objects data file.
 
     Args:
-      filename: a string containing the filename.
+      filename (str): name of the file.
     """
     stat_object = os.stat(filename)
     self._file_size = stat_object.st_size
@@ -1826,7 +2149,7 @@ class ObjectsDataFile(object):
 
 
 class CIMRepository(object):
-  """Class that contains a CIM repository."""
+  """A CIM repository."""
 
   _MAPPING_VER = construct.ULInt32(u'active_mapping_file')
 
@@ -1834,8 +2157,7 @@ class CIMRepository(object):
     """Initializes a CIM repository object.
 
     Args:
-      debug: optional boolean value to indicate if debug information should
-             be printed.
+      debug (Optional[bool]): True if debug information should be printed.
     """
     super(CIMRepository, self).__init__()
     self._debug = debug
@@ -1848,7 +2170,10 @@ class CIMRepository(object):
     """Retrieves the current mapping file.
 
     Args:
-      path: a string containing the path to the CIM repository.
+      path (str): path to the CIM repository.
+
+    Raises:
+      ParseError: if the current mapping file cannot be read.
     """
     mapping_file_glob = glob.glob(
         os.path.join(path, u'[Mm][Aa][Pp][Pp][Ii][Nn][Gg].[Vv][Ee][Rr]'))
@@ -1859,7 +2184,7 @@ class CIMRepository(object):
         try:
           active_mapping_file = self._MAPPING_VER.parse_stream(file_object)
         except construct.FieldError as exception:
-          raise IOError(
+          raise ParseError(
               u'Unable to parse Mapping.ver with error: {0:s}'.format(
                   exception))
 
@@ -1890,7 +2215,7 @@ class CIMRepository(object):
     """Retrieves the keys from an index page.
 
     Yields:
-      A string containing the CIM key.
+      str: a CIM key.
     """
     for key in index_page.keys:
       yield key
@@ -1923,7 +2248,7 @@ class CIMRepository(object):
     """Retrieves the keys.
 
     Yields:
-      A string containing the CIM key.
+      str: a CIM key.
     """
     if not self._index_binary_tree_file:
       return
@@ -1936,10 +2261,10 @@ class CIMRepository(object):
     """Retrieves a specific object record.
 
     Args:
-      key: a string containing the CIM key.
+      key (str): a CIM key.
 
     Returns:
-      An object record (instance of ObjectRecord) or None.
+      ObjectRecord: an object record or None.
     """
     if not self._objects_data_file:
       return
@@ -1950,7 +2275,7 @@ class CIMRepository(object):
     """Opens the CIM repository.
 
     Args:
-      path: a string containing the path to the CIM repository.
+      path (str): path to the CIM repository.
     """
     # TODO: self._GetCurrentMappingFile(path)
 
@@ -2001,7 +2326,7 @@ def Main():
   """The main program function.
 
   Returns:
-    A boolean containing True if successful or False if not.
+    bool: True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
       u'Extracts information from WMI Common Information Model (CIM) '

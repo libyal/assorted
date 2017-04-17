@@ -8,11 +8,11 @@ import bz2
 import gzip
 import hashlib
 import logging
-import lzma
 import os
 import sys
 
 import construct
+import lzma
 
 import hexdump
 

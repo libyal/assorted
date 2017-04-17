@@ -218,7 +218,8 @@ class LNKFileEntry(object):
     """Opens the LNK file entry.
 
     Args:
-      file_object (file): file-like object that contains the LNK file entry data.
+      file_object (file): file-like object that contains the LNK file
+          entry data.
     """
     self._lnk_file.open_file_object(file_object)
 

@@ -89,27 +89,43 @@ class UTMPFile(object):
 
       terminal = entry_struct.terminal.replace(u'\0', '')
       print(u'Terminal\t\t\t\t\t\t\t: {0:s}'.format(terminal))
-      print(u'Terminal ID\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.terminal_id))
+
+      value_string = u'{0:d}'.format(entry_struct.terminal_id)
+      print(u'Terminal ID\t\t\t\t\t\t\t: {0:s}'.format(value_string))
 
       username = entry_struct.username.replace(u'\0', '')
       print(u'Username\t\t\t\t\t\t\t: {0:s}'.format(username))
 
       hostname = entry_struct.hostname.replace(u'\0', '')
       print(u'Hostname\t\t\t\t\t\t\t: {0:s}'.format(hostname))
-      print(u'Termination\t\t\t\t\t\t\t: 0x{0:04x}'.format(entry_struct.termination))
+
+      value_string = u'0x{0:04x}'.format(entry_struct.termination)
+      print(u'Termination\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
       print(u'Exit\t\t\t\t\t\t\t\t: 0x{0:04x}'.format(entry_struct.exit))
       print(u'Session\t\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.session))
 
       date_time = (datetime.datetime(1970, 1, 1) + datetime.timedelta(
           seconds=int(entry_struct.timestamp)))
-      print(u'Timestamp\t\t\t\t\t\t\t: {0!s} ({1:d})'.format(
-          date_time, entry_struct.timestamp))
 
-      print(u'Micro seconds\t\t\t\t\t\t\t: {0:d}'.format(entry_struct.micro_seconds))
-      print(u'Address A\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_struct.address_a))
-      print(u'Address B\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_struct.address_b))
-      print(u'Address C\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_struct.address_c))
-      print(u'Address D\t\t\t\t\t\t\t: 0x{0:08x}'.format(entry_struct.address_d))
+      value_string = u'{0!s} ({1:d})'.format(date_time, entry_struct.timestamp)
+      print(u'Timestamp\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
+      value_string = u'{0:d}'.format(entry_struct.micro_seconds)
+      print(u'Micro seconds\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
+      value_string = u'0x{0:08x}'.format(entry_struct.address_a)
+      print(u'Address A\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
+      value_string = u'0x{0:08x}'.format(entry_struct.address_b)
+      print(u'Address B\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
+      value_string = u'0x{0:08x}'.format(entry_struct.address_c)
+      print(u'Address C\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
+      value_string = u'0x{0:08x}'.format(entry_struct.address_d)
+      print(u'Address D\t\t\t\t\t\t\t: {0:s}'.format(value_string))
+
       print(u'')
 
     return entry_struct_size

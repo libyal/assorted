@@ -27,7 +27,7 @@ class BinaryCookiesFile(object):
       construct.ULInt32(u'signature'),
       construct.ULInt32(u'number_of_records'),
       construct.Array(
-          lambda ctx: ctx.number_of_records, 
+          lambda ctx: ctx.number_of_records,
           construct.ULInt32(u'offsets')))
 
   _RECORD_HEADER = construct.Struct(
@@ -114,8 +114,8 @@ class BinaryCookiesFile(object):
 
     try:
       page_sizes_array = construct.Array(
-             file_header_struct.number_of_pages,
-             construct.UBInt32(u'page_sizes')).parse(page_sizes_data)
+          file_header_struct.number_of_pages,
+          construct.UBInt32(u'page_sizes')).parse(page_sizes_data)
 
     except construct.FieldError as exception:
       raise IOError(
@@ -234,7 +234,7 @@ class BinaryCookiesFile(object):
         string = construct.CString(u'string').parse(
             page_data[data_offset:record_data_size])
       else:
-        sting = u''
+        string = u''
 
       print(u'URL\t\t\t\t\t\t\t\t: {0:s}'.format(string))
 
@@ -243,7 +243,7 @@ class BinaryCookiesFile(object):
         string = construct.CString(u'string').parse(
             page_data[data_offset:record_data_size])
       else:
-        sting = u''
+        string = u''
 
       print(u'Name\t\t\t\t\t\t\t\t: {0:s}'.format(string))
 
@@ -252,7 +252,7 @@ class BinaryCookiesFile(object):
         string = construct.CString(u'string').parse(
             page_data[data_offset:record_data_size])
       else:
-        sting = u''
+        string = u''
 
       print(u'Path\t\t\t\t\t\t\t\t: {0:s}'.format(string))
 
@@ -261,7 +261,7 @@ class BinaryCookiesFile(object):
         string = construct.CString(u'string').parse(
             page_data[data_offset:record_data_size])
       else:
-        sting = u''
+        string = u''
 
       print(u'Value\t\t\t\t\t\t\t\t: {0:s}'.format(string))
 

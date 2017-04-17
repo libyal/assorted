@@ -18,7 +18,7 @@ def Main():
 
   parser.add_argument(
       u'filename', metavar=u'FILENAME', type=unicode, nargs=1,
-     help=u'the name of the file to mark')
+      help=u'the name of the file to mark')
 
   parser.add_argument(
       u'-b', dest=u'block_size', metavar=u'SIZE', type=int, action=u'store',
@@ -26,7 +26,7 @@ def Main():
 
   arguments = parser.parse_args()
 
-  file_object = open(arguments.filename[ 0 ], 'r+b')
+  file_object = open(arguments.filename[0], 'r+b')
 
   try:
     file_object.seek(0, os.SEEK_END)
