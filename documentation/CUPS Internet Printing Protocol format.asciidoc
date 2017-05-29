@@ -1,5 +1,4 @@
-= Title
-Sub title
+= CUPS Internet Printing Protocol format
 
 :toc:
 :toclevels: 4
@@ -34,11 +33,17 @@ in the section entitled "GNU Free Documentation License".
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
-| 0.0.1 | J.B. Metz | | Initial version.
+| 0.0.1 | J.B. Metz | May 2017 | Initial version.
 |===
 
 :numbered:
 == Overview
+
+* header
+* attributes tag
+* attributes sequence
+* end of attributes tag
+* data
 
 [cols="1,5",options="header"]
 |===
@@ -48,26 +53,183 @@ in the section entitled "GNU Free Documentation License".
 | Character strings | 
 |===
 
-=== Heading 2
+== Heading 1
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | Signature
+| 0 | 1 | 1 | Major version
+| 1 | 1 | 0 or 1 | Minor version
+| 2 | 2 | | Operation identifier or status code
+| 4 | 4 | | Request identifier
+|===
+
+=== Attribute
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | Value tag +
+See section: <<value_tags,Value tags>>
+| 1 | 2 | | Name size
+| 2 | ... | | Name
+| ... | 2 | | Value size
+| ... | ... | | Value
+|===
+
+Additional value.
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | Value tag +
+See section: <<value_tags,Value tags>>
+| 1 | 2 | 0 | Name size
+| 2 | 2 | | Value size
+| 4 | ... | | Value
+|===
+
+== Tags
+
+=== [[delimiter_tags]]Delimiter tags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00 | | reserved
+| 0x01 | | operation-attributes-tag
+| 0x02 | | job-attributes-tag
+| 0x03 | | end-of-attributes-tag
+| 0x04 | | printer-attributes-tag
+| 0x05 | | unsupported-attributes-tag
+| 0x06 - 0x0e | | reserved for future delimiters
+| 0x0f | | reserved for future chunking-end-of-attributes- tag
+|===
+
+=== [[value_tags]]Value tags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x10 | | unsupported
+| 0x11 | | reserved for future "default"
+| 0x12 | | unknown
+| 0x13 | | no-value
+| 0x14 - 0x1f | | reserved for future "out-of-band" values
+| 0x20 | | reserved for "generic integer"
+| 0x21 | | integer
+| 0x22 | | boolean
+| 0x23 | | enum
+| 0x24 - 0x2f | | reserved for future integer types
+| 0x30 | | octetString with an unspecified format
+| 0x31 | | dateTime
+| 0x32 | | resolution
+| 0x33 | | rangeOfInteger
+| 0x34 | | reserved for collection (in the future)
+| 0x35 | | textWithLanguage
+| 0x36 | | nameWithLanguage
+| 0x37 - 0x3f | | reserved for future octetString types
+| 0x40 | | reserved for "generic character-string"
+| 0x41 | | textWithoutLanguage
+| 0x42 | | nameWithoutLanguage
+| 0x43 | | reserved
+| 0x44 | | keyword
+| 0x45 | | uri
+| 0x46 | | uriScheme
+| 0x47 | | charset
+| 0x48 | | naturalLanguage
+| 0x49 | | mimeMediaType
+| 0x4a - 0x5f | | reserved for future character string types
 |===
 
 :numbered!:
 [appendix]
 == References
 
-`[REFERENCE]`
+`[RFC2565]`
 
 [cols="1,5",options="header"]
 |===
-| Title: | 
-| Author(s): | 
-| Date: | 
-| URL: | 
+| Title: | RFC2565 - Internet Printing Protocol/1.0: Encoding and Transport
+| URL: | https://tools.ietf.org/html/rfc2565
+|===
+
+`[RFC2566]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC2566 - Internet Printing Protocol/1.0: Model and Semantics
+| URL: | https://tools.ietf.org/html/rfc2566
+|===
+
+`[RFC2567]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC2567 - Design Goals for an Internet Printing Protocol
+| URL: | https://tools.ietf.org/html/rfc2567
+|===
+
+`[RFC2568]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC2568 - Rationale for the Structure of the Model and Protocol for the Internet Printing Protocol
+| URL: | https://tools.ietf.org/html/rfc2568
+
+`[RFC2569]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC2569 - Mapping between LPD and IPP Protocols
+| URL: | https://tools.ietf.org/html/rfc2569
+
+`[RFC2639]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC2639 - Internet Printing Protocol/1.0: Implementer's Guide
+| URL: | https://tools.ietf.org/html/rfc2639
+|===
+
+`[RFC2910]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC2910 - Internet Printing Protocol/1.1: Encoding and Transport
+| URL: | https://tools.ietf.org/html/rfc2910
+|===
+
+`[RFC2911]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC2911 - Internet Printing Protocol/1.1: Model and Semantics
+| URL: | https://tools.ietf.org/html/rfc2911
+|===
+
+`[RFC3196]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC3196 - Internet Printing Protocol/1.1: Implementor's Guide
+| URL: | https://tools.ietf.org/html/rfc3196
+|===
+
+`[RFC3516]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | RFC3516 - Internet Printing Protocol/1.1: IPP URL Scheme
+| URL: | https://tools.ietf.org/html/rfc3510
+|===
+
+`[GHOSTSCRIPT]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | Internet Printing Protocol support functions for CUPS
+| URL: | https://ghostscript.com/doc/cups/libs/cups/ipp-support.c
 |===
 
 [appendix]
