@@ -28,6 +28,7 @@ bin_PROGRAMS = \
 	lzxpressdecompress \
 	mssearchdecode \
 	rc4crypt \
+	serpentcrypt \
 	xor32sum \
 	xor64sum \
 	zcompress \
@@ -198,6 +199,24 @@ rc4crypt_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
+serpentcrypt_SOURCES = \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libcsystem.h \
+	assorted_libfcrypto.h \
+	assorted_libuna.h \
+	assorted_output.c assorted_output.h \
+	serpentcrypt.c
+
+serpentcrypt_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBFCRYPTO_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
 xor32sum_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
@@ -291,6 +310,8 @@ splint:
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzxpressdecompress_SOURCES)
 	@echo "Running splint on rc4crypt ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(rc4crypt_SOURCES)
+	@echo "Running splint on serpentcrypt ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(serpentcrypt_SOURCES)
 	@echo "Running splint on xor32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(xor32sum_SOURCES)
 	@echo "Running splint on xor64sum ..."

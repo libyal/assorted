@@ -113,6 +113,7 @@ stamp-h[1-9]
 /common/config.h
 /common/config.h.in
 /common/types.h
+/src/*.exe
 /src/adler32sum
 /src/ascii7decompress
 /src/crc32sum
@@ -122,11 +123,12 @@ stamp-h[1-9]
 /src/lznt1decompress
 /src/lzxpressdecompress
 /src/mssearchdecode
-/src/zcompress
-/src/zdecompress
 /src/rc4crypt
+/src/serpentcrypt
 /src/xor32sum
 /src/xor64sum
+/src/zcompress
+/src/zdecompress
 /tests/input
 /tests/tmp*
 

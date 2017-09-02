@@ -11,6 +11,7 @@ MSVSCPP_FILES = \
 	libcnotify/libcnotify.vcproj \
 	libcsystem/libcsystem.vcproj \
 	libcthreads/libcthreads.vcproj \
+	libfcrypto/libfcrypto.vcproj \
 	libfwnt/libfwnt.vcproj \
 	libhmac/libhmac.vcproj \
 	libuna/libuna.vcproj \
@@ -19,6 +20,7 @@ MSVSCPP_FILES = \
 	lzxpressdecompress/lzxpressdecompress.vcproj \
 	mssearchdecode/mssearchdecode.vcproj \
 	rc4crypt/rc4crypt.vcproj \
+	serpentcrypt/serpentcrypt.vcproj \
 	xor32sum/xor32sum.vcproj \
 	xor64sum/xor64sum.vcproj \
 	zcompress/zcompress.vcproj \

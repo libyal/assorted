@@ -30,6 +30,7 @@
 
 #include <libfcrypto_definitions.h>
 #include <libfcrypto_rc4_context.h>
+#include <libfcrypto_serpent_context.h>
 #include <libfcrypto_support.h>
 #include <libfcrypto_types.h>
 

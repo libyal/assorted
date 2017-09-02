@@ -1,5 +1,5 @@
 /*
- * De- or encrypts data using RC4
+ * De- or encrypts data using Serpent
  *
  * Copyright (C) 2008-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -42,13 +42,13 @@
 /* Sets the keys
  * Returns 1 if successful or -1 on error
  */
-int rc4crypt_set_keys(
+int serpentcrypt_set_keys(
      const system_character_t *string,
      uint8_t **key_data,
      size_t *key_data_size,
      libcerror_error_t **error )
 {
-	static char *function   = "rc4crypt_set_keys";
+	static char *function   = "serpentcrypt_set_keys";
 	size_t string_length    = 0;
 	uint32_t base16_variant = 0;
 
@@ -143,10 +143,10 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use rc4crypt to de- or encrypt data using RC4.\n\n" );
+	fprintf( stream, "Use serpentcrypt to de- or encrypt data using Serpent.\n\n" );
 
-	fprintf( stream, "Usage: rc4crypt [ -k key ] [ -o offset ] [ -s size ]\n"
-	                 "                [ -t target ] [ -hvV ] source\n\n" );
+	fprintf( stream, "Usage: serpentcrypt [ -k key ] [ -o offset ] [ -s size ]\n"
+	                 "                    [ -t target ] [ -hvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
@@ -173,14 +173,14 @@ int main( int argc, char * const argv[] )
 	libcerror_error_t *error               = NULL;
 	libcfile_file_t *destination_file      = NULL;
 	libcfile_file_t *source_file           = NULL;
-	libfcrypto_rc4_context_t *context      = NULL;
+	libfcrypto_serpent_context_t *context  = NULL;
 	system_character_t *option_keys        = NULL;
 	system_character_t *option_target_path = NULL;
 	system_character_t *source             = NULL;
 	uint8_t *buffer                        = NULL;
 	uint8_t *decrypted_data                = NULL;
 	uint8_t *key_data                      = NULL;
-	char *program                          = "rc4crypt";
+	char *program                          = "serpentcrypt";
 	system_integer_t option                = 0;
 	size64_t source_size                   = 0;
 	size_t buffer_size                     = 0;
@@ -384,19 +384,19 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libfcrypto_rc4_context_initialize(
+	if( libfcrypto_serpent_context_initialize(
 	     &context,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to create RC4 context.\n" );
+		 "Unable to create Serpent context.\n" );
 
 		goto on_error;
 	}
 	fprintf(
 	 stdout,
-	 "Starting RC4 decrypting data of: %" PRIs_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
+	 "Starting Serpent decrypting data of: %" PRIs_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
 	 source,
 	 source_offset,
 	 source_offset );
@@ -417,7 +417,7 @@ int main( int argc, char * const argv[] )
 	}
 	/* Decrypts the data
 	 */
-	if( rc4crypt_set_keys(
+	if( serpentcrypt_set_keys(
 	     option_keys,
 	     &key_data,
 	     &key_data_size,
@@ -429,7 +429,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libfcrypto_rc4_context_set_key(
+	if( libfcrypto_serpent_context_set_key(
 	     context,
 	     key_data,
 	     key_data_size * 8,
@@ -468,8 +468,9 @@ int main( int argc, char * const argv[] )
 		 source_size,
 		 0 );
 	}
-	if( libfcrypto_rc4_crypt(
+	if( libfcrypto_serpent_crypt_ecb(
 	     context,
+	     LIBFCRYPTO_SERPENT_CRYPT_MODE_DECRYPT,
 	     buffer,
 	     source_size,
 	     decrypted_data,
@@ -554,13 +555,13 @@ int main( int argc, char * const argv[] )
 	}
 	/* Clean up
 	 */
-	if( libfcrypto_rc4_context_free(
+	if( libfcrypto_serpent_context_free(
 	     &context,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to free RC4 context.\n" );
+		 "Unable to free Serpent context.\n" );
 
 		goto on_error;
 	}
@@ -596,7 +597,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "RC4 decryption:\tSUCCESS\n" );
+	 "Serpent decryption:\tSUCCESS\n" );
 
 	return( EXIT_SUCCESS );
 
@@ -631,7 +632,7 @@ on_error:
 	}
 	if( context != NULL )
 	{
-		libfcrypto_rc4_context_free(
+		libfcrypto_serpent_context_free(
 		 &context,
 		 NULL );
 	}
@@ -648,7 +649,7 @@ on_error:
 	}
 	fprintf(
 	 stdout,
-	 "RC4 decryption:\tFAILURE\n" );
+	 "Serpent decryption:\tFAILURE\n" );
 
 	return( EXIT_FAILURE );
 }

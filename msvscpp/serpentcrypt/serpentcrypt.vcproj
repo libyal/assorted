@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="xor32sum"
-	ProjectGUID="{5ED411A7-C79F-4DC7-A03B-A3AF7BBA3E32}"
-	RootNamespace="xor32sum"
+	Name="serpentcrypt"
+	ProjectGUID="{8C1B30A1-99FE-4C09-87E0-CA92C57DDFA7}"
+	RootNamespace="serpentcrypt"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -180,11 +180,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\xor32sum.c"
+				RelativePath="..\..\src\serpentcrypt.c"
 				>
 			</File>
 		</Filter>
@@ -210,11 +206,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.h"
+				RelativePath="..\..\src\assorted_libfcrypto.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.h"
+				RelativePath="..\..\src\assorted_libuna.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_output.h"
 				>
 			</File>
 		</Filter>
