@@ -84,7 +84,6 @@ int main( int argc, char * const argv[] )
 	uint8_t *uncompressed_data         = NULL;
 	char *program                      = "zdecompress";
 	system_integer_t option            = 0;
-	uLongf zlib_uncompressed_data_size = 0;
 	size64_t source_size               = 0;
 	size_t uncompressed_data_size      = 0;
 	ssize_t read_count                 = 0;
@@ -94,6 +93,10 @@ int main( int argc, char * const argv[] )
 	int print_count                    = 0;
 	int result                         = 0;
 	int verbose                        = 0;
+
+#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
+	uLongf zlib_uncompressed_data_size = 0;
+#endif
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -300,6 +303,14 @@ int main( int argc, char * const argv[] )
 	}
 	if( decompression_method == 1 )
 	{
+#if !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL )
+		fprintf(
+		 stderr,
+		 "Missing zlib support.\n" );
+
+		goto on_error;
+
+#else
 		zlib_uncompressed_data_size = (uLongf) uncompressed_data_size;
 
 		if( uncompress(
@@ -315,6 +326,8 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 		uncompressed_data_size = (size_t) zlib_uncompressed_data_size;
+
+#endif /* !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL ) */
 	}
 	else if( decompression_method == 2 )
 	{

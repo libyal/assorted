@@ -358,12 +358,20 @@ int main( int argc, char * const argv[] )
 	}
 	else if( calculation_method == 5 )
 	{
+#if !defined( HAVE_ZLIB_ADLER32 )
+		fprintf(
+		 stderr,
+		 "Missing zlib Adler-32 support.\n" );
+
+		goto on_error;
+#else
 		checksum_value = adler32(
 		                  initial_value,
 		                  buffer,
 		                  source_size );
 
 		result = 1;
+#endif
 	}
 	if( result != 1 )
 	{

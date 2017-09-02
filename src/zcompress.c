@@ -91,11 +91,16 @@ int main( int argc, char * const argv[] )
 	ssize_t read_count                = 0;
 	ssize_t write_count               = 0;
 	off_t source_offset               = 0;
-	int compression_level             = Z_DEFAULT_COMPRESSION;
 	int compression_method            = 2;
 	int print_count                   = 0;
 	int result                        = 0;
 	int verbose                       = 0;
+
+#if !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL )
+	int compression_level             = -1;
+
+#else
+	int compression_level             = Z_DEFAULT_COMPRESSION;
 
 #if defined( USE_COMPRESS2 )
 	uLongf zlib_compressed_data_size  = 0;
@@ -110,8 +115,10 @@ int main( int argc, char * const argv[] )
 	int zlib_method                   = Z_DEFLATED;
 	int zlib_strategy                 = Z_DEFAULT_STRATEGY;
 	int zlib_windowBits               = 15;
-#endif
+
+#endif /* !defined( USE_DEFLATE_INIT ) */
 #endif /* defined( USE_COMPRESS2 ) */
+#endif /* !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL ) */
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -323,7 +330,14 @@ int main( int argc, char * const argv[] )
 	}
 	if( compression_method == 1 )
 	{
-#if defined( USE_COMPRESS2 )
+#if !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL )
+		fprintf(
+		 stderr,
+		 "Missing zlib support.\n" );
+
+		goto on_error;
+
+#elif defined( USE_COMPRESS2 )
 		zlib_compressed_data_size = (uLongf) compressed_data_size;
 
 		if( compress2(
@@ -340,6 +354,7 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 		compressed_data_size = (size_t) zlib_compressed_data_size;
+
 #else
 		zlib_stream.opaque = Z_NULL;
 		zlib_stream.zalloc = Z_NULL;
@@ -349,6 +364,7 @@ int main( int argc, char * const argv[] )
 		if( deflateInit(
 		     &zlib_stream,
 		     compression_level ) != Z_OK )
+
 #else
 		if( deflateInit2(
 		     &zlib_stream,
@@ -357,7 +373,8 @@ int main( int argc, char * const argv[] )
 		     zlib_windowBits,
 		     zlib_memLevel,
 		     zlib_strategy ) != Z_OK )
-#endif
+
+#endif /* defined( USE_DEFLATE_INIT ) */
 		{
 			fprintf(
 			 stderr,
@@ -398,7 +415,8 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 		compressed_data_size = zlib_stream.total_out;
-#endif
+
+#endif /* !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL ) */
 	}
 	else if( compression_method == 2 )
 	{
