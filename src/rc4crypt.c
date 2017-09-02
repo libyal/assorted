@@ -35,9 +35,9 @@
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_libcsystem.h"
+#include "assorted_libfcrypto.h"
 #include "assorted_libuna.h"
 #include "assorted_output.h"
-#include "rc4.h"
 
 /* Sets the keys
  * Returns 1 if successful or -1 on error
@@ -173,7 +173,7 @@ int main( int argc, char * const argv[] )
 	libcerror_error_t *error               = NULL;
 	libcfile_file_t *destination_file      = NULL;
 	libcfile_file_t *source_file           = NULL;
-	rc4_context_t *context                 = NULL;
+	libfcrypto_rc4_context_t *context      = NULL;
 	system_character_t *option_keys        = NULL;
 	system_character_t *option_target_path = NULL;
 	system_character_t *source             = NULL;
@@ -384,7 +384,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( rc4_context_initialize(
+	if( libfcrypto_rc4_context_initialize(
 	     &context,
 	     &error ) != 1 )
 	{
@@ -429,7 +429,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( rc4_context_set_key(
+	if( libfcrypto_rc4_context_set_key(
 	     context,
 	     key_data,
 	     key_data_size * 8,
@@ -468,7 +468,7 @@ int main( int argc, char * const argv[] )
 		 source_size,
 		 0 );
 	}
-	if( rc4_crypt(
+	if( libfcrypto_rc4_crypt(
 	     context,
 	     buffer,
 	     source_size,
@@ -554,7 +554,7 @@ int main( int argc, char * const argv[] )
 	}
 	/* Clean up
 	 */
-	if( rc4_context_free(
+	if( libfcrypto_rc4_context_free(
 	     &context,
 	     &error ) != 1 )
 	{
@@ -631,7 +631,7 @@ on_error:
 	}
 	if( context != NULL )
 	{
-		rc4_context_free(
+		libfcrypto_rc4_context_free(
 		 &context,
 		 NULL );
 	}

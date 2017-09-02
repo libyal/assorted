@@ -20,6 +20,7 @@
  */
 
 #include <common.h>
+#include <memory.h>
 #include <types.h>
 
 #include "assorted_libcerror.h"
@@ -179,7 +180,10 @@ void initialize_crc64_table(
 	uint64_t crc64_table_index = 0;
 	uint8_t bit_iterator       = 0;
 
-	memset( crc64_table1, 0, sizeof( uint64_t ) * 256 );
+	memory_set(
+	 crc64_table1,
+	 0,
+	 sizeof( uint64_t ) * 256 );
 
 	for( crc64_table_index = 0;
 	     crc64_table_index < 256;

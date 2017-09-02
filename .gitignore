@@ -139,6 +139,7 @@ stamp-h[1-9]
 /libcstring
 /libcsystem
 /libcthreads
+/libfcrypto
 /libfwnt
 /libhmac
 /libuna

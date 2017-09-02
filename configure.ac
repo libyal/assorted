@@ -75,6 +75,9 @@ AX_LIBUNA_CHECK_ENABLE
 dnl Check for enabling libcfile for cross-platform C file functions
 AX_LIBCFILE_CHECK_ENABLE
 
+dnl Check for enabling libfcrypto for encryption types support
+AX_LIBFCRYPTO_CHECK_ENABLE
+
 dnl Check for enabling libfwnt for file Windows NT type support
 AX_LIBFWNT_CHECK_ENABLE
 
@@ -138,6 +141,7 @@ AC_CONFIG_FILES([libclocale/Makefile])
 AC_CONFIG_FILES([libcnotify/Makefile])
 AC_CONFIG_FILES([libuna/Makefile])
 AC_CONFIG_FILES([libcfile/Makefile])
+AC_CONFIG_FILES([libfcrypto/Makefile])
 AC_CONFIG_FILES([libfwnt/Makefile])
 AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([libcsystem/Makefile])
@@ -160,6 +164,7 @@ Building:
    libclocale support:                            $ac_cv_libclocale
    libuna support:                                $ac_cv_libuna
    libcfile support:                              $ac_cv_libcfile
+   libfcrypto support:                            $ac_cv_libfcrypto
    libfwnt support:                               $ac_cv_libfwnt
    ADLER32 checksum support:                      $ac_cv_adler32
    DEFLATE compression support:                   $ac_cv_zlib

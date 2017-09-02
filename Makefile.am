@@ -9,6 +9,7 @@ SUBDIRS = \
 	libcnotify \
 	libuna \
 	libcfile \
+	libfcrypto \
 	libfwnt \
 	libhmac \
 	libcsystem \
@@ -46,6 +47,7 @@ splint:
 	(cd $(srcdir)/libcnotify && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libuna && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcfile && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libfcrypto && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfwnt && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libhmac && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))

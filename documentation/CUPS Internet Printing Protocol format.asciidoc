@@ -140,6 +140,9 @@ See section: <<value_tags,Value tags>>
 | 0x48 | | naturalLanguage
 | 0x49 | | mimeMediaType
 | 0x4a - 0x5f | | reserved for future character string types
+| 0x60 - 0x7e | | reserved for future types
+| 0x7f | | reserved for extended types
+| 0x80 - 0xff | | reserved for future types
 |===
 
 :numbered!:

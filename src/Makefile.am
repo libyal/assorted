@@ -8,6 +8,7 @@ AM_CPPFLAGS = \
 	@LIBCNOTIFY_CPPFLAGS@ \
 	@LIBUNA_CPPFLAGS@ \
 	@LIBCFILE_CPPFLAGS@ \
+	@LIBFCRYPTO_CPPFLAGS@ \
 	@LIBFWNT_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@LIBCSYSTEM_CPPFLAGS@ \
@@ -184,13 +185,14 @@ rc4crypt_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_libcsystem.h \
+	assorted_libfcrypto.h \
 	assorted_libuna.h \
 	assorted_output.c assorted_output.h \
-	rc4.c rc4.h \
 	rc4crypt.c
 
 rc4crypt_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
+	@LIBFCRYPTO_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \

@@ -21,6 +21,7 @@
 
 #include <common.h>
 #include <byte_stream.h>
+#include <memory.h>
 #include <types.h>
 
 #include "assorted_libcerror.h"
@@ -488,7 +489,7 @@ int mssearch_decompress_byte_indexed_compressed_data(
 
 		return( -1 );
 	}
-	if( memset(
+	if( memory_set(
 	     compression_value_table,
 	     0,
 	     2048 * 2 ) == NULL )
