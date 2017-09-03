@@ -11,7 +11,6 @@ AM_CPPFLAGS = \
 	@LIBFCRYPTO_CPPFLAGS@ \
 	@LIBFWNT_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
-	@LIBCSYSTEM_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@BZIP2_CPPFLAGS@
 
@@ -37,13 +36,13 @@ bin_PROGRAMS = \
 adler32sum_SOURCES = \
 	adler32.c adler32.h \
 	adler32sum.c \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h
 
 adler32sum_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -54,13 +53,13 @@ adler32sum_LDADD = \
 ascii7decompress_SOURCES = \
 	ascii7.c ascii7.h \
 	ascii7decompress.c \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h
 
 ascii7decompress_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -68,16 +67,16 @@ ascii7decompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 crc32sum_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	crc32.c crc32.h \
 	crc32sum.c
 
 crc32sum_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -85,16 +84,16 @@ crc32sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 crc64sum_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	crc64.c crc64.h \
 	crc64sum.c
 
 crc64sum_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -102,16 +101,16 @@ crc64sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fletcher32sum_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	fletcher32.c fletcher32.h \
 	fletcher32sum.c
 
 fletcher32sum_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -119,17 +118,17 @@ fletcher32sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 lzfudecompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	crc32.c crc32.h \
 	lzfu.c lzfu.h \
 	lzfudecompress.c
 
 lzfudecompress_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -137,16 +136,16 @@ lzfudecompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 lznt1decompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_libfwnt.h \
 	assorted_output.c assorted_output.h \
 	lznt1decompress.c
 
 lznt1decompress_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBFWNT_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
@@ -155,16 +154,16 @@ lznt1decompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 lzxpressdecompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_libfwnt.h \
 	assorted_output.c assorted_output.h \
 	lzxpressdecompress.c
 
 lzxpressdecompress_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBFWNT_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
@@ -173,17 +172,17 @@ lzxpressdecompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 mssearchdecode_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_libuna.h \
 	assorted_output.c assorted_output.h \
 	mssearch.c mssearch.h \
 	mssearchdecode.c
 
 mssearchdecode_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -191,17 +190,17 @@ mssearchdecode_LDADD = \
 	@LIBCERROR_LIBADD@
 
 rc4crypt_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_libfcrypto.h \
 	assorted_libuna.h \
 	assorted_output.c assorted_output.h \
 	rc4crypt.c
 
 rc4crypt_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBFCRYPTO_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
@@ -210,17 +209,17 @@ rc4crypt_LDADD = \
 	@LIBCERROR_LIBADD@
 
 serpentcrypt_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_libfcrypto.h \
 	assorted_libuna.h \
 	assorted_output.c assorted_output.h \
 	serpentcrypt.c
 
 serpentcrypt_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBFCRYPTO_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
@@ -229,16 +228,16 @@ serpentcrypt_LDADD = \
 	@LIBCERROR_LIBADD@
 
 xor32sum_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	xor32.c xor32.h \
 	xor32sum.c
 
 xor32sum_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -246,16 +245,16 @@ xor32sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 xor64sum_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	xor64.c xor64.h \
 	xor64sum.c
 
 xor64sum_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -263,16 +262,16 @@ xor64sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 zcompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	deflate.c deflate.h \
 	zcompress.c
 
 zcompress_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -281,16 +280,16 @@ zcompress_LDADD = \
 	@ZLIB_LIBADD@
 
 zdecompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_libcsystem.h \
 	assorted_output.c assorted_output.h \
 	deflate.c deflate.h \
 	zdecompress.c
 
 zdecompress_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \

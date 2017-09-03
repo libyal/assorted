@@ -1,6 +1,5 @@
 /*
- * Library for system independent implementation of functionality
- * for programs
+ * Internationalization (i18n) functions
  *
  * Copyright (C) 2008-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -20,35 +19,30 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _ASSORTED_LIBCSYSTEM_H )
-#define _ASSORTED_LIBCSYSTEM_H
+#if !defined( _ASSORTED_I18N_H )
+#define _ASSORTED_I18N_H
 
-/* Define HAVE_LOCAL_LIBCSYSTEM for local use of libcsystem
- */
-#if defined( HAVE_LOCAL_LIBCSYSTEM )
+#include <common.h>
 
-#include <libcsystem_definitions.h>
-#include <libcsystem_file_io.h>
-#include <libcsystem_getopt.h>
-#include <libcsystem_glob.h>
-#include <libcsystem_i18n.h>
-#include <libcsystem_signal.h>
-#include <libcsystem_string.h>
-#include <libcsystem_support.h>
-#include <libcsystem_unused.h>
-
-#else
-
-/* If libtool DLL support is enabled set LIBCSYSTEM_DLL_IMPORT
- * before including libcsystem.h
- */
-#if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBCSYSTEM_DLL_IMPORT
+#if defined( HAVE_LIBINTL_H )
+#include <libintl.h>
 #endif
 
-#include <libcsystem.h>
-
+#if defined( __cplusplus )
+extern "C" {
 #endif
 
+/* TODO for now do nothing i18n-like
+#define	_( string ) \
+	gettext( string )
+*/
+
+#define	_( string ) \
+	string
+
+#if defined( __cplusplus )
+}
 #endif
+
+#endif /* !defined( _ASSORTED_I18N_H ) */
 

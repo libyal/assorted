@@ -12,7 +12,6 @@ SUBDIRS = \
 	libfcrypto \
 	libfwnt \
 	libhmac \
-	libcsystem \
 	src \
 	po
 
@@ -50,7 +49,6 @@ splint:
 	(cd $(srcdir)/libfcrypto && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfwnt && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libhmac && $(MAKE) splint $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/src && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) splint $(AM_MAKEFLAGS))
 

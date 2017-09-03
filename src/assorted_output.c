@@ -23,7 +23,7 @@
 #include <file_stream.h>
 #include <types.h>
 
-#include "assorted_libcsystem.h"
+#include "assorted_i18n.h"
 
 /* Prints the copyright information
  */

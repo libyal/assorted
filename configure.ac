@@ -94,9 +94,6 @@ AX_BZIP2_CHECK_ENABLE
 dnl Check for enabling libhmac for message digest hash function support
 AX_LIBHMAC_CHECK_ENABLE
 
-dnl Check for enabling libcsystem for cross-platform C generic system functions
-AX_LIBCSYSTEM_CHECK_ENABLE
-
 dnl Local includes
 AC_CHECK_HEADERS([math.h])
 
@@ -144,7 +141,6 @@ AC_CONFIG_FILES([libcfile/Makefile])
 AC_CONFIG_FILES([libfcrypto/Makefile])
 AC_CONFIG_FILES([libfwnt/Makefile])
 AC_CONFIG_FILES([libhmac/Makefile])
-AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
@@ -175,7 +171,6 @@ Building:
    MD5 support:                                   $ac_cv_libhmac_md5
    SHA1 support:                                  $ac_cv_libhmac_sha1
    SHA256 support:                                $ac_cv_libhmac_sha256
-   libcsystem support:                            $ac_cv_libcsystem
 
 Features:
    Wide character type support:                   $ac_cv_enable_wide_character_type

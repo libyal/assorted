@@ -29,10 +29,10 @@
 #include <stdlib.h>
 #endif
 
+#include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_libcsystem.h"
 #include "assorted_output.h"
 #include "crc32.h"
 
@@ -100,7 +100,7 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
-	while( ( option = libcsystem_getopt(
+	while( ( option = assorted_getopt(
 	                   argc,
 	                   argv,
 	                   _SYSTEM_STRING( "12c:hi:o:p:s:vVw" ) ) ) != (system_integer_t) -1 )

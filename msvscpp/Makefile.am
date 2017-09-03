@@ -9,7 +9,6 @@ MSVSCPP_FILES = \
 	libcfile/libcfile.vcproj \
 	libclocale/libclocale.vcproj \
 	libcnotify/libcnotify.vcproj \
-	libcsystem/libcsystem.vcproj \
 	libcthreads/libcthreads.vcproj \
 	libfcrypto/libfcrypto.vcproj \
 	libfwnt/libfwnt.vcproj \
