@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script that runs the tests
 #
-# Version: 20170828
+# Version: 20180905
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -77,7 +77,7 @@ run_configure_make_check_with_asan()
 	then
 		return ${EXIT_SUCCESS};
 	fi
-	local LIBASAN=`ldconfig -p | grep libasan | sed 's/^.* => //'`;
+	local LIBASAN=`ldconfig -p | grep libasan | sed 's/^.* => //' | sort | tail -n 1`;
 
 	if test -z ${LIBASAN} || test ! -f ${LIBASAN};
 	then
@@ -174,6 +174,13 @@ run_configure_make_check_python()
 
 run_setup_py_tests()
 {
+	# Skip this test when running Cygwin on AppVeyor.
+	if test -n "${APPVEYOR}" && test ${TARGET} = "cygwin";
+	then
+		echo "Running: 'setup.py build' skipped";
+
+		return ${EXIT_SUCCESS};
+	fi
 	PYTHON=$1;
 
 	${PYTHON} setup.py build;
@@ -194,6 +201,14 @@ echo "${CONFIGURE_HELP}" | grep -- '--enable-wide-character-type' > /dev/null;
 
 HAVE_ENABLE_WIDE_CHARACTER_TYPE=$?;
 
+echo "${CONFIGURE_HELP}" | grep -- '--enable-verbose-output' > /dev/null;
+
+HAVE_ENABLE_VERBOSE_OUTPUT=$?;
+
+echo "${CONFIGURE_HELP}" | grep -- '--enable-debug-output' > /dev/null;
+
+HAVE_ENABLE_DEBUG_OUTPUT=$?;
+
 echo "${CONFIGURE_HELP}" | grep -- '--with-zlib' > /dev/null;
 
 HAVE_WITH_ZLIB=$?;
@@ -206,7 +221,16 @@ echo "${CONFIGURE_HELP}" | grep -- '--enable-python' > /dev/null;
 
 HAVE_ENABLE_PYTHON=$?;
 
-PYTHON_CONFIG=`whereis python-config | sed 's/^.*:[ ]*//' 2> /dev/null`;
+echo "${CONFIGURE_HELP}" | grep -- '--enable-static-executables' > /dev/null;
+
+HAVE_ENABLE_STATIC_EXECUTABLES=$?;
+
+PYTHON_CONFIG="";
+
+if test -x /usr/bin/whereis;
+then
+	PYTHON_CONFIG=`/usr/bin/whereis python-config | sed 's/^.*:[ ]*//' 2> /dev/null`;
+fi
 
 # Test "./configure && make && make check" without options.
 
@@ -216,6 +240,19 @@ RESULT=$?;
 if test ${RESULT} -ne ${EXIT_SUCCESS};
 then
 	exit ${EXIT_FAILURE};
+fi
+
+if test ${HAVE_ENABLE_VERBOSE_OUTPUT} -eq 0 && test ${HAVE_ENABLE_DEBUG_OUTPUT} -eq 0;
+then
+	# Test "./configure && make && make check" with verbose and debug output.
+
+	run_configure_make_check "--enable-verbose-output --enable-debug-output";
+	RESULT=$?;
+
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
+	then
+		exit ${EXIT_FAILURE};
+	fi
 fi
 
 if test ${HAVE_WITH_ZLIB} -eq 0;
@@ -243,9 +280,19 @@ then
 		exit ${EXIT_FAILURE};
 	fi
 
-	# Test "./configure && make && make check" with non-EVP openssl implementation.
+	# Test "./configure && make && make check" with OpenSSL non-EVP implementation.
 
 	run_configure_make_check "--enable-openssl-evp-cipher=no --enable-openssl-evp-md=no";
+	RESULT=$?;
+
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
+	then
+		exit ${EXIT_FAILURE};
+	fi
+
+	# Test "./configure && make && make check" with OpenSSL EVP implementation.
+
+	run_configure_make_check "--enable-openssl-evp-cipher=yes --enable-openssl-evp-md=yes";
 	RESULT=$?;
 
 	if test ${RESULT} -ne ${EXIT_SUCCESS};
@@ -260,21 +307,25 @@ then
 	PYTHON2=`which python2 2> /dev/null`;
 
         # Note that "test -x" on Mac OS X will succeed if the argument is not set.
-	if test ! -z ${PYTHON2} && test -x ${PYTHON2};
+	if test -n "${PYTHON2}" && test -x ${PYTHON2};
 	then
 		export PYTHON_VERSION=2;
 
 		run_configure_make_check_python "--enable-python";
 		RESULT=$?;
 
+		export PYTHON_VERSION=;
+
 		if test ${RESULT} -ne ${EXIT_SUCCESS};
 		then
 			exit ${EXIT_FAILURE};
 		fi
-		export PYTHON_VERSION=;
+		export PYTHON_VERSION=2;
 
-		run_configure_make "--enable-python2";
+		run_configure_make_check_python "--enable-python2";
 		RESULT=$?;
+
+		export PYTHON_VERSION=;
 
 		if test ${RESULT} -ne ${EXIT_SUCCESS};
 		then
@@ -291,21 +342,25 @@ then
 	PYTHON3=`which python3 2> /dev/null`;
 
         # Note that "test -x" on Mac OS X will succeed if the argument is not set.
-	if test ! -z ${PYTHON3} && test -x ${PYTHON3};
+	if test -n "${PYTHON3}" && test -x ${PYTHON3};
 	then
 		export PYTHON_VERSION=3;
 
 		run_configure_make_check_python "--enable-python";
 		RESULT=$?;
 
+		export PYTHON_VERSION=;
+
 		if test ${RESULT} -ne ${EXIT_SUCCESS};
 		then
 			exit ${EXIT_FAILURE};
 		fi
-		export PYTHON_VERSION=;
+		export PYTHON_VERSION=3;
 
-		run_configure_make "--enable-python3";
+		run_configure_make_check_python "--enable-python3";
 		RESULT=$?;
+
+		export PYTHON_VERSION=;
 
 		if test ${RESULT} -ne ${EXIT_SUCCESS};
 		then
@@ -338,8 +393,32 @@ then
 	fi
 fi
 
+if test ${HAVE_ENABLE_STATIC_EXECUTABLES} -eq 0;
+then
+	run_configure_make_check "--enable-static-executables";
+	RESULT=$?;
+
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
+	then
+		exit ${EXIT_FAILURE};
+	fi
+fi
+
+# Run tests with asan.
 CONFIGURE_OPTIONS="";
 
+if test ${HAVE_ENABLE_WIDE_CHARACTER_TYPE} -eq 0;
+then
+	CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --enable-wide-character-type";
+fi
+if test ${HAVE_WITH_ZLIB} -eq 0;
+then
+	CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --with-zlib=no";
+fi
+if test ${HAVE_WITH_OPENSSL} -eq 0;
+then
+	CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --with-openssl=no";
+fi
 if test ${HAVE_ENABLE_PYTHON} -eq 0 && test -n "${PYTHON_CONFIG}";
 then
 	# Issue with running the python bindings with asan disabled for now.
@@ -355,11 +434,20 @@ then
 	exit ${EXIT_FAILURE};
 fi
 
+# Run tests with coverage.
 CONFIGURE_OPTIONS="--enable-shared=no";
 
-if test ${HAVE_ENABLE_WIDE_CHARACTER_TYPE};
+if test ${HAVE_ENABLE_WIDE_CHARACTER_TYPE} -eq 0;
 then
 	CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --enable-wide-character-type";
+fi
+if test ${HAVE_WITH_ZLIB} -eq 0;
+then
+	CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --with-zlib=no";
+fi
+if test ${HAVE_WITH_OPENSSL} -eq 0;
+then
+	CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --with-openssl=no";
 fi
 
 run_configure_make_check_with_coverage ${CONFIGURE_OPTIONS};
