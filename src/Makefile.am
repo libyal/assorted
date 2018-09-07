@@ -22,6 +22,7 @@ bin_PROGRAMS = \
 	crc32sum \
 	crc64sum \
 	fletcher32sum \
+	fletcher64sum \
 	lzfudecompress \
 	lznt1decompress \
 	lzxpressdecompress \
@@ -111,6 +112,23 @@ fletcher32sum_SOURCES = \
 	fletcher32sum.c
 
 fletcher32sum_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+fletcher64sum_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_output.c assorted_output.h \
+	fletcher64.c fletcher64.h \
+	fletcher64sum.c
+
+fletcher64sum_LDADD = \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \

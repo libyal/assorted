@@ -4,6 +4,7 @@ MSVSCPP_FILES = \
 	crc32sum/crc32sum.vcproj \
 	crc64sum/crc64sum.vcproj \
 	fletcher32sum/fletcher32sum.vcproj \
+	fletcher64sum/fletcher64sum.vcproj \
 	libcdata/libcdata.vcproj \
 	libcerror/libcerror.vcproj \
 	libcfile/libcfile.vcproj \

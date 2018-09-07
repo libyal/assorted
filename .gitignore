@@ -120,6 +120,7 @@ stamp-h[1-9]
 /src/crc32sum
 /src/crc64sum
 /src/fletcher32sum
+/src/fletcher64sum
 /src/lzfudecompress
 /src/lznt1decompress
 /src/lzxpressdecompress
