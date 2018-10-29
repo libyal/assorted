@@ -123,6 +123,7 @@ stamp-h[1-9]
 /src/fletcher64sum
 /src/lzfudecompress
 /src/lznt1decompress
+/src/lzvndecompress
 /src/lzxpressdecompress
 /src/mssearchdecode
 /src/rc4crypt
