@@ -609,7 +609,7 @@ int lzvn_decompress(
 		if( literal_size > 0 )
 		{
 			if( ( (size_t) literal_size > compressed_data_size )
-			 || ( compressed_data_offset >= ( compressed_data_size - literal_size ) ) )
+			 || ( compressed_data_offset > ( compressed_data_size - literal_size ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -621,7 +621,7 @@ int lzvn_decompress(
 				return( -1 );
 			}
 			if( ( (size_t) literal_size > *uncompressed_data_size )
-			 || ( uncompressed_data_offset >= ( *uncompressed_data_size - literal_size ) ) )
+			 || ( uncompressed_data_offset > ( *uncompressed_data_size - literal_size ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -677,7 +677,7 @@ int lzvn_decompress(
 			match_offset = uncompressed_data_offset - distance;
 
 			if( ( (size_t) match_size > *uncompressed_data_size )
-			 || ( uncompressed_data_offset >= ( *uncompressed_data_size - match_size ) ) )
+			 || ( uncompressed_data_offset > ( *uncompressed_data_size - match_size ) ) )
 			{
 				libcerror_error_set(
 				 error,

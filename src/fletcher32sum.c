@@ -274,7 +274,7 @@ int main( int argc, char * const argv[] )
 	libcnotify_print_data(
 	 buffer,
 	 source_size,
-	 0 );
+	 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 
 	memory_free(
 	 buffer );
