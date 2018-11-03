@@ -340,6 +340,7 @@ int lzvn_decompress(
 	uint8_t oppcode_value           = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
+	size_t debug_match_offset       = 0;
 	size_t oppcode_data_offset      = 0;
 	size_t oppcode_data_size        = 0;
 #endif
@@ -691,35 +692,32 @@ int lzvn_decompress(
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
+				debug_match_offset = match_offset;
+
 				libcnotify_printf(
 				 "%s: match offset\t\t\t\t\t\t: 0x%" PRIzx "\n",
 				 function,
-				 match_offset );
+				 debug_match_offset );
+			}
+#endif
+			while( match_size > 0 )
+			{
+				uncompressed_data[ uncompressed_data_offset++ ] = uncompressed_data[ match_offset++ ];
 
+				match_size--;
+			}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
 				libcnotify_printf(
 				 "%s: match:\n",
 				 function );
 				libcnotify_print_data(
-				 &( uncompressed_data[ match_offset ] ),
+				 &( uncompressed_data[ debug_match_offset ] ),
 				 match_size,
 				 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 			}
 #endif
-			if( memory_copy(
-			     &( uncompressed_data[ uncompressed_data_offset ] ),
-			     &( uncompressed_data[ match_offset ] ),
-			     (size_t) match_size ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-				 "%s: unable to copy match to uncompressed data.",
-				 function );
-
-				return( -1 );
-			}
-			uncompressed_data_offset += (size_t) match_size;
 		}
 	}
 	*uncompressed_data_size = uncompressed_data_offset;
