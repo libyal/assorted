@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Classes to implement a Windows volume collector."""
 
+from __future__ import unicode_literals
+
 import dfvfs
 import dfwinreg
 
@@ -12,11 +14,11 @@ from dfwinreg import interface as dfwinreg_interface
 from dfwinreg import regf as dfwinreg_regf
 
 
-if dfvfs.__version__ < u'20160227':
-  raise ImportWarning(u'collector.py requires dfvfs 20160227 or later.')
+if dfvfs.__version__ < '20160227':
+  raise ImportWarning('collector.py requires dfvfs 20160227 or later.')
 
-if dfwinreg.__version__ < u'20151026':
-  raise ImportWarning(u'collector.py requires dfwinreg 20151026 or later.')
+if dfwinreg.__version__ < '20151026':
+  raise ImportWarning('collector.py requires dfwinreg 20151026 or later.')
 
 
 class WindowsVolumeCollector(dfvfs_volume_scanner.WindowsVolumeScanner):
@@ -88,7 +90,7 @@ class CollectorRegistryFileReader(dfwinreg_interface.WinRegistryFileReader):
     super(CollectorRegistryFileReader, self).__init__()
     self._volume_scanner = volume_scanner
 
-  def Open(self, path, ascii_codepage=u'cp1252'):
+  def Open(self, path, ascii_codepage='cp1252'):
     """Opens the Windows Registry file specificed by the path.
 
     Args:

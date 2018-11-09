@@ -3,6 +3,8 @@
 """Script to extract Windows Shell items."""
 
 from __future__ import print_function
+from __future__ import unicode_literals
+
 import argparse
 import hashlib
 import logging
@@ -32,28 +34,28 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
   # TSK metadata files that need special handling.
   _METADATA_FILE_LOCATIONS_TSK = frozenset([
       # NTFS
-      u'/$AttrDef',
-      u'/$BadClus',
-      u'/$Bitmap',
-      u'/$Boot',
-      u'/$Extend/$ObjId',
-      u'/$Extend/$Quota',
-      u'/$Extend/$Reparse',
-      u'/$Extend/$RmMetadata/$Repair',
-      u'/$Extend/$RmMetadata/$TxfLog/$Tops',
-      u'/$Extend/$UsnJrnl',
-      u'/$LogFile',
-      u'/$MFT',
-      u'/$MFTMirr',
-      u'/$Secure',
-      u'/$UpCase',
-      u'/$Volume',
+      '/$AttrDef',
+      '/$BadClus',
+      '/$Bitmap',
+      '/$Boot',
+      '/$Extend/$ObjId',
+      '/$Extend/$Quota',
+      '/$Extend/$Reparse',
+      '/$Extend/$RmMetadata/$Repair',
+      '/$Extend/$RmMetadata/$TxfLog/$Tops',
+      '/$Extend/$UsnJrnl',
+      '/$LogFile',
+      '/$MFT',
+      '/$MFTMirr',
+      '/$Secure',
+      '/$UpCase',
+      '/$Volume',
       # HFS+/HFSX
-      u'/$ExtentsFile',
-      u'/$CatalogFile',
-      u'/$BadBlockFile',
-      u'/$AllocationFile',
-      u'/$AttributesFile',
+      '/$ExtentsFile',
+      '/$CatalogFile',
+      '/$BadBlockFile',
+      '/$AllocationFile',
+      '/$AttributesFile',
   ])
 
   _DATA_TYPE_FABRIC_DEFINITION = b'\n'.join([
@@ -123,20 +125,20 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       yaml_definition=_DATA_TYPE_FABRIC_DEFINITION)
 
   # TODO: add functionlity to set byte-order?
-  _UINT16LE = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'uint16le')
+  _UINT16LE = _DATA_TYPE_FABRIC.CreateDataTypeMap('uint16le')
 
   _EXTENSION_BLOCK = _DATA_TYPE_FABRIC.CreateDataTypeMap(
-      u'extension_block')
+      'extension_block')
 
-  _SHELL_ITEM = _DATA_TYPE_FABRIC.CreateDataTypeMap(u'shell_item')
+  _SHELL_ITEM = _DATA_TYPE_FABRIC.CreateDataTypeMap('shell_item')
 
   _SIGNATURES = [
-      (u'creg', 0, b'CREG'),
-      (u'lnk', 0, (b'\x4c\x00\x00\x00\x01\x14\x02\x00\x00\x00\x00\x00\xc0'
+      ('creg', 0, b'CREG'),
+      ('lnk', 0, (b'\x4c\x00\x00\x00\x01\x14\x02\x00\x00\x00\x00\x00\xc0'
                    b'\x00\x00\x00\x00\x00\x00\x46')),
-      (u'olecf', 0, b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'),
-      (u'olecf_beta', 0, b'\x0e\x11\xfc\x0d\xd0\xcf\x11\x0e'),
-      (u'regf', 0, b'regf'),
+      ('olecf', 0, b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'),
+      ('olecf_beta', 0, b'\x0e\x11\xfc\x0d\xd0\xcf\x11\x0e'),
+      ('regf', 0, b'regf'),
   ]
 
   def __init__(self, debug=False, mediator=None):
@@ -171,8 +173,8 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
 
       except dtfabric_errors.MappingError as exception:
         raise ParseError((
-            u'Unable to parse shell item at offset: 0x{0:08x} '
-            u'with error: {1:s}').format(data_offset, exception))
+            'Unable to parse shell item at offset: 0x{0:08x} '
+            'with error: {1:s}').format(data_offset, exception))
 
       shell_item_data_size = shell_item_struct.size
 
@@ -193,8 +195,8 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
 
       except dtfabric_errors.MappingError as exception:
         raise ParseError((
-            u'Unable to parse extension block offset at offset: 0x{0:08x} '
-            u'with error: {1:s}').format(
+            'Unable to parse extension block offset at offset: 0x{0:08x} '
+            'with error: {1:s}').format(
                 data_offset + len(shell_item_data) - 2, exception))
 
       # The extension block signature can be found by the extension
@@ -213,8 +215,8 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
 
           except dtfabric_errors.MappingError as exception:
             raise ParseError((
-                u'Unable to parse extension block at offset: 0x{0:08x} '
-                u'with error: {1:s}').format(
+                'Unable to parse extension block at offset: 0x{0:08x} '
+                'with error: {1:s}').format(
                     extension_block_offset, exception))
 
           extension_block_size = extension_block_struct.size
@@ -247,8 +249,8 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       file_object = file_entry.GetFileObject(data_stream_name=data_stream_name)
     except IOError as exception:
       logging.warning((
-          u'Unable to open path specification:\n{0:s}'
-          u'with error: {1:s}').format(
+          'Unable to open path specification:\n{0:s}'
+          'with error: {1:s}').format(
               file_entry.path_spec.comparable, exception))
       return
 
@@ -259,8 +261,8 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       self._ExtractFromFileObject(file_object, full_path, output_writer)
     except IOError as exception:
       logging.warning((
-          u'Unable to read from path specification:\n{0:s}'
-          u'with error: {1:s}').format(
+          'Unable to read from path specification:\n{0:s}'
+          'with error: {1:s}').format(
               file_entry.path_spec.comparable, exception))
       return
 
@@ -280,7 +282,7 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     full_path = file_system.JoinPath([parent_full_path, file_entry.name])
     for data_stream in file_entry.data_streams:
       if data_stream.name:
-        data_stream_path = u'{0:s}:{1:s}'.format(full_path, data_stream.name)
+        data_stream_path = '{0:s}:{1:s}'.format(full_path, data_stream.name)
       else:
         data_stream_path = full_path
 
@@ -304,14 +306,14 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
     """
     signatures = self._GetSignatures(file_object)
 
-    if u'lnk' in signatures:
+    if 'lnk' in signatures:
       self._ExtractFromLNK(file_object, full_path, output_writer)
 
-    if u'olecf' in signatures:
+    if 'olecf' in signatures:
       # TODO: extract WSI from automatic destination JumpLists.
       pass
 
-    if u'regf' in signatures:
+    if 'regf' in signatures:
       # TODO: extract WSI from BagsMRU.
       # TODO: extract WSI from MRU.
       # TODO: extract WSI from JumpLists.
@@ -392,11 +394,11 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       file_entry = dfvfs_resolver.Resolver.OpenFileEntry(base_path_spec)
       if file_entry is None:
         logging.warning(
-            u'Unable to open base path specification:\n{0:s}'.format(
+            'Unable to open base path specification:\n{0:s}'.format(
                 base_path_spec.comparable))
         continue
 
-      self._ExtractFromFileEntry(file_system, file_entry, u'', output_writer)
+      self._ExtractFromFileEntry(file_system, file_entry, '', output_writer)
 
 
 class FileOutputWriter(object):
@@ -468,42 +470,42 @@ def Main():
     bool: True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
-      u'Extracts Windows Shell items from the source.'))
+      'Extracts Windows Shell items from the source.'))
 
   argument_parser.add_argument(
-      u'-d', u'--debug', dest=u'debug', action=u'store_true', default=False,
-      help=u'enable debug output.')
+      '-d', '--debug', dest='debug', action='store_true', default=False,
+      help='enable debug output.')
 
   argument_parser.add_argument(
-      u'-o', u'--output-directory', u'--output_directory',
-      dest=u'output_directory', action=u'store', metavar=u'PATH',
+      '-o', '--output-directory', '--output_directory',
+      dest='output_directory', action='store', metavar='PATH',
       default=None, help=(
-          u'path of the directory to write the output data to.'))
+          'path of the directory to write the output data to.'))
 
   argument_parser.add_argument(
-      u'source', nargs=u'?', action=u'store', metavar=u'PATH',
+      'source', nargs='?', action='store', metavar='PATH',
       default=None, help=(
-          u'path of the source to extract Windows Shell items from.'))
+          'path of the source to extract Windows Shell items from.'))
 
   options = argument_parser.parse_args()
 
   if not options.source:
-    print(u'Source file missing.')
-    print(u'')
+    print('Source file missing.')
+    print('')
     argument_parser.print_help()
-    print(u'')
+    print('')
     return False
 
   logging.basicConfig(
-      level=logging.INFO, format=u'[%(levelname)s] %(message)s')
+      level=logging.INFO, format='[%(levelname)s] %(message)s')
 
   if options.output_directory:
     if not os.path.exists(options.output_directory):
       os.mkdir(options.output_directory)
 
     if not os.path.isdir(options.output_directory):
-      print(u'{0:s} must be a directory'.format(options.output_directory))
-      print(u'')
+      print('{0:s} must be a directory'.format(options.output_directory))
+      print('')
       return False
 
     output_writer = FileOutputWriter(options.output_directory)
@@ -511,8 +513,8 @@ def Main():
     output_writer = StdoutOutputWriter()
 
   if not output_writer.Open():
-    print(u'Unable to open output writer.')
-    print(u'')
+    print('Unable to open output writer.')
+    print('')
     return False
 
   # TODO: pass mediator.
@@ -522,20 +524,20 @@ def Main():
   try:
     base_path_specs = extractor.GetBasePathSpecs(options.source)
     if not base_path_specs:
-      print(u'No supported file system found in source.')
-      print(u'')
+      print('No supported file system found in source.')
+      print('')
       return False
 
     extractor.ExtractWindowsShellItems(base_path_specs, output_writer)
 
-    print(u'')
-    print(u'Completed.')
+    print('')
+    print('Completed.')
 
     return_value = True
 
   except KeyboardInterrupt:
-    print(u'')
-    print(u'Aborted by user.')
+    print('')
+    print('Aborted by user.')
 
     return_value = False
 

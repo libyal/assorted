@@ -3,6 +3,8 @@
 """Script to calculate Windows Prefetch hashes."""
 
 from __future__ import print_function
+from __future__ import unicode_literals
+
 import argparse
 import sys
 
@@ -98,33 +100,33 @@ def Main():
     A boolean containing True if successful or False if not.
   """
   argument_parser = argparse.ArgumentParser(description=(
-      u'Calculate Windows Prefetch hashes'))
+      'Calculate Windows Prefetch hashes'))
 
   argument_parser.add_argument(
-      u'path', nargs=u'?', action=u'store', metavar=u'PATH',
-      default=None, help=u'path to calculate the Prefetch hash of.')
+      'path', nargs='?', action='store', metavar='PATH',
+      default=None, help='path to calculate the Prefetch hash of.')
 
   options = argument_parser.parse_args()
 
   if not options.path:
-    print(u'Path missing.')
-    print(u'')
+    print('Path missing.')
+    print('')
     argument_parser.print_help()
-    print(u'')
+    print('')
     return False
 
-  print(u'Windows Prefetch hashes:')
+  print('Windows Prefetch hashes:')
 
   prefetch_hash = CalculatePrefetchHashXP(options.path)
-  print(u'\tWindows XP\t: 0x{0:08x}'.format(prefetch_hash))
+  print('\tWindows XP\t: 0x{0:08x}'.format(prefetch_hash))
 
   prefetch_hash = CalculatePrefetchHashVista(options.path)
-  print(u'\tWindows Vista\t: 0x{0:08x}'.format(prefetch_hash))
+  print('\tWindows Vista\t: 0x{0:08x}'.format(prefetch_hash))
 
   prefetch_hash = CalculatePrefetchHash2008(options.path)
-  print(u'\tWindows 2008\t: 0x{0:08x}'.format(prefetch_hash))
+  print('\tWindows 2008\t: 0x{0:08x}'.format(prefetch_hash))
 
-  print(u'')
+  print('')
 
   return True
 

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Script to mark every block in a file."""
 
+from __future__ import unicode_literals
+
 import argparse
 import os
 import sys
@@ -14,15 +16,15 @@ def Main():
     bool: True if successful or False if not.
   """
   parser = argparse.ArgumentParser(
-      description=u'Marks every block in a file.')
+      description='Marks every block in a file.')
 
   parser.add_argument(
-      u'filename', metavar=u'FILENAME', type=unicode, nargs=1,
-      help=u'the name of the file to mark')
+      'filename', metavar='FILENAME', type=unicode, nargs=1,
+      help='the name of the file to mark')
 
   parser.add_argument(
-      u'-b', dest=u'block_size', metavar=u'SIZE', type=int, action=u'store',
-      default=512, help=u'the block size')
+      '-b', dest='block_size', metavar='SIZE', type=int, action='store',
+      default=512, help='the block size')
 
   arguments = parser.parse_args()
 
