@@ -263,7 +263,7 @@ int main( int argc, char * const argv[] )
 	     buffer,
 	     source_size,
 	     &fletcher64,
-	     NULL ) != 1 )
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
