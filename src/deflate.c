@@ -1887,6 +1887,11 @@ int deflate_decompress(
 				bit_stream.byte_stream_offset += block_size;
 				uncompressed_data_offset      += block_size;
 
+				/* Flush the bit-stream buffer
+				 */
+				bit_stream.bit_buffer      = 0;
+				bit_stream.bit_buffer_size = 0;
+
 				break;
 
 			case BLOCK_TYPE_HUFFMAN_FIXED:
