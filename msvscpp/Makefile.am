@@ -17,6 +17,7 @@ MSVSCPP_FILES = \
 	libuna/libuna.vcproj \
 	lzfudecompress/lzfudecompress.vcproj \
 	lznt1decompress/lznt1decompress.vcproj \
+	lzvndecompress/lzvndecompress.vcproj \
 	lzxpressdecompress/lzxpressdecompress.vcproj \
 	mssearchdecode/mssearchdecode.vcproj \
 	rc4crypt/rc4crypt.vcproj \
