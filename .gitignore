@@ -28,6 +28,7 @@
 *.trs
 *.Tpo
 .deps
+.dirstamp
 .libs
 INSTALL
 Makefile
@@ -132,6 +133,7 @@ stamp-h[1-9]
 /src/xor64sum
 /src/zcompress
 /src/zdecompress
+/tests/assorted_test_deflate
 /tests/input
 /tests/tmp*
 

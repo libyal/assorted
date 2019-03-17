@@ -35,10 +35,10 @@ extern "C" {
  */
 enum DEFLATE_BLOCK_TYPES
 {
-	BLOCK_TYPE_UNCOMPRESSED				= 0x00,
-	BLOCK_TYPE_HUFFMAN_FIXED			= 0x01,
-	BLOCK_TYPE_HUFFMAN_DYNAMIC			= 0x02,
-	BLOCK_TYPE_RESERVED				= 0x03
+	DEFLATE_BLOCK_TYPE_UNCOMPRESSED		= 0x00,
+	DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED	= 0x01,
+	DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC	= 0x02,
+	DEFLATE_BLOCK_TYPE_RESERVED		= 0x03
 };
 
 /* The largest primary (or scalar) available
@@ -115,20 +115,6 @@ int deflate_bit_stream_get_huffman_encoded_value(
      uint32_t *value_32bit,
      libcerror_error_t **error );
 
-int deflate_bit_stream_get_huffman_encoded_value(
-     deflate_bit_stream_t *bit_stream,
-     deflate_huffman_table_t *table,
-     uint32_t *value_32bit,
-     libcerror_error_t **error );
-
-int deflate_bit_stream_get_huffman_encoded_codes_array(
-     deflate_bit_stream_t *bit_stream,
-     deflate_huffman_table_t *code_size_table,
-     uint16_t *codes_array,
-     uint32_t maximum_number_of_codes,
-     uint32_t number_of_codes,
-     libcerror_error_t **error );
-
 int deflate_initialize_dynamic_huffman_tables(
      deflate_bit_stream_t *bit_stream,
      deflate_huffman_table_t *literals_table,
@@ -138,6 +124,15 @@ int deflate_initialize_dynamic_huffman_tables(
 int deflate_initialize_fixed_huffman_tables(
      deflate_huffman_table_t *literals_table,
      deflate_huffman_table_t *distances_table,
+     libcerror_error_t **error );
+
+int deflate_decode_huffman(
+     deflate_bit_stream_t *bit_stream,
+     deflate_huffman_table_t *literals_table,
+     deflate_huffman_table_t *distances_table,
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
 int deflate_calculate_adler32(

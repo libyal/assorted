@@ -48,6 +48,12 @@ AX_COMMON_CHECK_ENABLE_WINAPI
 dnl Check if wide character type should be enabled
 AX_COMMON_CHECK_ENABLE_WIDE_CHARACTER_TYPE
 
+dnl Check if verbose output should be enabled
+AX_COMMON_CHECK_ENABLE_VERBOSE_OUTPUT
+
+dnl Check if debug output should be enabled
+AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
+
 dnl Check for type definitions
 AX_TYPES_CHECK_LOCAL
 
@@ -94,27 +100,6 @@ AX_BZIP2_CHECK_ENABLE
 dnl Check for enabling libhmac for message digest hash function support
 AX_LIBHMAC_CHECK_ENABLE
 
-dnl Local includes
-AC_CHECK_HEADERS([math.h])
-
-AC_CHECK_LIB(
- m,
- log,
- [],
- [AC_MSG_FAILURE(
-  [Missing function: log in library: libm.],
-  1)
- ])
-
-dnl Check if assorted tools should be build as static executables
-AX_COMMON_CHECK_ENABLE_STATIC_EXECUTABLES
-
-dnl Check if assorted tools should be build with verbose output
-AX_COMMON_CHECK_ENABLE_VERBOSE_OUTPUT
-
-dnl Check if assorted tools should be build with debug output
-AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
-
 dnl Headers included in various places
 AC_CHECK_HEADERS([stdarg.h varargs.h])
 
@@ -124,6 +109,12 @@ AS_IF(
   [Missing headers: stdarg.h and varargs.h],
   [1])
  ])
+
+dnl Check if assorted tools required headers and functions are available
+AX_ASSORTED_TOOLS_CHECK_LOCAL
+
+dnl Check if tests required headers and functions are available
+AX_TESTS_CHECK_LOCAL
 
 dnl Set additional compiler flags
 CFLAGS="$CFLAGS -Wall";
@@ -142,6 +133,7 @@ AC_CONFIG_FILES([libfcrypto/Makefile])
 AC_CONFIG_FILES([libfwnt/Makefile])
 AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 dnl Have configure make distribution specific files
@@ -154,27 +146,27 @@ AC_OUTPUT
 dnl Print a summary
 AC_MSG_NOTICE([
 Building:
-   libcerror support:                             $ac_cv_libcerror
-   libcthreads support:                           $ac_cv_libcthreads
-   libcdata support:                              $ac_cv_libcdata
-   libclocale support:                            $ac_cv_libclocale
-   libuna support:                                $ac_cv_libuna
-   libcfile support:                              $ac_cv_libcfile
-   libfcrypto support:                            $ac_cv_libfcrypto
-   libfwnt support:                               $ac_cv_libfwnt
-   ADLER32 checksum support:                      $ac_cv_adler32
-   DEFLATE compression support:                   $ac_cv_zlib
-   BZIP2 compression support:                     $ac_cv_bzip2
-   LZNT1 compression support:                     $ac_cv_libfwnt
-   LZXPRESS compression support:                  $ac_cv_libfwnt
-   libhmac support:                               $ac_cv_libhmac
-   MD5 support:                                   $ac_cv_libhmac_md5
-   SHA1 support:                                  $ac_cv_libhmac_sha1
-   SHA256 support:                                $ac_cv_libhmac_sha256
+   libcerror support:                              $ac_cv_libcerror
+   libcthreads support:                            $ac_cv_libcthreads
+   libcdata support:                               $ac_cv_libcdata
+   libclocale support:                             $ac_cv_libclocale
+   libuna support:                                 $ac_cv_libuna
+   libcfile support:                               $ac_cv_libcfile
+   libfcrypto support:                             $ac_cv_libfcrypto
+   libfwnt support:                                $ac_cv_libfwnt
+   ADLER32 checksum support:                       $ac_cv_adler32
+   DEFLATE compression support:                    $ac_cv_zlib
+   BZIP2 compression support:                      $ac_cv_bzip2
+   LZNT1 compression support:                      $ac_cv_libfwnt
+   LZXPRESS compression support:                   $ac_cv_libfwnt
+   libhmac support:                                $ac_cv_libhmac
+   MD5 support:                                    $ac_cv_libhmac_md5
+   SHA1 support:                                   $ac_cv_libhmac_sha1
+   SHA256 support:                                 $ac_cv_libhmac_sha256
 
 Features:
-   Wide character type support:                   $ac_cv_enable_wide_character_type
-   assorted tool are build as static executables: $ac_cv_enable_static_executables
+   Wide character type support:                    $ac_cv_enable_wide_character_type
+   assorted tools are build as static executables: $ac_cv_enable_static_executables
    Verbose output:                                $ac_cv_enable_verbose_output
    Debug output:                                  $ac_cv_enable_debug_output
 ]);

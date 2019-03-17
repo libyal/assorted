@@ -39,7 +39,8 @@ int deflate_bit_stream_get_value(
      uint32_t *value_32bit,
      libcerror_error_t **error )
 {
-	static char *function = "deflate_bit_stream_get_value";
+	static char *function     = "deflate_bit_stream_get_value";
+	uint32_t safe_value_32bit = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -93,16 +94,29 @@ int deflate_bit_stream_get_value(
 
 			return( -1 );
 		}
-		*value_32bit   = bit_stream->byte_stream[ bit_stream->byte_stream_offset++ ];
-		*value_32bit <<= bit_stream->bit_buffer_size;
+		safe_value_32bit   = bit_stream->byte_stream[ bit_stream->byte_stream_offset++ ];
+		safe_value_32bit <<= bit_stream->bit_buffer_size;
 
-		bit_stream->bit_buffer      |= *value_32bit;
+		bit_stream->bit_buffer      |= safe_value_32bit;
 		bit_stream->bit_buffer_size += 8;
 	}
-	*value_32bit = bit_stream->bit_buffer & ~( -1L << number_of_bits );
+	safe_value_32bit = bit_stream->bit_buffer;
 
-	bit_stream->bit_buffer     >>= number_of_bits;
-	bit_stream->bit_buffer_size -= number_of_bits;
+	if( number_of_bits < 32 )
+	{
+		/* On VS 2008 32-bit "~( 0xfffffffUL << 32 )" does not behave as expected
+		 */
+		safe_value_32bit &= ~( 0xffffffffUL << number_of_bits );
+
+		bit_stream->bit_buffer     >>= number_of_bits;
+		bit_stream->bit_buffer_size -= number_of_bits;
+	}
+	else
+	{
+		bit_stream->bit_buffer      = 0;
+		bit_stream->bit_buffer_size = 0;
+	}
+	*value_32bit = safe_value_32bit;
 
 	return( 1 );
 }
@@ -318,15 +332,16 @@ int deflate_bit_stream_get_huffman_encoded_value(
      uint32_t *value_32bit,
      libcerror_error_t **error )
 {
-	static char *function  = "deflate_bit_stream_get_huffman_encoded_value";
-	uint32_t bit_buffer    = 0;
-	uint8_t bit_index      = 0;
-	uint8_t number_of_bits = 0;
-	int code_size_count    = 0;
-	int first_huffman_code = 0;
-	int first_index        = 0;
-	int huffman_code       = 0;
-	int result             = 0;
+	static char *function     = "deflate_bit_stream_get_huffman_encoded_value";
+	uint32_t bit_buffer       = 0;
+	uint32_t safe_value_32bit = 0;
+	uint8_t bit_index         = 0;
+	uint8_t number_of_bits    = 0;
+	int code_size_count       = 0;
+	int first_huffman_code    = 0;
+	int first_index           = 0;
+	int huffman_code          = 0;
+	int result                = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -369,10 +384,10 @@ int deflate_bit_stream_get_huffman_encoded_value(
 		{
 			break;
 		}
-		*value_32bit   = bit_stream->byte_stream[ bit_stream->byte_stream_offset++ ];
-		*value_32bit <<= bit_stream->bit_buffer_size;
+		safe_value_32bit   = bit_stream->byte_stream[ bit_stream->byte_stream_offset++ ];
+		safe_value_32bit <<= bit_stream->bit_buffer_size;
 
-		bit_stream->bit_buffer      |= *value_32bit;
+		bit_stream->bit_buffer      |= safe_value_32bit;
 		bit_stream->bit_buffer_size += 8;
 	}
 	if( table->maximum_number_of_bits < bit_stream->bit_buffer_size )
@@ -397,7 +412,7 @@ int deflate_bit_stream_get_huffman_encoded_value(
 
 		if( ( huffman_code - code_size_count ) < first_huffman_code )
 		{
-			*value_32bit = table->codes_array[ first_index + ( huffman_code - first_huffman_code ) ];
+			safe_value_32bit = table->codes_array[ first_index + ( huffman_code - first_huffman_code ) ];
 
 			result = 1;
 
@@ -412,7 +427,20 @@ int deflate_bit_stream_get_huffman_encoded_value(
 		bit_stream->bit_buffer     >>= bit_index;
 		bit_stream->bit_buffer_size -= bit_index;
 	}
-	return( result );
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid huffman encoded value.",
+		 function );
+
+		return( -1 );
+	}
+	*value_32bit = safe_value_32bit;
+
+	return( 1 );
 }
 
 /* Initializes the dynamic Huffman tables
@@ -954,7 +982,7 @@ int deflate_decode_huffman(
 
 			if( deflate_bit_stream_get_value(
 			     bit_stream,
-			     number_of_extra_bits,
+			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
 			     error ) != 1 )
 			{
@@ -1007,7 +1035,7 @@ int deflate_decode_huffman(
 
 			if( deflate_bit_stream_get_value(
 			     bit_stream,
-			     number_of_extra_bits,
+			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
 			     error ) != 1 )
 			{
@@ -1540,6 +1568,17 @@ int deflate_decompress(
 		 2,
 		 0 );
 	}
+	if( compressed_data_offset >= compressed_data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: invalid compressed data value too small.",
+		 function );
+
+		return( -1 );
+	}
 	compression_method      = compressed_data[ 0 ] & 0x0f;
 	compression_information = compressed_data[ 0 ] >> 4;
 
@@ -1615,6 +1654,7 @@ int deflate_decompress(
 		 preset_dictionary_identifier );
 
 		compressed_data_offset += 4;
+		compressed_data_size   -= 4;
 
 		if( libcnotify_verbose != 0 )
 		{
@@ -1625,6 +1665,7 @@ int deflate_decompress(
 		}
 	}
 	compressed_data_offset += 2;
+	compressed_data_size   -= 2;
 
 	if( compression_method != 8 )
 	{
@@ -1734,22 +1775,22 @@ int deflate_decompress(
 
 			switch( block_type )
 			{
-				case BLOCK_TYPE_UNCOMPRESSED:
+				case DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
 					libcnotify_printf(
 					 "Uncompressed" );
 					break;
 
-				case BLOCK_TYPE_HUFFMAN_FIXED:
+				case DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED:
 					libcnotify_printf(
 					 "Fixed Huffman" );
 					break;
 
-				case BLOCK_TYPE_HUFFMAN_DYNAMIC:
+				case DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
 					libcnotify_printf(
 					 "Dynamic Huffman" );
 					break;
 
-				case BLOCK_TYPE_RESERVED:
+				case DEFLATE_BLOCK_TYPE_RESERVED:
 				default:
 					libcnotify_printf(
 					 "Reserved" );
@@ -1763,7 +1804,7 @@ int deflate_decompress(
 		}
 		switch( block_type )
 		{
-			case BLOCK_TYPE_UNCOMPRESSED:
+			case DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
 				/* Ignore the bits in the buffer upto the next byte
 				 */
 				skip_bits = bit_stream.bit_buffer_size & 0x07;
@@ -1829,7 +1870,7 @@ int deflate_decompress(
 					 block_size_copy ^ 0x0000ffffUL,
 					 block_size_copy );
 				}
-				block_size_copy ^= 0x0000ffffUL;
+				block_size_copy = ( block_size >> 16 ) ^ 0x0000ffffUL;
 
 				if( block_size != block_size_copy )
 				{
@@ -1894,7 +1935,7 @@ int deflate_decompress(
 
 				break;
 
-			case BLOCK_TYPE_HUFFMAN_FIXED:
+			case DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED:
 				if( deflate_decode_huffman(
 				     &bit_stream,
 				     &fixed_huffman_literals_table,
@@ -1915,7 +1956,7 @@ int deflate_decompress(
 				}
 				break;
 
-			case BLOCK_TYPE_HUFFMAN_DYNAMIC:
+			case DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
 				if( deflate_initialize_dynamic_huffman_tables(
 				     &bit_stream,
 				     &dynamic_huffman_literals_table,
@@ -1951,7 +1992,7 @@ int deflate_decompress(
 				}
 				break;
 
-			case BLOCK_TYPE_RESERVED:
+			case DEFLATE_BLOCK_TYPE_RESERVED:
 			default:
 				libcerror_error_set(
 				 error,
