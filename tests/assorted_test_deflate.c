@@ -1,5 +1,5 @@
 /*
- * Library DEFLATE decompression testing program
+ * DEFLATE decompression testing program
  *
  * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -686,7 +686,7 @@ uint8_t assorted_test_deflate_uncompressed_byte_stream[ 7640 ] = {
 	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x20, 0x66, 0x6f, 0x72, 0x20, 0x74, 0x68, 0x65, 0x0a, 0x4c, 0x69,
 	0x62, 0x72, 0x61, 0x72, 0x79, 0x2e, 0x0a, 0x0a };
 
-#if defined( __GNUC__ ) && !defined( LIBASSORTED_DLL_IMPORT )
+#if defined( __GNUC__ )
 
 /* Tests the deflate_bit_stream_get_value function
  * Returns 1 if successful or 0 if not
@@ -1849,7 +1849,7 @@ on_error:
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) && !defined( LIBASSORTED_DLL_IMPORT ) */
+#endif /* defined( __GNUC__ ) */
 
 /* The main program
  */
@@ -1866,7 +1866,6 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#define ASSORTED_TEST_DEFLATE
 #if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_DEFLATE )
 	libcnotify_verbose_set(
 	 1 );
@@ -1875,7 +1874,7 @@ int main(
 	 NULL );
 #endif
 
-#if defined( __GNUC__ ) && !defined( LIBASSORTED_DLL_IMPORT )
+#if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
 	 "deflate_bit_stream_get_value",
@@ -1909,7 +1908,7 @@ int main(
 	 "deflate_decompress",
 	 assorted_test_deflate_decompress );
 
-#endif /* defined( __GNUC__ ) && !defined( LIBASSORTED_DLL_IMPORT ) */
+#endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 

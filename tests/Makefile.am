@@ -27,7 +27,33 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	assorted_test_adler32 \
+	assorted_test_ascii7 \
 	assorted_test_deflate
+
+assorted_test_adler32_SOURCES = \
+	../src/adler32.c ../src/adler32.h \
+	assorted_test_adler32.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_adler32_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_ascii7_SOURCES = \
+	../src/ascii7.c ../src/ascii7.h \
+	assorted_test_ascii7.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_ascii7_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
 
 assorted_test_deflate_SOURCES = \
 	../src/deflate.c ../src/deflate.h \

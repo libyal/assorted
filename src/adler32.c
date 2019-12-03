@@ -46,14 +46,14 @@ typedef unsigned long int adler32_aligned_t;
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_basic1(
+int adler32_calculate_checksum_basic1(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_adler32_basic1";
+	static char *function = "adler32_calculate_checksum_basic1";
 	size_t buffer_index   = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -118,14 +118,14 @@ int checksum_calculate_adler32_basic1(
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_basic2(
+int adler32_calculate_checksum_basic2(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_adler32_basic2";
+	static char *function = "adler32_calculate_checksum_basic2";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -194,14 +194,14 @@ int checksum_calculate_adler32_basic2(
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_unfolded4_1(
+int adler32_calculate_checksum_unfolded4_1(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_adler32_unfolded4_1";
+	static char *function = "adler32_calculate_checksum_unfolded4_1";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -289,15 +289,15 @@ int checksum_calculate_adler32_unfolded4_1(
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_unfolded4_2(
+int adler32_calculate_checksum_unfolded4_2(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
 	uint8_t *buffer_index = NULL;
-	static char *function = "checksum_calculate_adler32_unfolded4_2";
+	static char *function = "adler32_calculate_checksum_unfolded4_2";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -397,14 +397,14 @@ int checksum_calculate_adler32_unfolded4_2(
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_unfolded16_1(
+int adler32_calculate_checksum_unfolded16_1(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_adler32_unfolded16_1";
+	static char *function = "adler32_calculate_checksum_unfolded16_1";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -558,14 +558,14 @@ int checksum_calculate_adler32_unfolded16_1(
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_unfolded16_2(
+int adler32_calculate_checksum_unfolded16_2(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_adler32_unfolded16_2";
+	static char *function = "adler32_calculate_checksum_unfolded16_2";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -742,14 +742,14 @@ int checksum_calculate_adler32_unfolded16_2(
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_unfolded16_3(
+int adler32_calculate_checksum_unfolded16_3(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_adler32_unfolded16_3";
+	static char *function = "adler32_calculate_checksum_unfolded16_3";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -839,14 +839,14 @@ int checksum_calculate_adler32_unfolded16_3(
  * Use a previous key of 0 to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_unfolded16_4(
+int adler32_calculate_checksum_unfolded16_4(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_adler32_unfolded16_4";
+	static char *function = "adler32_calculate_checksum_unfolded16_4";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -1087,7 +1087,7 @@ int checksum_calculate_adler32_unfolded16_4(
  * It uses the initial value to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_cpu_aligned(
+int adler32_calculate_checksum_cpu_aligned(
      uint32_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
@@ -1096,7 +1096,7 @@ int checksum_calculate_adler32_cpu_aligned(
 {
 	adler32_aligned_t *aligned_buffer_index = NULL;
 	uint8_t *buffer_index                   = NULL;
-	static char *function                   = "checksum_calculate_adler32_cpu_aligned";
+	static char *function                   = "adler32_calculate_checksum_cpu_aligned";
 	size_t buffer_offset                    = 0;
 	uint32_t lower_word                     = 0;
 	uint32_t upper_word                     = 0;
@@ -1360,7 +1360,7 @@ int checksum_calculate_adler32_cpu_aligned(
  * It uses the initial value to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_adler32_simd(
+int adler32_calculate_checksum_simd(
      uint32_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
@@ -1371,7 +1371,7 @@ int checksum_calculate_adler32_simd(
 	adler32_8byte_vector_t upper_word_8byte_multiplier;
 	adler32_8byte_vector_t upper_word_8byte_value;
 
-	static char *function = "checksum_calculate_adler32_simd";
+	static char *function = "adler32_calculate_checksum_simd";
 	size_t buffer_offset  = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;

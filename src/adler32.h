@@ -31,70 +31,70 @@
 extern "C" {
 #endif
 
-int checksum_calculate_adler32_basic1(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_basic2(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_unfolded4_1(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_unfolded4_2(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_unfolded16_1(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_unfolded16_2(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_unfolded16_3(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_unfolded16_4(
-     uint32_t *checksum_value,
-     uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int checksum_calculate_adler32_cpu_aligned(
+int adler32_calculate_checksum_basic1(
      uint32_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error );
 
-int checksum_calculate_adler32_simd(
+int adler32_calculate_checksum_basic2(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_unfolded4_1(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_unfolded4_2(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_unfolded16_1(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_unfolded16_2(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_unfolded16_3(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_unfolded16_4(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_cpu_aligned(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
+int adler32_calculate_checksum_simd(
      uint32_t *checksum_value,
      const uint8_t *buffer,
      size_t size,

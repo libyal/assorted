@@ -311,7 +311,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( calculation_method == 1 )
 	{
-		result = checksum_calculate_adler32_basic2(
+		result = adler32_calculate_checksum_basic2(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -323,12 +323,12 @@ int main( int argc, char * const argv[] )
 		/* The unfolded4_2 variant is slower than the unfolded4_1 variant
 		 */
 		/* Fastest to slowest variant
-		 * - checksum_calculate_adler32_unfolded16_4
-		 * - checksum_calculate_adler32_unfolded16_2
-		 * - checksum_calculate_adler32_unfolded16_1
-		 * - checksum_calculate_adler32_unfolded16_3
+		 * - adler32_calculate_checksum_unfolded16_4
+		 * - adler32_calculate_checksum_unfolded16_2
+		 * - adler32_calculate_checksum_unfolded16_1
+		 * - adler32_calculate_checksum_unfolded16_3
 		 */
-		result = checksum_calculate_adler32_unfolded16_4(
+		result = adler32_calculate_checksum_unfolded16_4(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -339,7 +339,7 @@ int main( int argc, char * const argv[] )
 	{
 		/* The unfolded variants seems to be faster then the CPU aligned
 		 */
-		result = checksum_calculate_adler32_cpu_aligned(
+		result = adler32_calculate_checksum_cpu_aligned(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -349,7 +349,7 @@ int main( int argc, char * const argv[] )
 	else if( calculation_method == 4 )
 	{
 /* TODO experimental */
-		result = checksum_calculate_adler32_simd(
+		result = adler32_calculate_checksum_simd(
 		          &checksum_value,
 		          buffer,
 		          source_size,

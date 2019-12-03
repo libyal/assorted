@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [assorted],
- [20191117],
+ [20191203],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -167,7 +167,7 @@ Building:
 Features:
    Wide character type support:                    $ac_cv_enable_wide_character_type
    assorted tools are build as static executables: $ac_cv_enable_static_executables
-   Verbose output:                                $ac_cv_enable_verbose_output
-   Debug output:                                  $ac_cv_enable_debug_output
+   Verbose output:                                 $ac_cv_enable_verbose_output
+   Debug output:                                   $ac_cv_enable_debug_output
 ]);
 
