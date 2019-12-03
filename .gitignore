@@ -135,6 +135,8 @@ stamp-h[1-9]
 /src/zdecompress
 /tests/assorted_test_adler32
 /tests/assorted_test_ascii7
+/tests/assorted_test_crc32
+/tests/assorted_test_crc64
 /tests/assorted_test_deflate
 /tests/input
 /tests/tmp*

@@ -29,6 +29,8 @@ EXTRA_DIST = \
 check_PROGRAMS = \
 	assorted_test_adler32 \
 	assorted_test_ascii7 \
+	assorted_test_crc32 \
+	assorted_test_crc64 \
 	assorted_test_deflate
 
 assorted_test_adler32_SOURCES = \
@@ -52,6 +54,30 @@ assorted_test_ascii7_SOURCES = \
 	assorted_test_unused.h
 
 assorted_test_ascii7_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_crc32_SOURCES = \
+	../src/crc32.c ../src/crc32.h \
+	assorted_test_crc32.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_crc32_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_crc64_SOURCES = \
+	../src/crc64.c ../src/crc64.h \
+	assorted_test_crc64.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_crc64_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 

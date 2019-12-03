@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="adler32 ascii7 deflate";
+LIBRARY_TESTS="adler32 ascii7 crc32 crc64 deflate";
 LIBRARY_TESTS_WITH_INPUT="";
 OPTION_SETS="";
 

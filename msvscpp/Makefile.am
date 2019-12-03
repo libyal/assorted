@@ -1,6 +1,10 @@
 MSVSCPP_FILES = \
 	adler32sum/adler32sum.vcproj \
 	ascii7decompress/ascii7decompress.vcproj \
+	assorted_test_adler32/assorted_test_adler32.vcproj \
+	assorted_test_ascii7/assorted_test_ascii7.vcproj \
+	assorted_test_crc32/assorted_test_crc32.vcproj \
+	assorted_test_crc64/assorted_test_crc64.vcproj \
 	assorted_test_deflate/assorted_test_deflate.vcproj \
 	crc32sum/crc32sum.vcproj \
 	crc64sum/crc64sum.vcproj \
