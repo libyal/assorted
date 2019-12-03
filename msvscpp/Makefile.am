@@ -6,6 +6,8 @@ MSVSCPP_FILES = \
 	assorted_test_crc32/assorted_test_crc32.vcproj \
 	assorted_test_crc64/assorted_test_crc64.vcproj \
 	assorted_test_deflate/assorted_test_deflate.vcproj \
+	assorted_test_fletcher32/assorted_test_fletcher32.vcproj \
+	assorted_test_fletcher64/assorted_test_fletcher64.vcproj \
 	crc32sum/crc32sum.vcproj \
 	crc64sum/crc64sum.vcproj \
 	fletcher32sum/fletcher32sum.vcproj \

@@ -259,10 +259,10 @@ int main( int argc, char * const argv[] )
 		goto on_error;
 	}
 	if( fletcher64_calculate(
-	     previous_key,
+	     &fletcher64,
 	     buffer,
 	     source_size,
-	     &fletcher64,
+	     previous_key,
 	     &error ) != 1 )
 	{
 		fprintf(

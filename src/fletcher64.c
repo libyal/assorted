@@ -31,10 +31,10 @@
  * Returns 1 if successful or -1 on error
  */
 int fletcher64_calculate(
-     uint64_t previous_key,
-     uint8_t *data,
-     size_t data_size,
      uint64_t *fletcher64,
+     const uint8_t *data,
+     size_t data_size,
+     uint64_t previous_key,
      libcerror_error_t **error )
 {
 	static char *function = "fletcher64_calculate";
@@ -43,6 +43,17 @@ int fletcher64_calculate(
 	uint64_t upper_32bit  = 0;
 	uint32_t value_32bit  = 0;
 
+	if( fletcher64 == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid Fletcher-64.",
+		 function );
+
+		return( -1 );
+	}
 	if( data == NULL )
 	{
 		libcerror_error_set(
@@ -72,17 +83,6 @@ int fletcher64_calculate(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
 		 "%s: invalid data size value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	if( fletcher64 == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid Fletcher-64.",
 		 function );
 
 		return( -1 );

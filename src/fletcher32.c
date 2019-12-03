@@ -30,10 +30,10 @@
  * Returns 1 if successful or -1 on error
  */
 int fletcher32_calculate(
-     uint32_t previous_key,
-     uint8_t *buffer,
-     size_t size,
      uint32_t *fletcher32,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t previous_key,
      libcerror_error_t **error )
 {
 	static char *function = "fletcher32_calculate";
@@ -41,6 +41,17 @@ int fletcher32_calculate(
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
 
+	if( fletcher32 == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid Fletcher-32.",
+		 function );
+
+		return( -1 );
+	}
 	if( buffer == NULL )
 	{
 		libcerror_error_set(
@@ -59,17 +70,6 @@ int fletcher32_calculate(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( fletcher32 == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid Fletcher-32.",
 		 function );
 
 		return( -1 );

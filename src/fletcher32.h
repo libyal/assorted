@@ -32,10 +32,10 @@ extern "C" {
 #endif
 
 int fletcher32_calculate(
-     uint32_t previous_key,
-     uint8_t *buffer,
-     size_t size,
      uint32_t *fletcher32,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t previous_key,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

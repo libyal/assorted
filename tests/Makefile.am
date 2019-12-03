@@ -31,7 +31,9 @@ check_PROGRAMS = \
 	assorted_test_ascii7 \
 	assorted_test_crc32 \
 	assorted_test_crc64 \
-	assorted_test_deflate
+	assorted_test_deflate \
+	assorted_test_fletcher32 \
+	assorted_test_fletcher64
 
 assorted_test_adler32_SOURCES = \
 	../src/adler32.c ../src/adler32.h \
@@ -90,6 +92,30 @@ assorted_test_deflate_SOURCES = \
 	assorted_test_unused.h
 
 assorted_test_deflate_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_fletcher32_SOURCES = \
+	../src/fletcher32.c ../src/fletcher32.h \
+	assorted_test_fletcher32.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_fletcher32_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_fletcher64_SOURCES = \
+	../src/fletcher64.c ../src/fletcher64.h \
+	assorted_test_fletcher64.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_fletcher64_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
