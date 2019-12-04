@@ -1,8 +1,11 @@
 TODO
+* add tests for mssearchdecode.c
+
 * create xor tool that will byte-wise xor a file using a "key"
 * create equivalent of sigfind that is more powerful
   can handle more than 4 byte signatures
 * create lz1decompress (or equiv) for NSF compression
+* create lzxdecompress
 
 * decompression tools and code
   - clean up, make stand-alone libs
@@ -42,37 +45,8 @@ Fletcher-16
 Filetime:
 * create equivalent tool in libfdatetime
 
-20161102
-* worked on lzxpressdecompress
-* worked on lznt1decompress
-
-20160831
-* updated dependencies
-
-20160124
-* worked on deflate
-
-20160116
-* worked on merging atools and assorted
-
-20160110
-* updated dependencies
-
-20160103
-* 2016 update
-
-20151225
-* worked on merging atools and assorted
-* merged crc32 and wcrc32
-* replaced individual copyright_fprint by assorted_output_copyright_fprint
-
-20150612
-* worked on lzxpressdecompress
-
-20141203
-* worked on rc4decrypt
-* worked on lzxpressdecompress
-* worked on moving copyright_fprint to assorted_output_copyright_fprint
+20141110
+* see `git log' for more recent change log
 
 20140512
 * worked on lzxpressdecompress
