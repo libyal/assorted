@@ -35,14 +35,14 @@ typedef unsigned long int xor64_aligned_t;
  * Use a intial value to calculate a new XOR-64
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_little_endian_xor64_basic(
+int xor64_calculate_checksum_little_endian_basic(
      uint64_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint64_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_little_endian_xor64_basic";
+	static char *function = "xor64_calculate_checksum_little_endian_basic";
 	uint64_t value_64bit  = 0;
 
 	if( checksum_value == NULL )
@@ -140,7 +140,7 @@ int checksum_calculate_little_endian_xor64_basic(
  * It uses the initial value to calculate a new XOR-64
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_little_endian_xor64_cpu_aligned(
+int xor64_calculate_checksum_little_endian_cpu_aligned(
      uint64_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
@@ -149,7 +149,7 @@ int checksum_calculate_little_endian_xor64_cpu_aligned(
 {
 	xor64_aligned_t *aligned_buffer_iterator = NULL;
 	uint8_t *buffer_iterator                 = NULL;
-	static char *function                    = "checksum_calculate_little_endian_xor64_cpu_aligned";
+	static char *function                    = "xor64_calculate_checksum_little_endian_cpu_aligned";
 	xor64_aligned_t value_aligned            = 0;
 	uint64_t value_64bit                     = 0;
 	uint8_t alignment_count                  = 0;

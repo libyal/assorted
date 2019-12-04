@@ -289,7 +289,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( calculation_method == 1 )
 	{
-		result = checksum_calculate_little_endian_xor64_basic(
+		result = xor64_calculate_checksum_little_endian_basic(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -298,7 +298,7 @@ int main( int argc, char * const argv[] )
 	}
 	else if( calculation_method == 2 )
 	{
-		result = checksum_calculate_little_endian_xor64_cpu_aligned(
+		result = xor64_calculate_checksum_little_endian_cpu_aligned(
 		          &checksum_value,
 		          buffer,
 		          source_size,

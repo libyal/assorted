@@ -31,14 +31,14 @@
 extern "C" {
 #endif
 
-int checksum_calculate_little_endian_xor32_basic(
+int xor32_calculate_checksum_little_endian_basic(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error );
 
-int checksum_calculate_little_endian_xor32_cpu_aligned(
+int xor32_calculate_checksum_little_endian_cpu_aligned(
      uint32_t *checksum_value,
      const uint8_t *buffer,
      size_t size,

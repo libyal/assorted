@@ -29,7 +29,7 @@
  * Return 1 on success or -1 on error
  */
 int ascii7_get_uncompressed_data_size(
-     uint8_t *compressed_data,
+     const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
@@ -91,7 +91,7 @@ int ascii7_get_uncompressed_data_size(
 int ascii7_decompress(
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
-     uint8_t *compressed_data,
+     const uint8_t *compressed_data,
      size_t compressed_data_size,
      libcerror_error_t **error )
 {

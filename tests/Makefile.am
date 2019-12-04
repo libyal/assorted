@@ -33,7 +33,11 @@ check_PROGRAMS = \
 	assorted_test_crc64 \
 	assorted_test_deflate \
 	assorted_test_fletcher32 \
-	assorted_test_fletcher64
+	assorted_test_fletcher64 \
+	assorted_test_lzfu \
+	assorted_test_lzvn \
+	assorted_test_xor32 \
+	assorted_test_xor64
 
 assorted_test_adler32_SOURCES = \
 	../src/adler32.c ../src/adler32.h \
@@ -119,8 +123,57 @@ assorted_test_fletcher64_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
+assorted_test_lzfu_SOURCES = \
+	../src/crc32.c ../src/crc32.h \
+	../src/lzfu.c ../src/lzfu.h \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_lzfu.c \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_lzfu_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_lzvn_SOURCES = \
+	../src/lzvn.c ../src/lzvn.h \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_lzvn.c \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_lzvn_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
 MAINTAINERCLEANFILES = \
 	Makefile.in
+
+assorted_test_xor32_SOURCES = \
+	../src/xor32.c ../src/xor32.h \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h \
+	assorted_test_xor32.c
+
+assorted_test_xor32_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_xor64_SOURCES = \
+	../src/xor64.c ../src/xor64.h \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h \
+	assorted_test_xor64.c
+
+assorted_test_xor64_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
 
 distclean: clean
 	/bin/rm -f Makefile

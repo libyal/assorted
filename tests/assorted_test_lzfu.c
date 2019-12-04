@@ -1,5 +1,5 @@
 /*
- * ASCII 7-bit (un)compression testing program
+ * LZFu (un)compression testing program
  *
  * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,21 +33,21 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/ascii7.h"
+#include "../src/lzfu.h"
 
-/* Define to make assorted_test_ascii7 generate verbose output
-#define ASSORTED_TEST_ASCII7
+/* Define to make assorted_test_lzfu generate verbose output
+#define ASSORTED_TEST_LZFU
  */
 
-uint8_t assorted_test_ascii7_compressed_data[ 16 ] = {
+uint8_t assorted_test_lzfu_compressed_data[ 16 ] = {
 	0x78, 0xda, 0xbd, 0x59, 0x6d, 0x8f, 0xdb, 0xb8, 0x11, 0xfe, 0x7c, 0xfa, 0x15, 0xc4, 0x7e, 0xb9 };
 
 #if defined( __GNUC__ )
 
-/* Tests the ascii7_get_uncompressed_data_size function
+/* Tests the lzfu_get_uncompressed_data_size function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_ascii7_get_uncompressed_data_size(
+int assorted_test_lzfu_get_uncompressed_data_size(
      void )
 {
 	libcerror_error_t *error      = NULL;
@@ -56,8 +56,9 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 
 	/* Test regular cases
 	 */
-	result = ascii7_get_uncompressed_data_size(
-	          assorted_test_ascii7_compressed_data,
+/* TODO add representative test data
+	result = lzfu_get_uncompressed_data_size(
+	          assorted_test_lzfu_compressed_data,
 	          16,
 	          &uncompressed_data_size,
 	          &error );
@@ -75,10 +76,11 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+*/
 
 	/* Test error cases
 	 */
-	result = ascii7_get_uncompressed_data_size(
+	result = lzfu_get_uncompressed_data_size(
 	          NULL,
 	          16,
 	          &uncompressed_data_size,
@@ -96,8 +98,8 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_get_uncompressed_data_size(
-	          assorted_test_ascii7_compressed_data,
+	result = lzfu_get_uncompressed_data_size(
+	          assorted_test_lzfu_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          &uncompressed_data_size,
 	          &error );
@@ -114,8 +116,8 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_get_uncompressed_data_size(
-	          assorted_test_ascii7_compressed_data,
+	result = lzfu_get_uncompressed_data_size(
+	          assorted_test_lzfu_compressed_data,
 	          16,
 	          NULL,
 	          &error );
@@ -138,25 +140,28 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the ascii7_decompress function
+/* Tests the lzfu_decompress function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_ascii7_decompress(
+int assorted_test_lzfu_decompress(
      void )
 {
 	uint8_t uncompressed_data[ 16 ];
 
-	libcerror_error_t *error = NULL;
-	int result               = 0;
+	libcerror_error_t *error      = NULL;
+	size_t uncompressed_data_size = 0;
+	int result                    = 0;
 
 	/* Test regular cases
 	 */
 /* TODO add representative test data
-	result = ascii7_decompress(
+	uncompressed_data_size = 16;
+
+	result = lzfu_decompress(
+	          assorted_test_lzfu_compressed_data,
+	          16,
 	          uncompressed_data,
-	          16,
-	          assorted_test_ascii7_compressed_data,
-	          16,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -176,11 +181,13 @@ int assorted_test_ascii7_decompress(
 
 	/* Test error cases
 	 */
-	result = ascii7_decompress(
+	uncompressed_data_size = 16;
+
+	result = lzfu_decompress(
 	          NULL,
 	          16,
-	          assorted_test_ascii7_compressed_data,
-	          16,
+	          uncompressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -195,11 +202,11 @@ int assorted_test_ascii7_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_decompress(
-	          uncompressed_data,
+	result = lzfu_decompress(
+	          assorted_test_lzfu_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
-	          assorted_test_ascii7_compressed_data,
-	          16,
+	          uncompressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -214,11 +221,11 @@ int assorted_test_ascii7_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_decompress(
-	          uncompressed_data,
+	result = lzfu_decompress(
+	          assorted_test_lzfu_compressed_data,
 	          16,
 	          NULL,
-	          16,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -233,11 +240,32 @@ int assorted_test_ascii7_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_decompress(
-	          uncompressed_data,
+	result = lzfu_decompress(
+	          assorted_test_lzfu_compressed_data,
 	          16,
-	          assorted_test_ascii7_compressed_data,
-	          (size_t) SSIZE_MAX + 1,
+	          uncompressed_data,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	uncompressed_data_size = (size_t) SSIZE_MAX + 1;
+
+	result = lzfu_decompress(
+	          assorted_test_lzfu_compressed_data,
+	          16,
+	          uncompressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -275,7 +303,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_ASCII7 )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZFU )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(
@@ -286,12 +314,14 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "ascii7_get_uncompressed_data_size",
-	 assorted_test_ascii7_get_uncompressed_data_size );
+	 "lzfu_get_uncompressed_data_size",
+	 assorted_test_lzfu_get_uncompressed_data_size );
+
+	/* TODO add tests for lzfu_compress */
 
 	ASSORTED_TEST_RUN(
-	 "ascii7_decompress",
-	 assorted_test_ascii7_decompress );
+	 "lzfu_decompress",
+	 assorted_test_lzfu_decompress );
 
 #endif /* defined( __GNUC__ ) */
 

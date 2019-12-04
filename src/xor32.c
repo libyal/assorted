@@ -35,14 +35,14 @@ typedef unsigned long int xor32_aligned_t;
  * Use a intial value to calculate a new XOR-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_little_endian_xor32_basic(
+int xor32_calculate_checksum_little_endian_basic(
      uint32_t *checksum_value,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "checksum_calculate_little_endian_xor32_basic";
+	static char *function = "xor32_calculate_checksum_little_endian_basic";
 	uint32_t value_32bit  = 0;
 
 	if( checksum_value == NULL )
@@ -116,7 +116,7 @@ int checksum_calculate_little_endian_xor32_basic(
  * It uses the initial value to calculate a new XOR-32
  * Returns 1 if successful or -1 on error
  */
-int checksum_calculate_little_endian_xor32_cpu_aligned(
+int xor32_calculate_checksum_little_endian_cpu_aligned(
      uint32_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
@@ -125,7 +125,7 @@ int checksum_calculate_little_endian_xor32_cpu_aligned(
 {
 	xor32_aligned_t *aligned_buffer_iterator = NULL;
 	uint8_t *buffer_iterator                 = NULL;
-	static char *function                    = "checksum_calculate_little_endian_xor32_cpu_aligned";
+	static char *function                    = "xor32_calculate_checksum_little_endian_cpu_aligned";
 	xor32_aligned_t value_aligned            = 0;
 	uint32_t value_32bit                     = 0;
 	uint8_t alignment_count                  = 0;
