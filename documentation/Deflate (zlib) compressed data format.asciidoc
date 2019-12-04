@@ -234,7 +234,7 @@ The value must be smaller than 286
 | 1.0 | 5 bits | | Number of distance codes +
 Number of distance codes = value + 1 +
 The value must be smaller than 30
-| 1.5 | 4 bits | | The number of Huffman codes for the code sizes =
+| 1.5 | 4 bits | | The number of Huffman codes for the code sizes +
 Number of code sizes = value + 4
 | 2.1 | ... | | The code sizes
 | ... | ... | | Huffman encoded stream of the Huffman codes for the literals

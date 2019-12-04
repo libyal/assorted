@@ -1,5 +1,5 @@
-= LZVN compressed data format specification
-Analysis of LZVN compressed data
+= LZX compressed data format specification
+Analysis of LZX compressed data
 
 :toc:
 :toclevels: 4
@@ -8,8 +8,9 @@ Analysis of LZVN compressed data
 [abstract]
 == Summary
 
-LZVN compression is used in various data formats used on Mac OS, including
-the Hierarchical File System (HFS) and the Apple File System (APFS).
+LZX compression is used in various data formats used on Windows, including
+the New Technologies File System (NTFS), Cabinet (CAB) file and Windows
+Imaging (WIM) file.
 
 [preface]
 == Document information
@@ -17,9 +18,9 @@ the Hierarchical File System (HFS) and the Apple File System (APFS).
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the LZVN compressed data format
+| Abstract: | This document contains information about the LZX compressed data format
 | Classification: | Public
-| Keywords: | LZVN
+| Keywords: | LZX
 |===
 
 [preface]
@@ -40,116 +41,93 @@ in the section entitled "GNU Free Documentation License".
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
-| 0.0.1 | J.B. Metz | January 2019 | Initial version based on earlier notes.
+| 0.0.1 | J.B. Metz | December 2019 | Initial version based on earlier notes.
 |===
 
 :numbered:
 == Overview
 
-LZVN compression is used in various data formats used on Mac OS, including
-the Hierarchical File System (HFS) and the Apple File System (APFS).
+LZX compression is used in various data formats used on Windows, including
+the New Technologies File System (NTFS), Cabinet (CAB) file and Windows
+Imaging (WIM) file.
 
 === Layout
 
-LZVN compressed data consist of:
+LZX compressed data consist of:
 
-* stream of opcodes.
+* one or more LZX compressed blocks
 
 [cols="1,5",options="header"]
 |===
 | Characteristics | Description
-| Byte order | big-endian
+| Byte order | little-endian
 |===
 
-===== Opcodes
+== LZX compressed block
 
-The opcodes consist of:
+A LZX compressed block consists of:
+
+* block header
+* compressed or uncompressed block data
+
+=== Block header
+
+The block header is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 3 bits | | Block type +
+See section: <<block_type,Block type>>
+| 0.3 | 1 bit | | Has block size +
+If not set the block size is 32 KiB
+4+| _If has block size is set_
+| 0.4 | 16 bits | | Block size
+4+| _If has block size is set and compression window (unit) size > 32 KiB_
+| 2.4 | 8 bits | | [yellow-background]*Unknown (Extended block size?)*
+4+| _If has block type is LZX_BLOCKTYPE_ALIGNED_
+| ... | 8 x 3 bits | Array of aligned offset code sizes
+4+| _If has block type is LZX_BLOCKTYPE_ALIGNED or LZX_BLOCKTYPE_VERBATIM_
+| ... | ... | Literal symbol code sizes +
+See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
+| ... | ... | Match header code sizes +
+See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
+| ... | ... | Length code sizes +
+See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
+4+| _If has block type is LZX_BLOCKTYPE_UNCOMPRESSED_
+| ... | ... | 16-bit alignment padding, which is 16-bit if already aligned
+|===
+
+==== [[block_type]]Block type
 
 [cols="1,1,5",options="header"]
 |===
-| Oppcode | Data | Description
-| 0xe0 | 11100000 LLLLLLLL <literal> | Large literal of size L + 16
-| 0xe1 - 0xef | 1110LLLL <literal> | Small literal of size L
-| 0x00 - 0x05 +
-0x08 - 0x0d +
-0x10 - 0x15 +
-0x18 - 0x1d +
-0x20 - 0x25 +
-0x28 - 0x2d +
-0x30 - 0x35 +
-0x38 - 0x3d +
-0x40 - 0x45 +
-0x48 - 0x4d +
-0x50 - 0x55 +
-0x58 - 0x5d +
-0x60 - 0x65 +
-0x68 - 0x6d +
-0x80 - 0x85 +
-0x88 - 0x8d +
-0x90 - 0x95 +
-0x98 - 0x9d +
-0xc0 - 0xc5 +
-0xc8 - 0xcd | LLMMMDDD DDDDDDDD <literal> | Small distance +
-M + 3
-| 0xa0 - 0xbf | 101LLMMM DDDDDDMM DDDDDDDD <literal> | Medium distance +
-M + 3
-| 0x07 +
-0x0f +
-0x17 +
-0x1f +
-0x27 +
-0x2f +
-0x37 +
-0x3f +
-0x47 +
-0x4f +
-0x57 +
-0x5f +
-0x67 +
-0x6f +
-0x87 +
-0x8f +
-0x97 +
-0x9f +
-0xc7 +
-0xcf | LLMMM111 DDDDDDDD DDDDDDDD <literal> | Large distance +
-M + 3
-| 0x46 +
-0x4e +
-0x56 +
-0x5e +
-0x66 +
-0x6e +
-0x86 +
-0x8e +
-0x96 +
-0x9e +
-0xc6 +
-0xce | LLMMM110 | Previous distance
-| 0x0e +
-0x16 | | None (nop)
-| 0x06 | | End of stream (eos)
-| 0xf1 - 0xff | 1111MMMM | Small match
-| 0xf0 | 11110000 MMMMMMMM | Large match +
-M + 16
-| 0x1e +
-0x26 +
-0x2e +
-0x36 +
-0x3e +
-0x70 - 0x7f +
-0xd0 - 0xdf | | Invalid
+| Value | Identifier | Description
+| 0 | LZX_BLOCKTYPE_INVALID | Invalid
+| 1 | LZX_BLOCKTYPE_VERBATIM | Verbatim block
+| 2 | LZX_BLOCKTYPE_ALIGNED | Aligned block
+| 3 | LZX_BLOCKTYPE_UNCOMPRESSED | Uncompressed block
 |===
+
+[NOTE]
+Note that block types 4 to 7 are also considered invalid.
+
+=== [[huffman_encoded_code_sizes]]Huffman encoded code sizes
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 20 x 4 bits | | Array of code sizes used by the Huffman encoding
+| ... | ... | | Encoded code sizes
+|===
+
+==== Encoded code sizes
+
+[yellow-background]*TODO write section*
 
 :numbered!:
 [appendix]
 == References
-
-[cols="1,5",options="header"]
-|===
-| Title: | LZFSE compression library and command line tool
-| URL: | https://github.com/lzfse/lzfse
-|===
 
 [appendix]
 == GNU Free Documentation License

@@ -36,7 +36,7 @@
 #include "../src/xor64.h"
 
 /* Define to make assorted_test_xor64 generate verbose output
-#define ASSORTED_TEST_XOR64
+#define ASSORTED_TEST_XOR64_VERBOSE
  */
 
 uint8_t assorted_test_xor64_data[ 16 ] = {
@@ -257,7 +257,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_XOR64 )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_XOR64_VERBOSE )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(

@@ -1,5 +1,5 @@
 /*
- * Adler-32 checksum testing program
+ * LZX (un)compression testing program
  *
  * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,34 +33,39 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/adler32.h"
+#include "../src/lzx.h"
 
-/* Define to make assorted_test_adler32 generate verbose output
-#define ASSORTED_TEST_ADLER32_VERBOSE
+/* Define to make assorted_test_lzx generate verbose output
+#define ASSORTED_TEST_LZX_VERBOSE
  */
 
-uint8_t assorted_test_adler32_data[ 16 ] = {
+uint8_t assorted_test_lzx_compressed_data[ 16 ] = {
 	0x78, 0xda, 0xbd, 0x59, 0x6d, 0x8f, 0xdb, 0xb8, 0x11, 0xfe, 0x7c, 0xfa, 0x15, 0xc4, 0x7e, 0xb9 };
 
 #if defined( __GNUC__ )
 
-/* Tests the adler32_calculate_checksum_basic1 function
+/* Tests the lzx_decompress function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_adler32_calculate_checksum_basic1(
+int assorted_test_lzx_decompress(
      void )
 {
-	libcerror_error_t *error = NULL;
-	uint32_t checksum_value  = 0;
-	int result               = 0;
+	uint8_t uncompressed_data[ 16 ];
+
+	libcerror_error_t *error      = NULL;
+	size_t uncompressed_data_size = 0;
+	int result                    = 0;
 
 	/* Test regular cases
 	 */
-	result = adler32_calculate_checksum_basic1(
-	          &checksum_value,
-	          assorted_test_adler32_data,
+/* TODO add representative test data
+	uncompressed_data_size = 16;
+
+	result = lzx_decompress(
+	          assorted_test_lzx_compressed_data,
 	          16,
-	          0,
+	          uncompressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -68,22 +73,25 @@ int assorted_test_adler32_calculate_checksum_basic1(
 	 result,
 	 1 );
 
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "checksum_value",
-	 checksum_value,
-	 (uint32_t) 0x5101098cUL );
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "uncompressed_data_size",
+	 uncompressed_data_size,
+	 (size_t) 18 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+*/
 
 	/* Test error cases
 	 */
-	result = adler32_calculate_checksum_basic1(
+	uncompressed_data_size = 16;
+
+	result = lzx_decompress(
 	          NULL,
-	          assorted_test_adler32_data,
 	          16,
-	          0,
+	          uncompressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -98,30 +106,70 @@ int assorted_test_adler32_calculate_checksum_basic1(
 	libcerror_error_free(
 	 &error );
 
-	result = adler32_calculate_checksum_basic1(
-	          &checksum_value,
-	          NULL,
-	          16,
-	          0,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = adler32_calculate_checksum_basic1(
-	          &checksum_value,
-	          assorted_test_adler32_data,
+	result = lzx_decompress(
+	          assorted_test_lzx_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
-	          0,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzx_decompress(
+	          assorted_test_lzx_compressed_data,
+	          16,
+	          NULL,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzx_decompress(
+	          assorted_test_lzx_compressed_data,
+	          16,
+	          uncompressed_data,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	uncompressed_data_size = (size_t) SSIZE_MAX + 1;
+
+	result = lzx_decompress(
+	          assorted_test_lzx_compressed_data,
+	          16,
+	          uncompressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -159,7 +207,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_ADLER32_VERBOSE )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZX_VERBOSE )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(
@@ -170,26 +218,8 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "adler32_calculate_checksum_basic1",
-	 assorted_test_adler32_calculate_checksum_basic1 );
-
-	/* TODO add tests for adler32_calculate_checksum_basic2 */
-
-	/* TODO add tests for adler32_calculate_checksum_unfolded4_1 */
-
-	/* TODO add tests for adler32_calculate_checksum_unfolded4_2 */
-
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_1 */
-
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_2 */
-
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_3 */
-
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_4 */
-
-	/* TODO add tests for adler32_calculate_checksum_cpu_aligned */
-
-	/* TODO add tests for adler32_calculate_checksum_simd */
+	 "lzx_decompress",
+	 assorted_test_lzx_decompress );
 
 #endif /* defined( __GNUC__ ) */
 

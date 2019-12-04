@@ -26,100 +26,8 @@
 
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
+#include "bit_stream.h"
 #include "deflate.h"
-
-/* TODO use memory alignment in bit stream */
-
-/* Retrieves a value from the bit stream
- * Returns 1 on success or -1 on error
- */
-int deflate_bit_stream_get_value(
-     deflate_bit_stream_t *bit_stream,
-     uint8_t number_of_bits,
-     uint32_t *value_32bit,
-     libcerror_error_t **error )
-{
-	static char *function     = "deflate_bit_stream_get_value";
-	uint32_t safe_value_32bit = 0;
-
-	if( bit_stream == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid bit stream.",
-		 function );
-
-		return( -1 );
-	}
-	if( number_of_bits > (uint8_t) 32 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid number of bits value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( value_32bit == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid 32-bit value.",
-		 function );
-
-		return( -1 );
-	}
-	if( number_of_bits == 0 )
-	{
-		*value_32bit = 0;
-
-		return( 1 );
-	}
-	while( bit_stream->bit_buffer_size < number_of_bits )
-	{
-		if( bit_stream->byte_stream_offset >= bit_stream->byte_stream_size )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-			 "%s: invalid byte stream value to small.",
-			 function );
-
-			return( -1 );
-		}
-		safe_value_32bit   = bit_stream->byte_stream[ bit_stream->byte_stream_offset++ ];
-		safe_value_32bit <<= bit_stream->bit_buffer_size;
-
-		bit_stream->bit_buffer      |= safe_value_32bit;
-		bit_stream->bit_buffer_size += 8;
-	}
-	safe_value_32bit = bit_stream->bit_buffer;
-
-	if( number_of_bits < 32 )
-	{
-		/* On VS 2008 32-bit "~( 0xfffffffUL << 32 )" does not behave as expected
-		 */
-		safe_value_32bit &= ~( 0xffffffffUL << number_of_bits );
-
-		bit_stream->bit_buffer     >>= number_of_bits;
-		bit_stream->bit_buffer_size -= number_of_bits;
-	}
-	else
-	{
-		bit_stream->bit_buffer      = 0;
-		bit_stream->bit_buffer_size = 0;
-	}
-	*value_32bit = safe_value_32bit;
-
-	return( 1 );
-}
 
 /* Constructs the Huffman table
  * Returns 1 on success, 0 if the table is empty or -1 on error
@@ -327,7 +235,7 @@ int deflate_huffman_table_construct(
  * Returns 1 on success or -1 on error
  */
 int deflate_bit_stream_get_huffman_encoded_value(
-     deflate_bit_stream_t *bit_stream,
+     bit_stream_t *bit_stream,
      deflate_huffman_table_t *table,
      uint32_t *value_32bit,
      libcerror_error_t **error )
@@ -447,7 +355,7 @@ int deflate_bit_stream_get_huffman_encoded_value(
  * Returns 1 on success or -1 on error
  */
 int deflate_initialize_dynamic_huffman_tables(
-     deflate_bit_stream_t *bit_stream,
+     bit_stream_t *bit_stream,
      deflate_huffman_table_t *literals_table,
      deflate_huffman_table_t *distances_table,
      libcerror_error_t **error )
@@ -470,7 +378,7 @@ int deflate_initialize_dynamic_huffman_tables(
 	uint32_t symbol                   = 0;
 	uint32_t times_to_repeat          = 0;
 
-	if( deflate_bit_stream_get_value(
+	if( bit_stream_get_value(
 	     bit_stream,
 	     14,
 	     &number_of_code_sizes,
@@ -542,7 +450,7 @@ int deflate_initialize_dynamic_huffman_tables(
 	     code_size_index < number_of_code_sizes;
 	     code_size_index++ )
 	{
-		if( deflate_bit_stream_get_value(
+		if( bit_stream_get_value(
 		     bit_stream,
 		     3,
 		     &code_size,
@@ -656,7 +564,7 @@ int deflate_initialize_dynamic_huffman_tables(
 			}
 			code_size = (uint32_t) code_size_array[ code_size_index - 1 ];
 
-			if( deflate_bit_stream_get_value(
+			if( bit_stream_get_value(
 			     bit_stream,
 			     2,
 			     &times_to_repeat,
@@ -675,7 +583,7 @@ int deflate_initialize_dynamic_huffman_tables(
 		}
 		else if( symbol == 17 )
 		{
-			if( deflate_bit_stream_get_value(
+			if( bit_stream_get_value(
 			     bit_stream,
 			     3,
 			     &times_to_repeat,
@@ -694,7 +602,7 @@ int deflate_initialize_dynamic_huffman_tables(
 		}
 		else if( symbol == 18 )
 		{
-			if( deflate_bit_stream_get_value(
+			if( bit_stream_get_value(
 			     bit_stream,
 			     7,
 			     &times_to_repeat,
@@ -866,7 +774,7 @@ int deflate_initialize_fixed_huffman_tables(
  * Returns 1 on success or -1 on error
  */
 int deflate_decode_huffman(
-     deflate_bit_stream_t *bit_stream,
+     bit_stream_t *bit_stream,
      deflate_huffman_table_t *literals_table,
      deflate_huffman_table_t *distances_table,
      uint8_t *uncompressed_data,
@@ -980,7 +888,7 @@ int deflate_decode_huffman(
 
 			number_of_extra_bits = literal_codes_number_of_extra_bits[ code_value ];
 
-			if( deflate_bit_stream_get_value(
+			if( bit_stream_get_value(
 			     bit_stream,
 			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
@@ -1033,7 +941,7 @@ int deflate_decode_huffman(
 			}
 			number_of_extra_bits = distance_codes_number_of_extra_bits[ code_value ];
 
-			if( deflate_bit_stream_get_value(
+			if( bit_stream_get_value(
 			     bit_stream,
 			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
@@ -1469,7 +1377,7 @@ int deflate_decompress(
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	deflate_bit_stream_t bit_stream;
+	bit_stream_t bit_stream;
 	deflate_huffman_table_t dynamic_huffman_distances_table;
 	deflate_huffman_table_t dynamic_huffman_literals_table;
 	deflate_huffman_table_t fixed_huffman_distances_table;
@@ -1742,7 +1650,7 @@ int deflate_decompress(
 /* TODO find optimized solution to read bit stream from bytes */
 	while( bit_stream.byte_stream_offset < bit_stream.byte_stream_size )
 	{
-		if( deflate_bit_stream_get_value(
+		if( bit_stream_get_value(
 		     &bit_stream,
 		     3,
 		     &value_32bit,
@@ -1818,7 +1726,7 @@ int deflate_decompress(
 				}
 				if( skip_bits > 0 )
 				{
-					if( deflate_bit_stream_get_value(
+					if( bit_stream_get_value(
 					     &bit_stream,
 					     skip_bits,
 					     &value_32bit,
@@ -1834,7 +1742,7 @@ int deflate_decompress(
 						return( -1 );
 					}
 				}
-				if( deflate_bit_stream_get_value(
+				if( bit_stream_get_value(
 				     &bit_stream,
 				     32,
 				     &block_size,

@@ -36,7 +36,7 @@
 #include "../src/crc32.h"
 
 /* Define to make assorted_test_crc32 generate verbose output
-#define ASSORTED_TEST_CRC32
+#define ASSORTED_TEST_CRC32_VERBOSE
  */
 
 uint8_t assorted_test_crc32_data[ 16 ] = {
@@ -265,7 +265,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_CRC32 )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_CRC32_VERBOSE )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(

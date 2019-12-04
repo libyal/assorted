@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "assorted_libcerror.h"
+#include "bit_stream.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -39,40 +40,6 @@ enum DEFLATE_BLOCK_TYPES
 	DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED	= 0x01,
 	DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC	= 0x02,
 	DEFLATE_BLOCK_TYPE_RESERVED		= 0x03
-};
-
-/* The largest primary (or scalar) available
- * supported by a single load and store instruction
- */
-typedef unsigned long int deflate_aligned_t;
-
-typedef struct deflate_bit_stream deflate_bit_stream_t;
-
-struct deflate_bit_stream
-{
-	/* The byte stream
-	 */
-	const uint8_t *byte_stream;
-
-	/* The aligned byte stream
-	 */
-	deflate_aligned_t *aligned_byte_stream;
-
-	/* The byte stream size
-	 */
-	size_t byte_stream_size;
-
-	/* The byte stream offset
-	 */
-	size_t byte_stream_offset;
-
-	/* The bit buffer
-	 */
-	uint32_t bit_buffer;
-
-	/* The number of bits remaining in the bit buffer
-	 */
-	uint8_t bit_buffer_size;
 };
 
 typedef struct deflate_huffman_table deflate_huffman_table_t;
@@ -97,12 +64,6 @@ struct deflate_huffman_table
 	int number_of_codes;
 };
 
-int deflate_bit_stream_get_value(
-     deflate_bit_stream_t *bit_stream,
-     uint8_t number_of_bits,
-     uint32_t *value_32bit,
-     libcerror_error_t **error );
-
 int deflate_huffman_table_construct(
      deflate_huffman_table_t *table,
      const uint16_t *code_sizes_array,
@@ -110,13 +71,13 @@ int deflate_huffman_table_construct(
      libcerror_error_t **error );
 
 int deflate_bit_stream_get_huffman_encoded_value(
-     deflate_bit_stream_t *bit_stream,
+     bit_stream_t *bit_stream,
      deflate_huffman_table_t *table,
      uint32_t *value_32bit,
      libcerror_error_t **error );
 
 int deflate_initialize_dynamic_huffman_tables(
-     deflate_bit_stream_t *bit_stream,
+     bit_stream_t *bit_stream,
      deflate_huffman_table_t *literals_table,
      deflate_huffman_table_t *distances_table,
      libcerror_error_t **error );
@@ -127,7 +88,7 @@ int deflate_initialize_fixed_huffman_tables(
      libcerror_error_t **error );
 
 int deflate_decode_huffman(
-     deflate_bit_stream_t *bit_stream,
+     bit_stream_t *bit_stream,
      deflate_huffman_table_t *literals_table,
      deflate_huffman_table_t *distances_table,
      uint8_t *uncompressed_data,

@@ -1,5 +1,5 @@
 /*
- * LZFu (un)compression testing program
+ * LZVN (un)compression testing program
  *
  * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -36,7 +36,7 @@
 #include "../src/lzvn.h"
 
 /* Define to make assorted_test_lzvn generate verbose output
-#define ASSORTED_TEST_LZVN
+#define ASSORTED_TEST_LZVN_VERBOSE
  */
 
 uint8_t assorted_test_lzvn_compressed_data[ 16 ] = {
@@ -207,7 +207,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZVN )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZVN_VERBOSE )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(

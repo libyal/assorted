@@ -305,6 +305,7 @@ zcompress_SOURCES = \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
 	deflate.c deflate.h \
+	bit_stream.c bit_stream.h \
 	zcompress.c
 
 zcompress_LDADD = \
@@ -323,6 +324,7 @@ zdecompress_SOURCES = \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
 	deflate.c deflate.h \
+	bit_stream.c bit_stream.h \
 	zdecompress.c
 
 zdecompress_LDADD = \

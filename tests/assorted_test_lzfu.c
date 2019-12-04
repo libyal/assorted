@@ -36,7 +36,7 @@
 #include "../src/lzfu.h"
 
 /* Define to make assorted_test_lzfu generate verbose output
-#define ASSORTED_TEST_LZFU
+#define ASSORTED_TEST_LZFU_VERBOSE
  */
 
 uint8_t assorted_test_lzfu_compressed_data[ 16 ] = {
@@ -303,7 +303,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZFU )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZFU_VERBOSE )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(

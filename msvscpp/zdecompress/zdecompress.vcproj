@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\bit_stream.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\deflate.c"
 				>
 			</File>
@@ -219,6 +223,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\bit_stream.h"
 				>
 			</File>
 			<File

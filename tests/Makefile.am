@@ -29,6 +29,7 @@ EXTRA_DIST = \
 check_PROGRAMS = \
 	assorted_test_adler32 \
 	assorted_test_ascii7 \
+	assorted_test_bit_stream \
 	assorted_test_crc32 \
 	assorted_test_crc64 \
 	assorted_test_deflate \
@@ -36,6 +37,7 @@ check_PROGRAMS = \
 	assorted_test_fletcher64 \
 	assorted_test_lzfu \
 	assorted_test_lzvn \
+	assorted_test_lzx \
 	assorted_test_xor32 \
 	assorted_test_xor64
 
@@ -60,6 +62,18 @@ assorted_test_ascii7_SOURCES = \
 	assorted_test_unused.h
 
 assorted_test_ascii7_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_bit_stream_SOURCES = \
+	../src/bit_stream.c ../src/bit_stream.h \
+	assorted_test_bit_stream.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_bit_stream_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
@@ -88,6 +102,7 @@ assorted_test_crc64_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_deflate_SOURCES = \
+	../src/bit_stream.c ../src/bit_stream.h \
 	../src/deflate.c ../src/deflate.h \
 	assorted_test_deflate.c \
 	assorted_test_libcerror.h \
@@ -148,8 +163,18 @@ assorted_test_lzvn_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
-MAINTAINERCLEANFILES = \
-	Makefile.in
+assorted_test_lzx_SOURCES = \
+	../src/bit_stream.c ../src/bit_stream.h \
+	../src/lzx.c ../src/lzx.h \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_lzx.c \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_lzx_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
 
 assorted_test_xor32_SOURCES = \
 	../src/xor32.c ../src/xor32.h \
@@ -174,6 +199,9 @@ assorted_test_xor64_SOURCES = \
 assorted_test_xor64_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
+
+MAINTAINERCLEANFILES = \
+	Makefile.in
 
 distclean: clean
 	/bin/rm -f Makefile

@@ -36,7 +36,7 @@
 #include "../src/deflate.h"
 
 /* Define to make assorted_test_deflate generate verbose output
-#define ASSORTED_TEST_DEFLATE
+#define ASSORTED_TEST_DEFLATE_VERBOSE
  */
 
 uint8_t assorted_test_deflate_compressed_byte_stream[ 2627 ] = {
@@ -688,253 +688,6 @@ uint8_t assorted_test_deflate_uncompressed_byte_stream[ 7640 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the deflate_bit_stream_get_value function
- * Returns 1 if successful or 0 if not
- */
-int assorted_test_deflate_bit_stream_get_value(
-     void )
-{
-	deflate_bit_stream_t bit_stream;
-
-	libcerror_error_t *error = NULL;
-	uint32_t value_32bit     = 0;
-	int result               = 0;
-
-	/* Initialize test
-	 */
-        bit_stream.byte_stream        = assorted_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 0;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
-
-	/* Test regular cases
-	 */
-	result = deflate_bit_stream_get_value(
-	          &bit_stream,
-	          0,
-	          &value_32bit,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "value_32bit",
-	 value_32bit,
-	 (uint32_t) 0x00000000UL );
-
-	ASSORTED_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
-	 "bit_stream.byte_stream_offset",
-	 bit_stream.byte_stream_offset,
-	 (size_t) 0 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "bit_stream.bit_buffer",
-	 bit_stream.bit_buffer,
-	 (uint32_t) 0x00000000UL );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
-	 "bit_stream.bit_buffer_size",
-	 bit_stream.bit_buffer_size,
-	 (uint8_t) 0 );
-
-	result = deflate_bit_stream_get_value(
-	          &bit_stream,
-	          4,
-	          &value_32bit,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "value_32bit",
-	 value_32bit,
-	 (uint32_t) 0x00000008UL );
-
-	ASSORTED_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
-	 "bit_stream.byte_stream_offset",
-	 bit_stream.byte_stream_offset,
-	 (size_t) 1 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "bit_stream.bit_buffer",
-	 bit_stream.bit_buffer,
-	 (uint32_t) 0x00000007UL );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
-	 "bit_stream.bit_buffer_size",
-	 bit_stream.bit_buffer_size,
-	 (uint8_t) 4 );
-
-	result = deflate_bit_stream_get_value(
-	          &bit_stream,
-	          12,
-	          &value_32bit,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "value_32bit",
-	 value_32bit,
-	 (uint32_t) 0x00000da7UL );
-
-	ASSORTED_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
-	 "bit_stream.byte_stream_offset",
-	 bit_stream.byte_stream_offset,
-	 (size_t) 2 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "bit_stream.bit_buffer",
-	 bit_stream.bit_buffer,
-	 (uint32_t) 0x00000000UL );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
-	 "bit_stream.bit_buffer_size",
-	 bit_stream.bit_buffer_size,
-	 (uint8_t) 0 );
-
-	result = deflate_bit_stream_get_value(
-	          &bit_stream,
-	          32,
-	          &value_32bit,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "value_32bit",
-	 value_32bit,
-	 (uint32_t) 0x8f6d59bdUL );
-
-	ASSORTED_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
-	 "bit_stream.byte_stream_offset",
-	 bit_stream.byte_stream_offset,
-	 (size_t) 6 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "bit_stream.bit_buffer",
-	 bit_stream.bit_buffer,
-	 (uint32_t) 0x00000000UL );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
-	 "bit_stream.bit_buffer_size",
-	 bit_stream.bit_buffer_size,
-	 (uint8_t) 0 );
-
-	/* Test error cases
-	 */
-	result = deflate_bit_stream_get_value(
-	          NULL,
-	          32,
-	          &value_32bit,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = deflate_bit_stream_get_value(
-	          &bit_stream,
-	          64,
-	          &value_32bit,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = deflate_bit_stream_get_value(
-	          &bit_stream,
-	          32,
-	          NULL,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	bit_stream.byte_stream_offset = 2627;
-        bit_stream.bit_buffer_size    = 0;
-
-	result = deflate_bit_stream_get_value(
-	          &bit_stream,
-	          32,
-	          &value_32bit,
-	          &error );
-
-	bit_stream.byte_stream_offset = 0;
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	return( 1 );
-
-on_error:
-	return( 0 );
-}
-
 /* Tests the deflate_huffman_table_construct function
  * Returns 1 if successful or 0 if not
  */
@@ -1105,7 +858,7 @@ on_error:
 int assorted_test_deflate_bit_stream_get_huffman_encoded_value(
      void )
 {
-	deflate_bit_stream_t bit_stream;
+	bit_stream_t bit_stream;
 	deflate_huffman_table_t distances_table;
 	deflate_huffman_table_t literals_table;
 
@@ -1252,7 +1005,7 @@ on_error:
 int assorted_test_deflate_initialize_dynamic_huffman_tables(
      void )
 {
-	deflate_bit_stream_t bit_stream;
+	bit_stream_t bit_stream;
 	deflate_huffman_table_t distances_table;
 	deflate_huffman_table_t literals_table;
 
@@ -1263,6 +1016,14 @@ int assorted_test_deflate_initialize_dynamic_huffman_tables(
 	int number_of_memset_fail_tests = 6;
 	int test_number                 = 0;
 #endif
+
+	/* Initialize test
+	 */
+        bit_stream.byte_stream        = assorted_test_deflate_compressed_byte_stream;
+        bit_stream.byte_stream_size   = 2627;
+        bit_stream.byte_stream_offset = 2;
+        bit_stream.bit_buffer         = 0;
+        bit_stream.bit_buffer_size    = 0;
 
 	/* Test regular cases
 	 */
@@ -1485,13 +1246,21 @@ int assorted_test_deflate_decode_huffman(
 {
 	uint8_t uncompressed_data[ 8192 ];
 
-	deflate_bit_stream_t bit_stream;
+	bit_stream_t bit_stream;
 	deflate_huffman_table_t distances_table;
 	deflate_huffman_table_t literals_table;
 
 	libcerror_error_t *error        = NULL;
 	size_t uncompressed_data_offset = 0;
 	int result                      = 0;
+
+	/* Initialize test
+	 */
+        bit_stream.byte_stream        = assorted_test_deflate_compressed_byte_stream;
+        bit_stream.byte_stream_size   = 2627;
+        bit_stream.byte_stream_offset = 2;
+        bit_stream.bit_buffer         = 0;
+        bit_stream.bit_buffer_size    = 0;
 
 	/* Test regular cases
 	 */
@@ -1866,7 +1635,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_DEFLATE )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_DEFLATE_VERBOSE )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(
@@ -1875,10 +1644,6 @@ int main(
 #endif
 
 #if defined( __GNUC__ )
-
-	ASSORTED_TEST_RUN(
-	 "deflate_bit_stream_get_value",
-	 assorted_test_deflate_bit_stream_get_value );
 
 	ASSORTED_TEST_RUN(
 	 "deflate_huffman_table_construct",
