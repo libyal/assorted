@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="assorted_test_deflate"
-	ProjectGUID="{D1B2BBF7-F9D1-4ED8-9BED-B6C2B62ABF96}"
-	RootNamespace="assorted_test_deflate"
+	Name="assorted_test_lzfu"
+	ProjectGUID="{0812372F-9BAB-4DC7-BA38-35C2C074D68B}"
+	RootNamespace="assorted_test_lzfu"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,15 +176,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\../src/bit_stream.c"
+				RelativePath="..\..\tests\../src/crc32.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\../src/deflate.c"
+				RelativePath="..\..\tests\../src/lzfu.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\assorted_test_deflate.c"
+				RelativePath="..\..\tests\assorted_test_lzfu.c"
 				>
 			</File>
 		</Filter>
@@ -194,11 +194,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\tests\../src/bit_stream.h"
+				RelativePath="..\..\tests\../src/crc32.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\../src/deflate.h"
+				RelativePath="..\..\tests\../src/lzfu.h"
 				>
 			</File>
 			<File

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="assorted_test_deflate"
-	ProjectGUID="{D1B2BBF7-F9D1-4ED8-9BED-B6C2B62ABF96}"
-	RootNamespace="assorted_test_deflate"
+	Name="assorted_test_bit_stream"
+	ProjectGUID="{B8E4F35E-5E0E-4EA4-B304-6EB058B8F377}"
+	RootNamespace="assorted_test_bit_stream"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -180,11 +180,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\../src/deflate.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\assorted_test_deflate.c"
+				RelativePath="..\..\tests\assorted_test_bit_stream.c"
 				>
 			</File>
 		</Filter>
@@ -195,10 +191,6 @@
 			>
 			<File
 				RelativePath="..\..\tests\../src/bit_stream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\../src/deflate.h"
 				>
 			</File>
 			<File

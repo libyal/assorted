@@ -94,7 +94,7 @@ matrix:
     os: osx
     osx_image: xcode8.3
 before_install:
-- .travis/run_with_timeout.sh 30 .travis/before_install.sh
+- .travis/before_install.sh
 install:
 - .travis/install.sh
 script:

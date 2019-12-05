@@ -20,8 +20,12 @@ elif test ${TRAVIS_OS_NAME} = "linux" || test ${TRAVIS_OS_NAME} = "linux-ppc64le
 then
 	sudo apt-get update;
 	sudo apt-mark hold mysql-server-5.7 postgresql-9.4 postgresql-client-9.4 postgresql-9.5 postgresql-client-9.5 postgresql-9.6 postgresql-client-9.6 postgresql-10 postgresql-client-10;
-	sudo apt-get --fix-missing -o Dpkg::Options::="--force-confold" upgrade -y --allow-unauthenticated;
 
+	# PPC64 stalls when upgrade is run.
+	if test ${TRAVIS_OS_NAME} = "linux";
+	then
+		sudo apt-get --fix-missing -o Dpkg::Options::="--force-confold" upgrade -y --allow-unauthenticated;
+	fi
 	sudo apt-get install -y autoconf automake autopoint build-essential git libtool pkg-config;
 
 elif test ${TRAVIS_OS_NAME} = "osx";

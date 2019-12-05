@@ -3,11 +3,17 @@ MSVSCPP_FILES = \
 	ascii7decompress/ascii7decompress.vcproj \
 	assorted_test_adler32/assorted_test_adler32.vcproj \
 	assorted_test_ascii7/assorted_test_ascii7.vcproj \
+	assorted_test_bit_stream/assorted_test_bit_stream.vcproj \
 	assorted_test_crc32/assorted_test_crc32.vcproj \
 	assorted_test_crc64/assorted_test_crc64.vcproj \
 	assorted_test_deflate/assorted_test_deflate.vcproj \
 	assorted_test_fletcher32/assorted_test_fletcher32.vcproj \
 	assorted_test_fletcher64/assorted_test_fletcher64.vcproj \
+	assorted_test_lzfu/assorted_test_lzfu.vcproj \
+	assorted_test_lzvn/assorted_test_lzvn.vcproj \
+	assorted_test_lzx/assorted_test_lzx.vcproj \
+	assorted_test_xor32/assorted_test_xor32.vcproj \
+	assorted_test_xor64/assorted_test_xor64.vcproj \
 	crc32sum/crc32sum.vcproj \
 	crc64sum/crc64sum.vcproj \
 	fletcher32sum/fletcher32sum.vcproj \

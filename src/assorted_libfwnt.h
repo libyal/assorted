@@ -45,7 +45,7 @@
 
 #include <libfwnt.h>
 
-#endif
+#endif /* defined( HAVE_LOCAL_LIBFWNT ) */
 
-#endif
+#endif /* !defined( _ASSORTED_LIBFWNT_H ) */
 
