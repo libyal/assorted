@@ -117,8 +117,24 @@ Note that block types 4 to 7 are also considered invalid.
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 20 x 4 bits | | Array of code sizes used by the Huffman encoding
+| 0 | 20 x 4 bits | | Array of bit sizes of the pre-tree Huffman (prefix) codes
 | ... | ... | | Encoded code sizes
+|===
+
+Where pre-tree Huffman (prefix) codes:
+
+[cols="1,5",options="header"]
+|===
+| Pre-tree code | Description
+| 0 - 16 | Directly encoded code size +
+Where `code size = ( previous code size - pre-tree code + 17 ) mod 17`
+| 17 | Run-length encoded code size of 0 +
+Where the pre-tree code is followed by a 4-bit length value, which `number of code sizes = 4 + length value` +
+| 18 | Run-length encoded code size of 0 +
+Where the pre-tree code is followed by a 5-bit length value, which `number of code sizes = 20 + length value`
+| 19 | Run-length encoded code size +
+Where the pre-tree code is followed by a 1-bit length value, which `number of code sizes = 4 + length value` +
+and a 4-bit second pre-tree code value, which `code size value = ( previous code size - second pre-tree code + 17 ) mod 17`
 |===
 
 ==== Encoded code sizes

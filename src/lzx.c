@@ -28,18 +28,19 @@
 #include "bit_stream.h"
 #include "lzx.h"
 
-/* Initializes a Huffman table
+/* Reads the Huffman code sizes
  * Returns 1 on success or -1 on error
  */
-int lzx_initialize_huffman_table(
+int lzx_read_huffman_code_sizes(
      bit_stream_t *bit_stream,
      libcerror_error_t **error )
 {
-	uint8_t code_size_array[ 20 ];
+	uint8_t precode_size_array[ 20 ];
 
-	static char *function = "lzx_initialize_huffman_table";
+	static char *function = "lzx_read_huffman_code_sizes";
 	uint32_t value_32bit  = 0;
-	int array_index       = 0;
+	int code_size_index   = 0;
+	int pre_code_index    = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -52,9 +53,9 @@ int lzx_initialize_huffman_table(
 
 		return( -1 );
 	}
-	for( array_index = 0;
-	     array_index < 20;
-	     array_index++ )
+	for( pre_code_index = 0;
+	     pre_code_index < 20;
+	     pre_code_index++ )
 	{
 		if( bit_stream_get_value(
 		     bit_stream,
@@ -66,18 +67,23 @@ int lzx_initialize_huffman_table(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve value from bit stream.",
-			 function );
+			 "%s: unable to retrieve pre-code: %d size bit stream.",
+			 function,
+			 pre_code_index );
 
 			return( -1 );
 		}
-		code_size_array[ array_index ] = (uint8_t) value_32bit;
+		precode_size_array[ pre_code_index ] = (uint8_t) value_32bit;
 	}
-	/* TODO create Huffman table */
+	/* TODO create pre-code Huffman table */
 
 	/* TODO read code sizes */
 
-	/* TODO create Huffman table */
+	for( code_size_index = 0;
+	     code_size_index < number_of_code_sizes;
+	     code_size_index++ )
+	{
+	}
 
 	return( 1 );
 }

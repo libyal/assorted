@@ -229,7 +229,7 @@ The dynamic Huffman table consists of:
 |===
 | Offset | Size | Value | Description
 | 0.3 | 5 bits | | Number of literal codes +
-Number of literal code = value + 257 +
+Number of literal codes = value + 257 +
 The value must be smaller than 286
 | 1.0 | 5 bits | | Number of distance codes +
 Number of distance codes = value + 1 +
