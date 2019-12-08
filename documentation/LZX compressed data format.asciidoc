@@ -79,20 +79,20 @@ The block header is variable of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 3 bits | | Block type +
 See section: <<block_type,Block type>>
-| 0.3 | 1 bit | | Has block size +
-If not set the block size is 32 KiB
-4+| _If has block size is set_
+| 0.3 | 1 bit | | Has default block size +
+If set the block size is 32 KiB
+4+| _If has default block size is not set_
 | 0.4 | 16 bits | | Block size
 4+| _If has block size is set and compression window (unit) size > 32 KiB_
 | 2.4 | 8 bits | | [yellow-background]*Unknown (Extended block size?)*
 4+| _If has block type is LZX_BLOCKTYPE_ALIGNED_
 | ... | 8 x 3 bits | Array of aligned offset code sizes
 4+| _If has block type is LZX_BLOCKTYPE_ALIGNED or LZX_BLOCKTYPE_VERBATIM_
-| ... | ... | Literal symbol code sizes +
+| ... | ... | 256 literal symbol code sizes +
 See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
-| ... | ... | Match header code sizes +
+| ... | ... | 240 match header code sizes +
 See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
-| ... | ... | Length code sizes +
+| ... | ... | 249 length code sizes +
 See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
 4+| _If has block type is LZX_BLOCKTYPE_UNCOMPRESSED_
 | ... | ... | 16-bit alignment padding, which is 16-bit if already aligned
@@ -110,7 +110,7 @@ See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
 |===
 
 [NOTE]
-Note that block types 4 to 7 are also considered invalid.
+Note that block types 4 to 7 are considered invalid.
 
 === [[huffman_encoded_code_sizes]]Huffman encoded code sizes
 
@@ -127,23 +127,37 @@ Where pre-tree Huffman (prefix) codes:
 |===
 | Pre-tree code | Description
 | 0 - 16 | Directly encoded code size +
-Where `code size = ( previous code size - pre-tree code + 17 ) mod 17`
+Where `code size = ( previous code size - pre-tree symbol + 17 ) mod 17`
 | 17 | Run-length encoded code size of 0 +
-Where the pre-tree code is followed by a 4-bit length value, which `number of code sizes = 4 + length value` +
+Where the pre-tree symbol is followed by a 4-bit times to repeat value, which `number of code sizes = 4 + times to repeat value` +
 | 18 | Run-length encoded code size of 0 +
-Where the pre-tree code is followed by a 5-bit length value, which `number of code sizes = 20 + length value`
+Where the pre-tree symbol is followed by a 5-bit times to repeat value, which `number of code sizes = 20 + times to repeat value`
 | 19 | Run-length encoded code size +
-Where the pre-tree code is followed by a 1-bit length value, which `number of code sizes = 4 + length value` +
-and a 4-bit second pre-tree code value, which `code size value = ( previous code size - second pre-tree code + 17 ) mod 17`
+Where the pre-tree symbol is followed by a 1-bit times to repeat value, which `number of code sizes = 4 + times to repeat value` +
+and a 4-bit second pre-tree symbol value, which `code size value = ( previous code size - second pre-tree symbol + 17 ) mod 17`
 |===
 
 ==== Encoded code sizes
 
 [yellow-background]*TODO write section*
 
+=== Encoded bit-stream
+
+The encoded bit-stream is stored in 16-bit little-endian integers, where bit
+values are stored front-to-back. So that the most-significant bit (MSB) of the
+first 16-bit integer is the first bit in the stream. 
+
 :numbered!:
 [appendix]
 == References
+
+`[MS-PATCH]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | `[MS-PATCH]`: LZX DELTA Compression and Decompression
+| URL: | https://docs.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-patch/cc78752a-b4af-4eee-88cb-01f4d8a4c2bf
+|===
 
 [appendix]
 == GNU Free Documentation License

@@ -96,7 +96,7 @@ void initialize_crc32_table(
  */
 int crc32_calculate_modulo2(
      uint32_t *crc32,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      uint8_t weak_crc,
@@ -214,7 +214,7 @@ int crc32_calculate_modulo2(
  */
 int crc32_calculate(
      uint32_t *crc32,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      uint8_t weak_crc,
@@ -329,7 +329,7 @@ int crc32_validate(
 int crc32_locate_error_offset(
      uint32_t crc32,
      uint32_t calculated_crc32,
-     uint8_t *buffer,
+     const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )

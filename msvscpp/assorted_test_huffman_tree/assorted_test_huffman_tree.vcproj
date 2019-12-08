@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="zdecompress"
-	ProjectGUID="{BA060399-30BC-45F1-8D6C-E41D4988311A}"
-	RootNamespace="zdecompress"
+	Name="assorted_test_huffman_tree"
+	ProjectGUID="{E96A7096-DA66-41DD-A2CC-347BE18FA816}"
+	RootNamespace="assorted_test_huffman_tree"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,27 +176,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_getopt.c"
+				RelativePath="..\..\tests\../src/bit_stream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.c"
+				RelativePath="..\..\tests\../src/huffman_tree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\bit_stream.c"
+				RelativePath="..\..\tests\assorted_test_huffman_tree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\deflate.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\huffman_tree.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\zdecompress.c"
+				RelativePath="..\..\tests\assorted_test_memory.c"
 				>
 			</File>
 		</Filter>
@@ -206,39 +198,31 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_getopt.h"
+				RelativePath="..\..\tests\../src/bit_stream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_i18n.h"
+				RelativePath="..\..\tests\../src/huffman_tree.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcerror.h"
+				RelativePath="..\..\tests\assorted_test_libcerror.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcfile.h"
+				RelativePath="..\..\tests\assorted_test_libcnotify.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcnotify.h"
+				RelativePath="..\..\tests\assorted_test_macros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.h"
+				RelativePath="..\..\tests\assorted_test_memory.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\bit_stream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\deflate.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\huffman_tree.h"
+				RelativePath="..\..\tests\assorted_test_unused.h"
 				>
 			</File>
 		</Filter>

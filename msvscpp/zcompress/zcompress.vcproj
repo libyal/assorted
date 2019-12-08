@@ -192,6 +192,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\huffman_tree.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\zcompress.c"
 				>
 			</File>
@@ -231,6 +235,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\deflate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\huffman_tree.h"
 				>
 			</File>
 		</Filter>

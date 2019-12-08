@@ -9,6 +9,7 @@ MSVSCPP_FILES = \
 	assorted_test_deflate/assorted_test_deflate.vcproj \
 	assorted_test_fletcher32/assorted_test_fletcher32.vcproj \
 	assorted_test_fletcher64/assorted_test_fletcher64.vcproj \
+	assorted_test_huffman_tree/assorted_test_huffman_tree.vcproj \
 	assorted_test_lzfu/assorted_test_lzfu.vcproj \
 	assorted_test_lzvn/assorted_test_lzvn.vcproj \
 	assorted_test_lzx/assorted_test_lzx.vcproj \
@@ -31,6 +32,7 @@ MSVSCPP_FILES = \
 	lzfudecompress/lzfudecompress.vcproj \
 	lznt1decompress/lznt1decompress.vcproj \
 	lzvndecompress/lzvndecompress.vcproj \
+	lzxdecompress/lzxdecompress.vcproj \
 	lzxpressdecompress/lzxpressdecompress.vcproj \
 	mssearchdecode/mssearchdecode.vcproj \
 	rc4crypt/rc4crypt.vcproj \

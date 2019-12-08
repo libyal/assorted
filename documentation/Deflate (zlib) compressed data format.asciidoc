@@ -42,6 +42,7 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.3 | J.B. Metz | December 2015 | Switched to asciidoc format.
 | 0.0.4 | J.B. Metz | February 2016 | Additional changes.
 | 0.0.5 | J.B. Metz | July 2019 | Changes for formatting.
+| 0.0.6 | J.B. Metz | December 2019 | Textual changes.
 |===
 
 :numbered:
@@ -218,7 +219,7 @@ The uncompressed data size can range between 0 and 65535 bytes.
 The uncompressed block data is variable of size and consists of:
 
 * Optional dynamic Huffman table
-* Huffman encoded data
+* Encoded bit-stream
 * End-of-stream (or end-of-block or end-of-data) marker
 
 ===== Dynamic Huffman table
@@ -272,7 +273,12 @@ the code sizes Huffman table. Code sizes that are not stored default to 0.
 The code size for the literal code 256 (end-of-block) should be set and thus
 not 0.
 
-===== Huffman encoded data
+===== Encoded bit-stream
+
+The encoded bit-stream is stored in 8-bit integers, where bit values are stored
+back-to-front. So that 3 least-significant bits (LSB) would resprent a 3-bit
+value at the start of the encoded bit-stream. Note that the LSB of the 3-bit
+value is the LSB of the byte value.
 
 Deflate uses a Huffman tree of 288 Huffman codes (or symbols) where the values:
 
@@ -283,9 +289,9 @@ Deflate uses a Huffman tree of 288 Huffman codes (or symbols) where the values:
 
 This document refers to this Huffman tree as the literals Huffman tree.
 
-The bits int he Huffman encoded stream correspond to values in the literals
+The bits in the encoded bit-stream correspond to values in the literals
 Huffman tree. If a symbol is found that represents a compression size and
-offset tuple (or match lenght code) the bits following the literals symbol
+offset tuple (or match length code) the bits following the literals symbol
 contains a distance (Huffman) code. The match length coedes might require
 additional (or extra) bits to store the length (or size).
 
@@ -419,7 +425,7 @@ The decompression in pseudo code:
 ....
 if( block_header.type == HUFFMANN_FIXED )
 {
-    initialize the fixed huffman code trees
+    initialize the fixed Huffman trees
 }
 
 do
@@ -436,7 +442,7 @@ do
     {
         if( block_header.type == HUFFMANN_DYNAMIC )
         {
-            read the dynamic huffman code trees (see subsection below)
+            read the dynamic Huffman trees (see subsection below)
         }
         loop (until end of block code recognized)
         {

@@ -28,355 +28,33 @@
 #include "assorted_libcnotify.h"
 #include "bit_stream.h"
 #include "deflate.h"
+#include "huffman_tree.h"
 
-/* Constructs the Huffman table
- * Returns 1 on success, 0 if the table is empty or -1 on error
- */
-int deflate_huffman_table_construct(
-     deflate_huffman_table_t *table,
-     const uint16_t *code_sizes_array,
-     int number_of_code_sizes,
-     libcerror_error_t **error )
-{
-	int code_offsets_array[ 16 ];
-
-	static char *function = "deflate_huffman_table_construct";
-	uint16_t code_size    = 0;
-	uint8_t bit_index     = 0;
-	int code_offset       = 0;
-	int left_value        = 0;
-	int symbol            = 0;
-
-	if( table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid table.",
-		 function );
-
-		return( -1 );
-	}
-	if( code_sizes_array == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid code sizes array.",
-		 function );
-
-		return( -1 );
-	}
-	if( number_of_code_sizes < 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid number of code sizes value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-/* TODO hardcoded for now */
-	table->maximum_number_of_bits = 15;
-
-	if( table->maximum_number_of_bits > 15 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid table - number of bits values out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	table->number_of_codes = (int) table->maximum_number_of_bits + 1;
-
-	if( memory_set(
-	     &( table->codes_array ),
-	     0,
-	     288 * sizeof( int ) ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear code counts array.",
-		 function );
-
-		return( -1 );
-	}
-	if( memory_set(
-	     &( table->code_counts_array ),
-	     0,
-	     16 * sizeof( int ) ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear code counts array.",
-		 function );
-
-		return( -1 );
-	}
-	for( symbol = 0;
-	     symbol < number_of_code_sizes;
-	     symbol++ )
-	{
-		code_size = code_sizes_array[ symbol ];
-
-		if( code_size > table->number_of_codes )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid symbol: %d code size: %" PRIu16 " value out of bounds.",
-			 function,
-			 symbol,
-			 code_size );
-
-			return( -1 );
-		}
-		table->code_counts_array[ code_size ] += 1;
-	}
-	/* The table has no codes
-	 */
-	if( table->code_counts_array[ 0 ] == number_of_code_sizes )
-	{
-		return( 0 );
-	}
-	/* Check if the set of code sizes is incomplete or over-subscribed
-	 */
-	left_value = 1;
-
-	for( bit_index = 1;
-	     bit_index <= table->maximum_number_of_bits;
-	     bit_index++ )
-	{
-		left_value <<= 1;
-		left_value  -= table->code_counts_array[ bit_index ];
-
-		if( left_value < 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: code sizes are over-subscribed.",
-			 function );
-
-			return( -1 );
-		}
-	}
-	/* Calculate the offsets for sorting the symbol table
-	 */
-	code_offsets_array[ 0 ] = 0;
-	code_offsets_array[ 1 ] = 0;
-
-	for( bit_index = 1;
-	     bit_index < table->maximum_number_of_bits;
-	     bit_index++ )
-	{
-		code_offsets_array[ bit_index + 1 ] = code_offsets_array[ bit_index ]
-		                                    + table->code_counts_array[ bit_index ];
-	}
-	for( symbol = 0;
-	     symbol < number_of_code_sizes;
-	     symbol++ )
-	{
-		code_size = code_sizes_array[ symbol ];
-
-		if( code_size == 0 )
-		{
-			continue;
-		}
-		code_offset = code_offsets_array[ code_size ];
-
-		if( ( code_offset < 0 )
-		 || ( code_offset > number_of_code_sizes ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid symbol: %d code offset: %d value out of bounds.",
-			 function,
-			 symbol,
-			 code_offset );
-
-			return( -1 );
-		}
-		code_offsets_array[ code_size ]  += 1;
-		table->codes_array[ code_offset ] = symbol;
-	}
-/* TODO only used by dynamic Huffman
-	if( left_value > 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: code sizes are incomplete.",
-		 function );
-
-		return( -1 );
-	}
-*/
-	return( 1 );
-}
-
-/* Retrieves a Huffman encoded value from the bit stream
+/* Reads and builds the dynamic Huffman trees
  * Returns 1 on success or -1 on error
  */
-int deflate_bit_stream_get_huffman_encoded_value(
+int deflate_build_dynamic_huffman_trees(
      bit_stream_t *bit_stream,
-     deflate_huffman_table_t *table,
-     uint32_t *value_32bit,
+     huffman_tree_t *literals_huffman_tree,
+     huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error )
 {
-	static char *function     = "deflate_bit_stream_get_huffman_encoded_value";
-	uint32_t bit_buffer       = 0;
-	uint32_t safe_value_32bit = 0;
-	uint8_t bit_index         = 0;
-	uint8_t number_of_bits    = 0;
-	int code_size_count       = 0;
-	int first_huffman_code    = 0;
-	int first_index           = 0;
-	int huffman_code          = 0;
-	int result                = 0;
-
-	if( bit_stream == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid bit stream.",
-		 function );
-
-		return( -1 );
-	}
-	if( table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid table.",
-		 function );
-
-		return( -1 );
-	}
-	if( value_32bit == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid 32-bit value.",
-		 function );
-
-		return( -1 );
-	}
-	/* Try to fill the bit buffer with the maximum number of bits
-	 */
-	while( bit_stream->bit_buffer_size < table->maximum_number_of_bits )
-	{
-		if( bit_stream->byte_stream_offset >= bit_stream->byte_stream_size )
-		{
-			break;
-		}
-		safe_value_32bit   = bit_stream->byte_stream[ bit_stream->byte_stream_offset++ ];
-		safe_value_32bit <<= bit_stream->bit_buffer_size;
-
-		bit_stream->bit_buffer      |= safe_value_32bit;
-		bit_stream->bit_buffer_size += 8;
-	}
-	if( table->maximum_number_of_bits < bit_stream->bit_buffer_size )
-	{
-		number_of_bits = table->maximum_number_of_bits;
-	}
-	else
-	{
-		number_of_bits = bit_stream->bit_buffer_size;
-	}
-	bit_buffer = bit_stream->bit_buffer;
-
-	for( bit_index = 1;
-	     bit_index <= number_of_bits;
-	     bit_index++ )
-	{
-		huffman_code <<= 1;
-		huffman_code  |= (int) bit_buffer & 0x00000001UL;
-		bit_buffer   >>= 1;
-
-		code_size_count = table->code_counts_array[ bit_index ];
-
-		if( ( huffman_code - code_size_count ) < first_huffman_code )
-		{
-			safe_value_32bit = table->codes_array[ first_index + ( huffman_code - first_huffman_code ) ];
-
-			result = 1;
-
-			break;
-		}
-		first_huffman_code  += code_size_count;
-		first_huffman_code <<= 1;
-		first_index         += code_size_count;
-	}
-	if( result != 0 )
-	{
-		bit_stream->bit_buffer     >>= bit_index;
-		bit_stream->bit_buffer_size -= bit_index;
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid huffman encoded value.",
-		 function );
-
-		return( -1 );
-	}
-	*value_32bit = safe_value_32bit;
-
-	return( 1 );
-}
-
-/* Initializes the dynamic Huffman tables
- * Returns 1 on success or -1 on error
- */
-int deflate_initialize_dynamic_huffman_tables(
-     bit_stream_t *bit_stream,
-     deflate_huffman_table_t *literals_table,
-     deflate_huffman_table_t *distances_table,
-     libcerror_error_t **error )
-{
-	uint16_t code_size_array[ 316 ];
+	uint8_t code_size_array[ 316 ];
 
 	uint8_t code_sizes_sequence[ 19 ] = {
 		16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2,
 	        14, 1, 15 };
 
-	deflate_huffman_table_t codes_table;
-
-	static char *function             = "deflate_initialize_dynamic_huffman_tables";
-	uint32_t code_size                = 0;
-	uint32_t code_size_index          = 0;
-	uint32_t code_size_sequence       = 0;
-	uint32_t number_of_code_sizes     = 0;
-	uint32_t number_of_distance_codes = 0;
-	uint32_t number_of_literal_codes  = 0;
-	uint32_t symbol                   = 0;
-	uint32_t times_to_repeat          = 0;
+	huffman_tree_t *pre_codes_huffman_tree = NULL;
+	static char *function                  = "deflate_build_dynamic_huffman_trees";
+	uint32_t code_size                     = 0;
+	uint32_t code_size_index               = 0;
+	uint32_t code_size_sequence            = 0;
+	uint32_t number_of_code_sizes          = 0;
+	uint32_t number_of_distance_codes      = 0;
+	uint32_t number_of_literal_codes       = 0;
+	uint32_t symbol                        = 0;
+	uint32_t times_to_repeat               = 0;
 
 	if( bit_stream_get_value(
 	     bit_stream,
@@ -391,7 +69,7 @@ int deflate_initialize_dynamic_huffman_tables(
 		 "%s: unable to retrieve value from bit stream.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	number_of_literal_codes  = number_of_code_sizes & 0x0000001fUL;
 	number_of_code_sizes   >>= 5;
@@ -401,19 +79,19 @@ int deflate_initialize_dynamic_huffman_tables(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of literal codes\t\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
+		 "%s: number of literal codes\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
 		 function,
 		 number_of_literal_codes + 257,
 		 number_of_literal_codes );
 
 		libcnotify_printf(
-		 "%s: number of distance codes\t\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
+		 "%s: number of distance codes\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
 		 function,
 		 number_of_distance_codes + 1,
 		 number_of_distance_codes );
 
 		libcnotify_printf(
-		 "%s: number of code sizes\t\t\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
+		 "%s: number of code sizes\t\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
 		 function,
 		 number_of_code_sizes + 4,
 		 number_of_code_sizes );
@@ -429,7 +107,7 @@ int deflate_initialize_dynamic_huffman_tables(
 		 "%s: invalid number of literal codes value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	number_of_distance_codes += 1;
 
@@ -442,7 +120,7 @@ int deflate_initialize_dynamic_huffman_tables(
 		 "%s: invalid number of distance codes value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	number_of_code_sizes += 4;
 
@@ -463,11 +141,11 @@ int deflate_initialize_dynamic_huffman_tables(
 			 "%s: unable to retrieve value from bit stream.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		code_size_sequence = code_sizes_sequence[ code_size_index ];
 
-		code_size_array[ code_size_sequence ] = (uint16_t) code_size;
+		code_size_array[ code_size_sequence ] = (uint8_t) code_size;
 
 		if( libcnotify_verbose != 0 )
 		{
@@ -497,8 +175,23 @@ int deflate_initialize_dynamic_huffman_tables(
 		libcnotify_printf(
 		 "\n" );
 	}
-	if( deflate_huffman_table_construct(
-	     &codes_table,
+	if( huffman_tree_initialize(
+	     &pre_codes_huffman_tree,
+	     19,
+	     15,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create pre-codes Huffman tree.",
+		 function );
+
+		goto on_error;
+	}
+	if( huffman_tree_build(
+	     pre_codes_huffman_tree,
 	     code_size_array,
 	     19,
 	     error ) != 1 )
@@ -507,10 +200,10 @@ int deflate_initialize_dynamic_huffman_tables(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to construct codes table.",
+		 "%s: unable to build pre-codes Huffman tree.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	number_of_code_sizes = number_of_literal_codes + number_of_distance_codes;
 
@@ -518,9 +211,9 @@ int deflate_initialize_dynamic_huffman_tables(
 
 	while( code_size_index < number_of_code_sizes )
 	{
-		if( deflate_bit_stream_get_huffman_encoded_value(
+		if( huffman_tree_get_symbol_from_bit_stream(
+		     pre_codes_huffman_tree,
 		     bit_stream,
-		     &codes_table,
 		     &symbol,
 		     error ) != 1 )
 		{
@@ -528,22 +221,30 @@ int deflate_initialize_dynamic_huffman_tables(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve literal value from bit stream.",
+			 "%s: unable to retrieve symbol from pre-codes Huffman tree.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: code value: % 3" PRIu32 "\t\t\t: %" PRIu32 "\n",
+			 "%s: code size: % 3" PRIu32 " symbol\t\t: %" PRIu32 "\n",
 			 function,
 			 code_size_index,
 			 symbol );
 		}
 		if( symbol < 16 )
 		{
-			code_size_array[ code_size_index++ ] = (uint16_t) symbol;
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: code size: % 3" PRIu32 " value\t\t\t: %" PRIu32 "\n",
+				 function,
+				 code_size_index,
+				 symbol );
+			}
+			code_size_array[ code_size_index++ ] = (uint8_t) symbol;
 
 			continue;
 		}
@@ -560,7 +261,7 @@ int deflate_initialize_dynamic_huffman_tables(
 				 "%s: invalid code size index value out of bounds.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			code_size = (uint32_t) code_size_array[ code_size_index - 1 ];
 
@@ -577,7 +278,7 @@ int deflate_initialize_dynamic_huffman_tables(
 				 "%s: unable to retrieve value from bit stream.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			times_to_repeat += 3;
 		}
@@ -596,7 +297,7 @@ int deflate_initialize_dynamic_huffman_tables(
 				 "%s: unable to retrieve value from bit stream.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			times_to_repeat += 3;
 		}
@@ -615,7 +316,7 @@ int deflate_initialize_dynamic_huffman_tables(
 				 "%s: unable to retrieve value from bit stream.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			times_to_repeat += 11;
 		}
@@ -625,19 +326,19 @@ int deflate_initialize_dynamic_huffman_tables(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 			 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid code value value out of bounds.",
+			 "%s: invalid code size symbol value out of bounds.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: times to repeat\t\t\t: %" PRIu32 "\n",
+			 "%s: times to repeat\t\t: %" PRIu32 "\n",
 			 function,
 			 times_to_repeat );
 		}
-		if( ( code_size_index + times_to_repeat ) > number_of_code_sizes )
+		if( times_to_repeat > ( number_of_code_sizes - code_size_index ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -646,11 +347,19 @@ int deflate_initialize_dynamic_huffman_tables(
 			 "%s: invalid times to repeat value out of bounds.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		while( times_to_repeat > 0 )
 		{
-			code_size_array[ code_size_index++ ] = (uint16_t) code_size;
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: code size: % 3" PRIu32 " value\t\t\t: %" PRIu32 "\n",
+				 function,
+				 code_size_index,
+				 code_size );
+			}
+			code_size_array[ code_size_index++ ] = (uint8_t) code_size;
 
 			times_to_repeat--;
 		}
@@ -664,10 +373,23 @@ int deflate_initialize_dynamic_huffman_tables(
 		 "%s: end-of-block code value missing in literal codes array.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	if( deflate_huffman_table_construct(
-	     literals_table,
+	if( huffman_tree_free(
+	     &pre_codes_huffman_tree,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free pre-codes Huffman tree.",
+		 function );
+
+		goto on_error;
+	}
+	if( huffman_tree_build(
+	     literals_huffman_tree,
 	     code_size_array,
 	     number_of_literal_codes,
 	     error ) != 1 )
@@ -676,13 +398,13 @@ int deflate_initialize_dynamic_huffman_tables(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to construct literals table.",
+		 "%s: unable to build literals Huffman tree.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	if( deflate_huffman_table_construct(
-	     distances_table,
+	if( huffman_tree_build(
+	     distances_huffman_tree,
 	     &( code_size_array[ number_of_literal_codes ] ),
 	     number_of_distance_codes,
 	     error ) != 1 )
@@ -691,25 +413,34 @@ int deflate_initialize_dynamic_huffman_tables(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to construct distances table.",
+		 "%s: unable to build distances Huffman tree.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	return( 1 );
+
+on_error:
+	if( pre_codes_huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &pre_codes_huffman_tree,
+		 NULL );
+	}
+	return( -1 );
 }
 
-/* Initializes the fixed Huffman tables
+/* Initializes the fixed Huffman trees
  * Returns 1 on success or -1 on error
  */
-int deflate_initialize_fixed_huffman_tables(
-     deflate_huffman_table_t *literals_table,
-     deflate_huffman_table_t *distances_table,
+int deflate_build_fixed_huffman_trees(
+     huffman_tree_t *literals_huffman_tree,
+     huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error )
 {
-	uint16_t code_size_array[ 318 ];
+	uint8_t code_size_array[ 318 ];
 
-	static char *function = "deflate_initialize_fixed_huffman_tables";
+	static char *function = "deflate_build_fixed_huffman_trees";
 	uint16_t symbol       = 0;
 
 	for( symbol = 0;
@@ -737,8 +468,8 @@ int deflate_initialize_fixed_huffman_tables(
 			code_size_array[ symbol ] = 5;
 		}
 	}
-	if( deflate_huffman_table_construct(
-	     literals_table,
+	if( huffman_tree_build(
+	     literals_huffman_tree,
 	     code_size_array,
 	     288,
 	     error ) != 1 )
@@ -747,13 +478,13 @@ int deflate_initialize_fixed_huffman_tables(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to construct literals table.",
+		 "%s: unable to build literals Huffman tree.",
 		 function );
 
 		return( -1 );
 	}
-	if( deflate_huffman_table_construct(
-	     distances_table,
+	if( huffman_tree_build(
+	     distances_huffman_tree,
 	     &( code_size_array[ 288 ] ),
 	     30,
 	     error ) != 1 )
@@ -762,7 +493,7 @@ int deflate_initialize_fixed_huffman_tables(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to construct distances table.",
+		 "%s: unable to build distances Huffman tree.",
 		 function );
 
 		return( -1 );
@@ -775,8 +506,8 @@ int deflate_initialize_fixed_huffman_tables(
  */
 int deflate_decode_huffman(
      bit_stream_t *bit_stream,
-     deflate_huffman_table_t *literals_table,
-     deflate_huffman_table_t *distances_table,
+     huffman_tree_t *literals_huffman_tree,
+     huffman_tree_t *distances_huffman_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
@@ -801,8 +532,8 @@ int deflate_decode_huffman(
 
 	static char *function         = "deflate_decode_huffman";
 	size_t data_offset            = 0;
-	uint32_t code_value           = 0;
 	uint32_t extra_bits           = 0;
+	uint32_t symbol               = 0;
 	uint16_t compression_offset   = 0;
 	uint16_t compression_size     = 0;
 	uint16_t number_of_extra_bits = 0;
@@ -844,17 +575,17 @@ int deflate_decode_huffman(
 
 	do
 	{
-		if( deflate_bit_stream_get_huffman_encoded_value(
+		if( huffman_tree_get_symbol_from_bit_stream(
+		     literals_huffman_tree,
 		     bit_stream,
-		     literals_table,
-		     &code_value,
+		     &symbol,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve listeral value from bit stream.",
+			 "%s: unable to retrieve symbol from literals Huffman tree.",
 			 function );
 
 			return( -1 );
@@ -862,11 +593,11 @@ int deflate_decode_huffman(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: code value\t\t\t\t\t\t: 0x%04" PRIx16 "\n",
+			 "%s: symbol\t\t\t\t\t\t: %" PRIu32 "\n",
 			 function,
-			 code_value );
+			 symbol );
 		}
-		if( code_value < 256 )
+		if( symbol < 256 )
 		{
 			if( data_offset >= uncompressed_data_size )
 			{
@@ -879,14 +610,14 @@ int deflate_decode_huffman(
 
 				return( -1 );
 			}
-			uncompressed_data[ data_offset++ ] = (uint8_t) code_value;
+			uncompressed_data[ data_offset++ ] = (uint8_t) symbol;
 		}
-		else if( ( code_value > 256 )
-		      && ( code_value < 286 ) )
+		else if( ( symbol > 256 )
+		      && ( symbol < 286 ) )
 		{
-			code_value -= 257;
+			symbol -= 257;
 
-			number_of_extra_bits = literal_codes_number_of_extra_bits[ code_value ];
+			number_of_extra_bits = literal_codes_number_of_extra_bits[ symbol ];
 
 			if( bit_stream_get_value(
 			     bit_stream,
@@ -906,28 +637,28 @@ int deflate_decode_huffman(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: literal code\t\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: literal code\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 literal_codes_base[ code_value ] );
+				 literal_codes_base[ symbol ] );
 
 				libcnotify_printf(
-				 "%s: extra bits\t\t\t\t\t\t: 0x%04" PRIx16 "\n",
+				 "%s: extra bits\t\t\t\t\t: 0x%04" PRIx16 "\n",
 				 function,
 				 extra_bits );
 			}
-			compression_size = literal_codes_base[ code_value ] + (uint16_t) extra_bits;
+			compression_size = literal_codes_base[ symbol ] + (uint16_t) extra_bits;
 
-			if( deflate_bit_stream_get_huffman_encoded_value(
+			if( huffman_tree_get_symbol_from_bit_stream(
+			     distances_huffman_tree,
 			     bit_stream,
-			     distances_table,
-			     &code_value,
+			     &symbol,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve distance value from bit stream.",
+				 "%s: unable to retrieve symbol from distances Huffman tree.",
 				 function );
 
 				return( -1 );
@@ -935,11 +666,11 @@ int deflate_decode_huffman(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: code value\t\t\t\t\t\t: 0x%04" PRIx16 "\n",
+				 "%s: symbol\t\t\t\t\t\t: 0x%04" PRIx16 "\n",
 				 function,
-				 code_value );
+				 symbol );
 			}
-			number_of_extra_bits = distance_codes_number_of_extra_bits[ code_value ];
+			number_of_extra_bits = distance_codes_number_of_extra_bits[ symbol ];
 
 			if( bit_stream_get_value(
 			     bit_stream,
@@ -959,31 +690,31 @@ int deflate_decode_huffman(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: distance code\t\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: distance code\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 distance_codes_base[ code_value ] );
+				 distance_codes_base[ symbol ] );
 
 				libcnotify_printf(
-				 "%s: extra bits\t\t\t\t\t\t: 0x%04" PRIx16 "\n",
+				 "%s: extra bits\t\t\t\t\t: 0x%04" PRIx16 "\n",
 				 function,
 				 extra_bits );
 			}
-			compression_offset = distance_codes_base[ code_value ] + (uint16_t) extra_bits;
+			compression_offset = distance_codes_base[ symbol ] + (uint16_t) extra_bits;
 
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: uncompressed data offset\t\t\t\t: %" PRIzd "\n",
+				 "%s: uncompressed data offset\t\t\t: %" PRIzd "\n",
 				 function,
 				 data_offset );
 
 				libcnotify_printf(
-				 "%s: compression offset\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: compression offset\t\t\t\t: %" PRIu16 "\n",
 				 function,
 				 compression_offset );
 
 				libcnotify_printf(
-				 "%s: compression size\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: compression size\t\t\t\t: %" PRIu16 "\n",
 				 function,
 				 compression_size );
 			}
@@ -1017,20 +748,20 @@ int deflate_decode_huffman(
 				compression_size--;
 			}
 		}
-		else if( code_value != 256 )
+		else if( symbol != 256 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: invalid code value: %" PRIu16 ".",
+			 "%s: invalid symbol: %" PRIu16 ".",
 			 function,
-			 code_value );
+			 symbol );
 
 			return( -1 );
 		}
 	}
-	while( code_value != 256 );
+	while( symbol != 256 );
 
 	*uncompressed_data_offset = data_offset;
 
@@ -1377,28 +1108,27 @@ int deflate_decompress(
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	bit_stream_t bit_stream;
-	deflate_huffman_table_t dynamic_huffman_distances_table;
-	deflate_huffman_table_t dynamic_huffman_literals_table;
-	deflate_huffman_table_t fixed_huffman_distances_table;
-	deflate_huffman_table_t fixed_huffman_literals_table;
-
-	static char *function                 = "deflate_decompress";
-	size_t compressed_data_offset         = 0;
-	size_t uncompressed_data_offset       = 0;
-	uint32_t block_size                   = 0;
-	uint32_t block_size_copy              = 0;
-	uint32_t compression_window_size      = 0;
-	uint32_t calculated_checksum          = 0;
-	uint32_t preset_dictionary_identifier = 0;
-	uint32_t stored_checksum              = 0;
-	uint32_t value_32bit                  = 0;
-	uint8_t block_type                    = 0;
-	uint8_t compression_information       = 0;
-	uint8_t compression_method            = 0;
-	uint8_t compression_window_bits       = 0;
-	uint8_t last_block_flag               = 0;
-	uint8_t skip_bits                     = 0;
+	bit_stream_t *bit_stream                       = NULL;
+	huffman_tree_t *dynamic_huffman_distances_tree = NULL;
+	huffman_tree_t *dynamic_huffman_literals_tree  = NULL;
+	huffman_tree_t *fixed_huffman_distances_tree   = NULL;
+	huffman_tree_t *fixed_huffman_literals_tree    = NULL;
+	static char *function                          = "deflate_decompress";
+	size_t compressed_data_offset                  = 0;
+	size_t uncompressed_data_offset                = 0;
+	uint32_t block_size                            = 0;
+	uint32_t block_size_copy                       = 0;
+	uint32_t calculated_checksum                   = 0;
+	uint32_t compression_window_size               = 0;
+	uint32_t preset_dictionary_identifier          = 0;
+	uint32_t stored_checksum                       = 0;
+	uint32_t value_32bit                           = 0;
+	uint8_t block_type                             = 0;
+	uint8_t compression_information                = 0;
+	uint8_t compression_method                     = 0;
+	uint8_t compression_window_bits                = 0;
+	uint8_t last_block_flag                        = 0;
+	uint8_t skip_bits                              = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -1485,7 +1215,7 @@ int deflate_decompress(
 		 "%s: invalid compressed data value too small.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	compression_method      = compressed_data[ 0 ] & 0x0f;
 	compression_information = compressed_data[ 0 ] >> 4;
@@ -1493,27 +1223,27 @@ int deflate_decompress(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: header compression method\t\t\t\t\t: %" PRIu8 "\n",
+		 "%s: header compression method\t\t\t\t: %" PRIu8 "\n",
 		 function,
 		 compression_method );
 
 		libcnotify_printf(
-		 "%s: header compression information\t\t\t\t: %" PRIu8 "\n",
+		 "%s: header compression information\t\t\t: %" PRIu8 "\n",
 		 function,
 		 compression_information );
 
 		libcnotify_printf(
-		 "%s: header check bits\t\t\t\t\t\t: 0x%02" PRIx8 "\n",
+		 "%s: header check bits\t\t\t\t\t: 0x%02" PRIx8 "\n",
 		 function,
 		 compressed_data[ 1 ] & 0x1f );
 
 		libcnotify_printf(
-		 "%s: header preset dictionary flag\t\t\t\t: %" PRIu8 "\n",
+		 "%s: header preset dictionary flag\t\t\t: %" PRIu8 "\n",
 		 function,
 		 ( compressed_data[ 1 ] >> 5 ) & 0x01 );
 
 		libcnotify_printf(
-		 "%s: header compression level\t\t\t\t\t: %" PRIu8 " (",
+		 "%s: header compression level\t\t\t\t: %" PRIu8 " (",
 		 function,
 		 compressed_data[ 1 ] >> 6 );
 
@@ -1555,7 +1285,7 @@ int deflate_decompress(
 			 "%s: invalid compressed data value too small.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		byte_stream_copy_to_uint32_big_endian(
 		 &( compressed_data[ 2 ] ),
@@ -1567,7 +1297,7 @@ int deflate_decompress(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: header preset dictionary identifier\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: header preset dictionary identifier\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 preset_dictionary_identifier );
 		}
@@ -1585,7 +1315,7 @@ int deflate_decompress(
 		 function,
 		 compression_method );
 
-		return( -1 );
+		goto on_error;
 	}
 	compression_window_bits = (uint8_t) compression_information + 8;
 	compression_window_size = 1UL << compression_window_bits;
@@ -1593,7 +1323,7 @@ int deflate_decompress(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: header compression window size\t\t\t\t: %" PRIu32 " (%" PRIu8 ")\n",
+		 "%s: header compression window size\t\t\t: %" PRIu32 " (%" PRIu8 ")\n",
 		 function,
 		 compression_window_size,
 		 compression_window_bits );
@@ -1608,7 +1338,7 @@ int deflate_decompress(
 		 function,
 		 compression_window_size );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( libcnotify_verbose != 0 )
 	{
@@ -1624,34 +1354,31 @@ int deflate_decompress(
 		 "%s: invalid compressed data value too small.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	bit_stream.byte_stream        = compressed_data;
-	bit_stream.byte_stream_size   = compressed_data_size;
-	bit_stream.byte_stream_offset = compressed_data_offset;
-	bit_stream.bit_buffer         = 0;
-	bit_stream.bit_buffer_size    = 0;
-
-	if( deflate_initialize_fixed_huffman_tables(
-	     &fixed_huffman_literals_table,
-	     &fixed_huffman_distances_table,
+	if( bit_stream_initialize(
+	     &bit_stream,
+	     compressed_data,
+	     compressed_data_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to construct fixed Huffman tables.",
+		 "%s: unable to create bit-stream.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
+/* TODO add seek byte offset function */
+	bit_stream->byte_stream_offset = compressed_data_offset;
 
 /* TODO find optimized solution to read bit stream from bytes */
-	while( bit_stream.byte_stream_offset < bit_stream.byte_stream_size )
+	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
 	{
 		if( bit_stream_get_value(
-		     &bit_stream,
+		     bit_stream,
 		     3,
 		     &value_32bit,
 		     error ) != 1 )
@@ -1663,7 +1390,7 @@ int deflate_decompress(
 			 "%s: unable to retrieve value from bit stream.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		last_block_flag = (uint8_t) ( value_32bit & 0x00000001UL );
 		value_32bit   >>= 1;
@@ -1672,12 +1399,12 @@ int deflate_decompress(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: block header last block flag\t\t\t\t: %" PRIu8 "\n",
+			 "%s: block header last block flag\t\t\t: %" PRIu8 "\n",
 			 function,
 			 last_block_flag );
 
 			libcnotify_printf(
-			 "%s: block header block type\t\t\t\t\t: %" PRIu8 " (",
+			 "%s: block header block type\t\t\t\t: %" PRIu8 " (",
 			 function,
 			 block_type );
 
@@ -1715,19 +1442,19 @@ int deflate_decompress(
 			case DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
 				/* Ignore the bits in the buffer upto the next byte
 				 */
-				skip_bits = bit_stream.bit_buffer_size & 0x07;
+				skip_bits = bit_stream->bit_buffer_size & 0x07;
 
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: skip bits\t\t\t\t\t\t\t: %" PRIu8 "\n",
+					 "%s: skip bits\t\t\t\t\t\t: %" PRIu8 "\n",
 					 function,
 					 skip_bits );
 				}
 				if( skip_bits > 0 )
 				{
 					if( bit_stream_get_value(
-					     &bit_stream,
+					     bit_stream,
 					     skip_bits,
 					     &value_32bit,
 					     error ) != 1 )
@@ -1739,11 +1466,11 @@ int deflate_decompress(
 						 "%s: unable to retrieve value from bit stream.",
 						 function );
 
-						return( -1 );
+						goto on_error;
 					}
 				}
 				if( bit_stream_get_value(
-				     &bit_stream,
+				     bit_stream,
 				     32,
 				     &block_size,
 				     error ) != 1 )
@@ -1755,7 +1482,7 @@ int deflate_decompress(
 					 "%s: unable to retrieve value from bit stream.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				block_size_copy = block_size >> 16;
 				block_size     &= 0x0000ffffUL;
@@ -1763,17 +1490,17 @@ int deflate_decompress(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: block header unknown1\t\t\t\t\t: %" PRIu32 "\n",
+					 "%s: block header unknown1\t\t\t\t: %" PRIu32 "\n",
 					 function,
 					 value_32bit );
 
 					libcnotify_printf(
-					 "%s: block header block size\t\t\t\t\t: %" PRIu32 "\n",
+					 "%s: block header block size\t\t\t\t: %" PRIu32 "\n",
 					 function,
 					 block_size );
 
 					libcnotify_printf(
-					 "%s: block header block size copy\t\t\t\t: %" PRIu16 " (%" PRIu32 ")\n",
+					 "%s: block header block size copy\t\t\t: %" PRIu16 " (%" PRIu32 ")\n",
 					 function,
 					 block_size_copy ^ 0x0000ffffUL,
 					 block_size_copy );
@@ -1791,13 +1518,13 @@ int deflate_decompress(
 					 block_size,
 					 block_size_copy );
 
-					return( -1 );
+					goto on_error;
 				}
 				if( block_size == 0 )
 				{
 					break;
 				}
-				if( (size_t) block_size > ( bit_stream.byte_stream_size - bit_stream.byte_stream_offset ) )
+				if( (size_t) block_size > ( bit_stream->byte_stream_size - bit_stream->byte_stream_offset ) )
 				{
 					libcerror_error_set(
 					 error,
@@ -1806,7 +1533,7 @@ int deflate_decompress(
 					 "%s: invalid compressed data value too small.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				if( (size_t) block_size > ( *uncompressed_data_size - uncompressed_data_offset ) )
 				{
@@ -1817,11 +1544,11 @@ int deflate_decompress(
 					 "%s: invalid uncompressed data value too small.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				if( memory_copy(
 				     &( uncompressed_data[ uncompressed_data_offset ] ),
-				     &( compressed_data[ bit_stream.byte_stream_offset ] ),
+				     &( compressed_data[ bit_stream->byte_stream_offset ] ),
 				     (size_t) block_size ) == NULL )
 				{
 					libcerror_error_set(
@@ -1831,23 +1558,71 @@ int deflate_decompress(
 					 "%s: unable to initialize lz buffer.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
-				bit_stream.byte_stream_offset += block_size;
-				uncompressed_data_offset      += block_size;
+				bit_stream->byte_stream_offset += block_size;
+				uncompressed_data_offset       += block_size;
 
 				/* Flush the bit-stream buffer
 				 */
-				bit_stream.bit_buffer      = 0;
-				bit_stream.bit_buffer_size = 0;
+				bit_stream->bit_buffer      = 0;
+				bit_stream->bit_buffer_size = 0;
 
 				break;
 
 			case DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED:
+				if( ( fixed_huffman_literals_tree == NULL )
+				 && ( fixed_huffman_distances_tree == NULL ) )
+				{
+					if( huffman_tree_initialize(
+					     &fixed_huffman_literals_tree,
+					     288,
+					     15,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+						 "%s: unable to create fixed literals Huffman tree.",
+						 function );
+
+						goto on_error;
+					}
+					if( huffman_tree_initialize(
+					     &fixed_huffman_distances_tree,
+					     30,
+					     15,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+						 "%s: unable to create fixed distances Huffman tree.",
+						 function );
+
+						goto on_error;
+					}
+					if( deflate_build_fixed_huffman_trees(
+					     fixed_huffman_literals_tree,
+					     fixed_huffman_distances_tree,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+						 "%s: unable to build fixed Huffman trees.",
+						 function );
+
+						goto on_error;
+					}
+				}
 				if( deflate_decode_huffman(
-				     &bit_stream,
-				     &fixed_huffman_literals_table,
-				     &fixed_huffman_distances_table,
+				     bit_stream,
+				     fixed_huffman_literals_tree,
+				     fixed_huffman_distances_tree,
 				     uncompressed_data,
 				     *uncompressed_data_size,
 				     &uncompressed_data_offset,
@@ -1860,30 +1635,60 @@ int deflate_decompress(
 					 "%s: unable to decode fixed Huffman encoded bit stream.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				break;
 
 			case DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
-				if( deflate_initialize_dynamic_huffman_tables(
-				     &bit_stream,
-				     &dynamic_huffman_literals_table,
-				     &dynamic_huffman_distances_table,
+				if( huffman_tree_initialize(
+				     &dynamic_huffman_literals_tree,
+				     288,
+				     15,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to construct dynamic Huffman tables.",
+					 "%s: unable to create dynamic literals Huffman tree.",
 					 function );
 
-					return( -1 );
+					goto on_error;
+				}
+				if( huffman_tree_initialize(
+				     &dynamic_huffman_distances_tree,
+				     30,
+				     15,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create dynamic distances Huffman tree.",
+					 function );
+
+					goto on_error;
+				}
+				if( deflate_build_dynamic_huffman_trees(
+				     bit_stream,
+				     dynamic_huffman_literals_tree,
+				     dynamic_huffman_distances_tree,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to build dynamic Huffman trees.",
+					 function );
+
+					goto on_error;
 				}
 				if( deflate_decode_huffman(
-				     &bit_stream,
-				     &dynamic_huffman_literals_table,
-				     &dynamic_huffman_distances_table,
+				     bit_stream,
+				     dynamic_huffman_literals_tree,
+				     dynamic_huffman_distances_tree,
 				     uncompressed_data,
 				     *uncompressed_data_size,
 				     &uncompressed_data_offset,
@@ -1896,7 +1701,33 @@ int deflate_decompress(
 					 "%s: unable to decode dynamic Huffman encoded bit stream.",
 					 function );
 
-					return( -1 );
+					goto on_error;
+				}
+				if( huffman_tree_free(
+				     &dynamic_huffman_distances_tree,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free dynamic distances Huffman tree.",
+					 function );
+
+					goto on_error;
+				}
+				if( huffman_tree_free(
+				     &dynamic_huffman_literals_tree,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free dynamic literals Huffman tree.",
+					 function );
+
+					goto on_error;
 				}
 				break;
 
@@ -1909,7 +1740,7 @@ int deflate_decompress(
 				 "%s: unsupported block type.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 		}
 		if( libcnotify_verbose != 0 )
 		{
@@ -1921,15 +1752,15 @@ int deflate_decompress(
 			break;
 		}
 	}
-	if( ( bit_stream.byte_stream_size - bit_stream.byte_stream_offset ) >= 4 )
+	if( ( bit_stream->byte_stream_size - bit_stream->byte_stream_offset ) >= 4 )
 	{
-		while( bit_stream.bit_buffer_size >= 8 )
+		while( bit_stream->bit_buffer_size >= 8 )
 		{
-			bit_stream.byte_stream_offset -= 1;
-			bit_stream.bit_buffer_size    -= 8;
+			bit_stream->byte_stream_offset -= 1;
+			bit_stream->bit_buffer_size    -= 8;
 		}
 		byte_stream_copy_to_uint32_big_endian(
-		 &( bit_stream.byte_stream[ bit_stream.byte_stream_offset ] ),
+		 &( bit_stream->byte_stream[ bit_stream->byte_stream_offset ] ),
 		 stored_checksum );
 
 		if( deflate_calculate_adler32(
@@ -1946,17 +1777,17 @@ int deflate_decompress(
 			 "%s: unable to calculate checksum.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: stored checksum\t\t\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: stored checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 stored_checksum );
 
 			libcnotify_printf(
-			 "%s: calculated checksum\t\t\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: calculated checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 calculated_checksum );
 		}
@@ -1971,12 +1802,90 @@ int deflate_decompress(
 			 stored_checksum,
 			 calculated_checksum );
 
-			return( -1 );
+			goto on_error;
 		}
+	}
+	if( fixed_huffman_distances_tree != NULL )
+	{
+		if( huffman_tree_free(
+		     &fixed_huffman_distances_tree,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free fixed distances Huffman tree.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( fixed_huffman_literals_tree != NULL )
+	{
+		if( huffman_tree_free(
+		     &fixed_huffman_literals_tree,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free fixed literals Huffman tree.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( bit_stream_free(
+	     &bit_stream,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free bit-stream.",
+		 function );
+
+		goto on_error;
 	}
 	*uncompressed_data_size = uncompressed_data_offset;
 
 	return( 1 );
+
+on_error:
+	if( dynamic_huffman_distances_tree != NULL )
+	{
+		huffman_tree_free(
+		 &dynamic_huffman_distances_tree,
+		 NULL );
+	}
+	if( dynamic_huffman_literals_tree != NULL )
+	{
+		huffman_tree_free(
+		 &dynamic_huffman_literals_tree,
+		 NULL );
+	}
+	if( fixed_huffman_distances_tree != NULL )
+	{
+		huffman_tree_free(
+		 &fixed_huffman_distances_tree,
+		 NULL );
+	}
+	if( fixed_huffman_literals_tree != NULL )
+	{
+		huffman_tree_free(
+		 &fixed_huffman_literals_tree,
+		 NULL );
+	}
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( -1 );
 }
 
 #ifdef TODO

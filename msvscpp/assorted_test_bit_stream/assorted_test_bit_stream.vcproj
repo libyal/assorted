@@ -183,6 +183,10 @@
 				RelativePath="..\..\tests\assorted_test_bit_stream.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\tests\assorted_test_memory.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -203,6 +207,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\assorted_test_macros.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\assorted_test_memory.h"
 				>
 			</File>
 			<File

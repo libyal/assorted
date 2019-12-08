@@ -35,6 +35,7 @@ check_PROGRAMS = \
 	assorted_test_deflate \
 	assorted_test_fletcher32 \
 	assorted_test_fletcher64 \
+	assorted_test_huffman_tree \
 	assorted_test_lzfu \
 	assorted_test_lzvn \
 	assorted_test_lzx \
@@ -71,6 +72,7 @@ assorted_test_bit_stream_SOURCES = \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
 	assorted_test_macros.h \
+	assorted_test_memory.c assorted_test_memory.h \
 	assorted_test_unused.h
 
 assorted_test_bit_stream_LDADD = \
@@ -104,6 +106,7 @@ assorted_test_crc64_LDADD = \
 assorted_test_deflate_SOURCES = \
 	../src/bit_stream.c ../src/bit_stream.h \
 	../src/deflate.c ../src/deflate.h \
+	../src/huffman_tree.c ../src/huffman_tree.h \
 	assorted_test_deflate.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -138,6 +141,20 @@ assorted_test_fletcher64_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
+assorted_test_huffman_tree_SOURCES = \
+	../src/bit_stream.c ../src/bit_stream.h \
+	../src/huffman_tree.c ../src/huffman_tree.h \
+	assorted_test_huffman_tree.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_memory.c assorted_test_memory.h \
+	assorted_test_unused.h
+
+assorted_test_huffman_tree_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
 assorted_test_lzfu_SOURCES = \
 	../src/crc32.c ../src/crc32.h \
 	../src/lzfu.c ../src/lzfu.h \
@@ -165,6 +182,7 @@ assorted_test_lzvn_LDADD = \
 
 assorted_test_lzx_SOURCES = \
 	../src/bit_stream.c ../src/bit_stream.h \
+	../src/huffman_tree.c ../src/huffman_tree.h \
 	../src/lzx.c ../src/lzx.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \

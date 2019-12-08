@@ -126,6 +126,7 @@ stamp-h[1-9]
 /src/lznt1decompress
 /src/lzvndecompress
 /src/lzxdecompress
+/src/lzxdecompress
 /src/lzxpressdecompress
 /src/mssearchdecode
 /src/rc4crypt
@@ -142,6 +143,7 @@ stamp-h[1-9]
 /tests/assorted_test_deflate
 /tests/assorted_test_fletcher32
 /tests/assorted_test_fletcher64
+/tests/assorted_test_huffman_tree
 /tests/assorted_test_lzfu
 /tests/assorted_test_lzvn
 /tests/assorted_test_lzx

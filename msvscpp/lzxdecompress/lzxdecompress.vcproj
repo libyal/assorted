@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="zdecompress"
-	ProjectGUID="{BA060399-30BC-45F1-8D6C-E41D4988311A}"
-	RootNamespace="zdecompress"
+	Name="lzxdecompress"
+	ProjectGUID="{817E2A53-CC89-41A0-B768-7145A43D26FB}"
+	RootNamespace="lzxdecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -188,15 +188,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\deflate.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\huffman_tree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\zdecompress.c"
+				RelativePath="..\..\src\lzx.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\lzxdecompress.c"
 				>
 			</File>
 		</Filter>
@@ -234,11 +234,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\deflate.h"
+				RelativePath="..\..\src\huffman_tree.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.h"
+				RelativePath="..\..\src\lzx.h"
 				>
 			</File>
 		</Filter>

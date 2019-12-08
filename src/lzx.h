@@ -26,6 +26,8 @@
 #include <types.h>
 
 #include "assorted_libcerror.h"
+#include "bit_stream.h"
+#include "huffman_tree.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -40,6 +42,40 @@ enum LZX_BLOCK_TYPES
 	LZX_BLOCK_TYPE_ALIGNED		= 0x02,
 	LZX_BLOCK_TYPE_UNCOMPRESSED	= 0x03
 };
+
+int lzx_read_huffman_code_sizes(
+     bit_stream_t *bit_stream,
+     uint8_t *code_size_array,
+     int number_of_code_sizes,
+     libcerror_error_t **error );
+
+int lzx_build_main_huffman_tree(
+     bit_stream_t *bit_stream,
+     huffman_tree_t *main_huffman_tre,
+     libcerror_error_t **error );
+
+int lzx_build_lengths_huffman_tree(
+     bit_stream_t *bit_stream,
+     huffman_tree_t *lengths_huffman_tre,
+     libcerror_error_t **error );
+
+int lzx_build_aligned_offsets_huffman_tree(
+     bit_stream_t *bit_stream,
+     huffman_tree_t *aligned_offsets_huffman_tre,
+     libcerror_error_t **error );
+
+int lzx_decode_huffman(
+     bit_stream_t *bit_stream,
+     uint32_t block_size,
+     huffman_tree_t *main_huffman_tree,
+     huffman_tree_t *lengths_huffman_tree,
+     huffman_tree_t *aligned_offsets_huffman_tree,
+     uint32_t *recent_compression_offsets,
+     const uint8_t *number_of_footer_bits,
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
+     libcerror_error_t **error );
 
 int lzx_decompress(
      const uint8_t *compressed_data,

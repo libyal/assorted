@@ -1,5 +1,5 @@
 /*
- * CRC-32 functions
+ * Huffman tree functions
  *
  * Copyright (C) 2008-2019, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,54 +19,61 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _CRC32_H )
-#define _CRC32_H
+#if !defined( _HUFFMAN_TREE_H )
+#define _HUFFMAN_TREE_H
 
 #include <common.h>
 #include <types.h>
 
 #include "assorted_libcerror.h"
+#include "bit_stream.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-void initialize_crc32_table(
-      uint32_t polynomial );
+typedef struct huffman_tree huffman_tree_t;
 
-int crc32_calculate_modulo2(
-     uint32_t *crc32,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     uint8_t weak_crc,
+struct huffman_tree
+{
+	/* The maximum number of bits allowed for a Huffman code
+	 */
+	uint8_t maximum_code_size;
+
+	/* The symbols array
+	 */
+	int *symbols;
+
+	/* The code size counts array
+	 */
+	int *code_size_counts;
+};
+
+int huffman_tree_initialize(
+     huffman_tree_t **huffman_tree,
+     int number_of_symbols,
+     uint8_t maximum_code_size,
      libcerror_error_t **error );
 
-int crc32_calculate(
-     uint32_t *crc32,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     uint8_t weak_crc,
+int huffman_tree_free(
+     huffman_tree_t **huffman_tree,
      libcerror_error_t **error );
 
-int crc32_validate(
-     uint32_t crc32,
-     uint32_t calculated_crc32,
-     uint8_t *bit_index,
+int huffman_tree_build(
+     huffman_tree_t *tree,
+     const uint8_t *code_sizes_array,
+     int number_of_code_sizes,
      libcerror_error_t **error );
 
-int crc32_locate_error_offset(
-     uint32_t crc32,
-     uint32_t calculated_crc32,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
+int huffman_tree_get_symbol_from_bit_stream(
+     huffman_tree_t *huffman_tree,
+     bit_stream_t *bit_stream,
+     uint32_t *symbol,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _CRC32_H ) */
+#endif /* !defined( _HUFFMAN_TREE_H ) */
 

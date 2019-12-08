@@ -26,6 +26,7 @@ bin_PROGRAMS = \
 	lzfudecompress \
 	lznt1decompress \
 	lzvndecompress \
+	lzxdecompress \
 	lzxpressdecompress \
 	mssearchdecode \
 	rc4crypt \
@@ -189,6 +190,25 @@ lzvndecompress_LDADD = \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
+lzxdecompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_output.c assorted_output.h \
+	bit_stream.c bit_stream.h \
+	huffman_tree.c huffman_tree.h \
+	lzx.c lzx.h \
+	lzxdecompress.c
+
+lzxdecompress_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
 lzxpressdecompress_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
@@ -304,8 +324,9 @@ zcompress_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	deflate.c deflate.h \
 	bit_stream.c bit_stream.h \
+	deflate.c deflate.h \
+	huffman_tree.c huffman_tree.h \
 	zcompress.c
 
 zcompress_LDADD = \
@@ -323,8 +344,9 @@ zdecompress_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	deflate.c deflate.h \
 	bit_stream.c bit_stream.h \
+	deflate.c deflate.h \
+	huffman_tree.c huffman_tree.h \
 	zdecompress.c
 
 zdecompress_LDADD = \
@@ -358,6 +380,8 @@ splint:
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzfudecompress_SOURCES)
 	@echo "Running splint on lznt1decompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lznt1decompress_SOURCES)
+	@echo "Running splint on lzxdecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzxdecompress_SOURCES)
 	@echo "Running splint on lzxpressdecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzxpressdecompress_SOURCES)
 	@echo "Running splint on rc4crypt ..."

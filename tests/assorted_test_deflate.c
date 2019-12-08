@@ -33,7 +33,9 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
+#include "../src/bit_stream.h"
 #include "../src/deflate.h"
+#include "../src/huffman_tree.h"
 
 /* Define to make assorted_test_deflate generate verbose output
 #define ASSORTED_TEST_DEFLATE_VERBOSE
@@ -688,58 +690,29 @@ uint8_t assorted_test_deflate_uncompressed_byte_stream[ 7640 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the deflate_huffman_table_construct function
+/* Tests the deflate_build_dynamic_huffman_trees function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_deflate_huffman_table_construct(
+int assorted_test_deflate_build_dynamic_huffman_trees(
      void )
 {
-	uint16_t code_size_array[ 318 ];
-
-	deflate_huffman_table_t table;
-
-	libcerror_error_t *error        = NULL;
-	uint16_t symbol                 = 0;
-	int result                      = 0;
+	bit_stream_t *bit_stream               = NULL;
+	huffman_tree_t *distances_huffman_tree = NULL;
+	huffman_tree_t *literals_huffman_tree  = NULL;
+	libcerror_error_t *error               = NULL;
+	int result                             = 0;
 
 #if defined( HAVE_ASSORTED_TEST_MEMORY )
-	int number_of_memset_fail_tests = 2;
-	int test_number                 = 0;
+	int number_of_memset_fail_tests        = 6;
+	int test_number                        = 0;
 #endif
 
 	/* Initialize test
 	 */
-	for( symbol = 0;
-	     symbol < 318;
-	     symbol++ )
-	{
-		if( symbol < 144 )
-		{
-			code_size_array[ symbol ] = 8;
-		}
-		else if( symbol < 256 )
-		{
-			code_size_array[ symbol ] = 9;
-		}
-		else if( symbol < 280 )
-		{
-			code_size_array[ symbol ] = 7;
-		}
-		else if( symbol < 288 )
-		{
-			code_size_array[ symbol ] = 8;
-		}
-		else
-		{
-			code_size_array[ symbol ] = 5;
-		}
-	}
-	/* Test regular cases
-	 */
-	result = deflate_huffman_table_construct(
-	          &table,
-	          code_size_array,
-	          288,
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_deflate_compressed_byte_stream,
+	          2627,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -747,16 +720,64 @@ int assorted_test_deflate_huffman_table_construct(
 	 result,
 	 1 );
 
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
+/* TODO add byte stream seek function */
+	bit_stream->byte_stream_offset = 2;
+
+	result = huffman_tree_initialize(
+	          &literals_huffman_tree,
+	          288,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "literals_huffman_tree",
+	 literals_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_initialize(
+	          &distances_huffman_tree,
+	          30,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "distances_huffman_tree",
+	 distances_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+
 	/* Test error cases
 	 */
-	result = deflate_huffman_table_construct(
+	result = deflate_build_dynamic_huffman_trees(
 	          NULL,
-	          code_size_array,
-	          288,
+	          literals_huffman_tree,
+	          distances_huffman_tree,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -771,10 +792,10 @@ int assorted_test_deflate_huffman_table_construct(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_huffman_table_construct(
-	          &table,
+	result = deflate_build_dynamic_huffman_trees(
+	          bit_stream,
 	          NULL,
-	          288,
+	          distances_huffman_tree,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -789,10 +810,10 @@ int assorted_test_deflate_huffman_table_construct(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_huffman_table_construct(
-	          &table,
-	          code_size_array,
-	          -1,
+	result = deflate_build_dynamic_huffman_trees(
+	          bit_stream,
+	          literals_huffman_tree,
+	          NULL,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -813,14 +834,14 @@ int assorted_test_deflate_huffman_table_construct(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test write_io_handle_initialize with memset failing
+		/* Test deflate_build_dynamic_huffman_trees with memset failing
 		 */
 		assorted_test_memset_attempts_before_fail = test_number;
 
-		result = deflate_huffman_table_construct(
-		          &table,
-		          code_size_array,
-		          288,
+		result = deflate_build_dynamic_huffman_trees(
+		          bit_stream,
+		          literals_huffman_tree,
+		          distances_huffman_tree,
 		          &error );
 
 		if( assorted_test_memset_attempts_before_fail != -1 )
@@ -844,39 +865,10 @@ int assorted_test_deflate_huffman_table_construct(
 	}
 #endif /* defined( HAVE_ASSORTED_TEST_MEMORY ) */
 
-	/* TODO test errornous data */
-
-	return( 1 );
-
-on_error:
-	return( 0 );
-}
-
-/* Tests the deflate_bit_stream_get_huffman_encoded_value function
- * Returns 1 if successful or 0 if not
- */
-int assorted_test_deflate_bit_stream_get_huffman_encoded_value(
-     void )
-{
-	bit_stream_t bit_stream;
-	deflate_huffman_table_t distances_table;
-	deflate_huffman_table_t literals_table;
-
-	libcerror_error_t *error = NULL;
-	uint32_t value_32bit     = 0;
-	int result               = 0;
-
-	/* Initialize test
+	/* Clean up
 	 */
-        bit_stream.byte_stream        = assorted_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 2;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
-
-	result = deflate_initialize_fixed_huffman_tables(
-	          &literals_table,
-	          &distances_table,
+	result = huffman_tree_free(
+	          &distances_huffman_tree,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -885,17 +877,15 @@ int assorted_test_deflate_bit_stream_get_huffman_encoded_value(
 	 1 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "distances_huffman_tree",
+	 distances_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	/* Test regular cases
-	 */
-	value_32bit = 0;
-
-	result = deflate_bit_stream_get_huffman_encoded_value(
-	          &bit_stream,
-	          &literals_table,
-	          &value_32bit,
+	result = huffman_tree_free(
+	          &literals_huffman_tree,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -903,137 +893,132 @@ int assorted_test_deflate_bit_stream_get_huffman_encoded_value(
 	 result,
 	 1 );
 
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "value_32bit",
-	 value_32bit,
-	 (uint32_t) 141 );
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "literals_huffman_tree",
+	 literals_huffman_tree );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	/* Test error cases
-	 */
-	value_32bit = 0;
-
-	result = deflate_bit_stream_get_huffman_encoded_value(
-	          NULL,
-	          &literals_table,
-	          &value_32bit,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = deflate_bit_stream_get_huffman_encoded_value(
+	result = bit_stream_free(
 	          &bit_stream,
-	          NULL,
-	          &value_32bit,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = deflate_bit_stream_get_huffman_encoded_value(
-	          &bit_stream,
-	          &literals_table,
-	          NULL,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-        bit_stream.byte_stream_offset = 2627;
-        bit_stream.bit_buffer_size    = 0;
-
-	result = deflate_bit_stream_get_huffman_encoded_value(
-	          &bit_stream,
-	          &literals_table,
-	          &value_32bit,
-	          &error );
-
-        bit_stream.byte_stream_offset = 2;
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
 
 	return( 1 );
 
 on_error:
+	if( distances_huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &distances_huffman_tree,
+		 NULL );
+	}
+	if( literals_huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &literals_huffman_tree,
+		 NULL );
+	}
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
 	return( 0 );
 }
 
-/* Tests the deflate_initialize_dynamic_huffman_tables function
+/* Tests the deflate_build_fixed_huffman_trees function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_deflate_initialize_dynamic_huffman_tables(
+int assorted_test_deflate_build_fixed_huffman_trees(
      void )
 {
-	bit_stream_t bit_stream;
-	deflate_huffman_table_t distances_table;
-	deflate_huffman_table_t literals_table;
-
-	libcerror_error_t *error        = NULL;
-	int result                      = 0;
+	huffman_tree_t *distances_huffman_tree = NULL;
+	huffman_tree_t *literals_huffman_tree  = NULL;
+	libcerror_error_t *error               = NULL;
+	int result                             = 0;
 
 #if defined( HAVE_ASSORTED_TEST_MEMORY )
-	int number_of_memset_fail_tests = 6;
-	int test_number                 = 0;
+	int number_of_memset_fail_tests        = 4;
+	int test_number                        = 0;
 #endif
 
 	/* Initialize test
 	 */
-        bit_stream.byte_stream        = assorted_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 2;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
+	result = huffman_tree_initialize(
+	          &literals_huffman_tree,
+	          288,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "literals_huffman_tree",
+	 literals_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_initialize(
+	          &distances_huffman_tree,
+	          30,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "distances_huffman_tree",
+	 distances_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test regular cases
 	 */
+	result = deflate_build_fixed_huffman_trees(
+	          literals_huffman_tree,
+	          distances_huffman_tree,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
-	result = deflate_initialize_dynamic_huffman_tables(
+	result = deflate_build_fixed_huffman_trees(
 	          NULL,
-	          &literals_table,
-	          &distances_table,
+	          distances_huffman_tree,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1048,27 +1033,8 @@ int assorted_test_deflate_initialize_dynamic_huffman_tables(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_initialize_dynamic_huffman_tables(
-	          &bit_stream,
-	          NULL,
-	          &distances_table,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = deflate_initialize_dynamic_huffman_tables(
-	          &bit_stream,
-	          &literals_table,
+	result = deflate_build_fixed_huffman_trees(
+	          literals_huffman_tree,
 	          NULL,
 	          &error );
 
@@ -1090,14 +1056,13 @@ int assorted_test_deflate_initialize_dynamic_huffman_tables(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test deflate_initialize_dynamic_huffman_tables with memset failing
+		/* Test deflate_build_fixed_huffman_trees with memset failing
 		 */
 		assorted_test_memset_attempts_before_fail = test_number;
 
-		result = deflate_initialize_dynamic_huffman_tables(
-		          &bit_stream,
-		          &literals_table,
-		          &distances_table,
+		result = deflate_build_fixed_huffman_trees(
+		          literals_huffman_tree,
+		          distances_huffman_tree,
 		          &error );
 
 		if( assorted_test_memset_attempts_before_fail != -1 )
@@ -1121,34 +1086,10 @@ int assorted_test_deflate_initialize_dynamic_huffman_tables(
 	}
 #endif /* defined( HAVE_ASSORTED_TEST_MEMORY ) */
 
-	return( 1 );
-
-on_error:
-	return( 0 );
-}
-
-/* Tests the deflate_initialize_fixed_huffman_tables function
- * Returns 1 if successful or 0 if not
- */
-int assorted_test_deflate_initialize_fixed_huffman_tables(
-     void )
-{
-	deflate_huffman_table_t distances_table;
-	deflate_huffman_table_t literals_table;
-
-	libcerror_error_t *error        = NULL;
-	int result                      = 0;
-
-#if defined( HAVE_ASSORTED_TEST_MEMORY )
-	int number_of_memset_fail_tests = 4;
-	int test_number                 = 0;
-#endif
-
-	/* Test regular cases
+	/* Clean up
 	 */
-	result = deflate_initialize_fixed_huffman_tables(
-	          &literals_table,
-	          &distances_table,
+	result = huffman_tree_free(
+	          &distances_huffman_tree,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1157,84 +1098,45 @@ int assorted_test_deflate_initialize_fixed_huffman_tables(
 	 1 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "distances_huffman_tree",
+	 distances_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	/* Test error cases
-	 */
-	result = deflate_initialize_fixed_huffman_tables(
-	          NULL,
-	          &distances_table,
+	result = huffman_tree_free(
+	          &literals_huffman_tree,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "literals_huffman_tree",
+	 literals_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = deflate_initialize_fixed_huffman_tables(
-	          &literals_table,
-	          NULL,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-#if defined( HAVE_ASSORTED_TEST_MEMORY )
-
-	for( test_number = 0;
-	     test_number < number_of_memset_fail_tests;
-	     test_number++ )
-	{
-		/* Test deflate_initialize_fixed_huffman_tables with memset failing
-		 */
-		assorted_test_memset_attempts_before_fail = test_number;
-
-		result = deflate_initialize_fixed_huffman_tables(
-		          &literals_table,
-		          &distances_table,
-		          &error );
-
-		if( assorted_test_memset_attempts_before_fail != -1 )
-		{
-			assorted_test_memset_attempts_before_fail = -1;
-		}
-		else
-		{
-			ASSORTED_TEST_ASSERT_EQUAL_INT(
-			 "result",
-			 result,
-			 -1 );
-
-			ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-			 "error",
-			 error );
-
-			libcerror_error_free(
-			 &error );
-		}
-	}
-#endif /* defined( HAVE_ASSORTED_TEST_MEMORY ) */
 
 	return( 1 );
 
 on_error:
+	if( distances_huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &distances_huffman_tree,
+		 NULL );
+	}
+	if( literals_huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &literals_huffman_tree,
+		 NULL );
+	}
 	return( 0 );
 }
 
@@ -1246,21 +1148,74 @@ int assorted_test_deflate_decode_huffman(
 {
 	uint8_t uncompressed_data[ 8192 ];
 
-	bit_stream_t bit_stream;
-	deflate_huffman_table_t distances_table;
-	deflate_huffman_table_t literals_table;
-
-	libcerror_error_t *error        = NULL;
-	size_t uncompressed_data_offset = 0;
-	int result                      = 0;
+	bit_stream_t *bit_stream               = NULL;
+	huffman_tree_t *distances_huffman_tree = NULL;
+	huffman_tree_t *literals_huffman_tree  = NULL;
+	libcerror_error_t *error               = NULL;
+	size_t uncompressed_data_offset        = 0;
+	int result                             = 0;
 
 	/* Initialize test
 	 */
-        bit_stream.byte_stream        = assorted_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 2;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_deflate_compressed_byte_stream,
+	          2627,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+/* TODO add byte stream seek function */
+	bit_stream->byte_stream_offset = 2;
+
+	result = huffman_tree_initialize(
+	          &literals_huffman_tree,
+	          288,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "literals_huffman_tree",
+	 literals_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_initialize(
+	          &distances_huffman_tree,
+	          30,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "distances_huffman_tree",
+	 distances_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test regular cases
 	 */
@@ -1269,8 +1224,8 @@ int assorted_test_deflate_decode_huffman(
 	 */
 	result = deflate_decode_huffman(
 	          NULL,
-	          &literals_table,
-	          &distances_table,
+	          literals_huffman_tree,
+	          distances_huffman_tree,
 	          uncompressed_data,
 	          8192,
 	          &uncompressed_data_offset,
@@ -1289,9 +1244,9 @@ int assorted_test_deflate_decode_huffman(
 	 &error );
 
 	result = deflate_decode_huffman(
-	          &bit_stream,
+	          bit_stream,
 	          NULL,
-	          &distances_table,
+	          distances_huffman_tree,
 	          uncompressed_data,
 	          8192,
 	          &uncompressed_data_offset,
@@ -1310,8 +1265,8 @@ int assorted_test_deflate_decode_huffman(
 	 &error );
 
 	result = deflate_decode_huffman(
-	          &bit_stream,
-	          &literals_table,
+	          bit_stream,
+	          literals_huffman_tree,
 	          NULL,
 	          uncompressed_data,
 	          8192,
@@ -1331,9 +1286,9 @@ int assorted_test_deflate_decode_huffman(
 	 &error );
 
 	result = deflate_decode_huffman(
-	          &bit_stream,
-	          &literals_table,
-	          &distances_table,
+	          bit_stream,
+	          literals_huffman_tree,
+	          distances_huffman_tree,
 	          NULL,
 	          8192,
 	          &uncompressed_data_offset,
@@ -1352,9 +1307,9 @@ int assorted_test_deflate_decode_huffman(
 	 &error );
 
 	result = deflate_decode_huffman(
-	          &bit_stream,
-	          &literals_table,
-	          &distances_table,
+	          bit_stream,
+	          literals_huffman_tree,
+	          distances_huffman_tree,
 	          uncompressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          &uncompressed_data_offset,
@@ -1373,9 +1328,9 @@ int assorted_test_deflate_decode_huffman(
 	 &error );
 
 	result = deflate_decode_huffman(
-	          &bit_stream,
-	          &literals_table,
-	          &distances_table,
+	          bit_stream,
+	          literals_huffman_tree,
+	          distances_huffman_tree,
 	          uncompressed_data,
 	          8192,
 	          NULL,
@@ -1393,9 +1348,80 @@ int assorted_test_deflate_decode_huffman(
 	libcerror_error_free(
 	 &error );
 
+	/* Clean up
+	 */
+	result = huffman_tree_free(
+	          &distances_huffman_tree,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "distances_huffman_tree",
+	 distances_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_free(
+	          &literals_huffman_tree,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "literals_huffman_tree",
+	 literals_huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	return( 1 );
 
 on_error:
+	if( distances_huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &distances_huffman_tree,
+		 NULL );
+	}
+	if( literals_huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &literals_huffman_tree,
+		 NULL );
+	}
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
 	return( 0 );
 }
 
@@ -1646,20 +1672,12 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "deflate_huffman_table_construct",
-	 assorted_test_deflate_huffman_table_construct );
+	 "deflate_build_dynamic_huffman_trees",
+	 assorted_test_deflate_build_dynamic_huffman_trees );
 
 	ASSORTED_TEST_RUN(
-	 "deflate_bit_stream_get_huffman_encoded_value",
-	 assorted_test_deflate_bit_stream_get_huffman_encoded_value );
-
-	ASSORTED_TEST_RUN(
-	 "deflate_initialize_dynamic_huffman_tables",
-	 assorted_test_deflate_initialize_dynamic_huffman_tables );
-
-	ASSORTED_TEST_RUN(
-	 "deflate_initialize_fixed_huffman_tables",
-	 assorted_test_deflate_initialize_fixed_huffman_tables );
+	 "deflate_build_fixed_huffman_trees",
+	 assorted_test_deflate_build_fixed_huffman_trees );
 
 	ASSORTED_TEST_RUN(
 	 "deflate_decode_huffman",

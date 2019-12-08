@@ -31,6 +31,16 @@
 extern "C" {
 #endif
 
+/* The storage type
+ */
+enum BIT_STREAM_STORAGE_TYPES
+{
+	BIT_STREAM_STORAGE_TYPE_UNKNOWN			= 0x00,
+	BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK	= 0x01,
+	BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT	= 0x02,
+	BIT_STREAM_STORAGE_TYPE_16BIT_LITTLE_ENDIAN	= 0x03
+};
+
 /* The largest primary (or scalar) available
  * supported by a single load and store instruction
  */
@@ -56,6 +66,10 @@ struct bit_stream
 	 */
 	size_t byte_stream_offset;
 
+	/* The storage type
+	 */
+	uint8_t storage_type;
+
 	/* The bit buffer
 	 */
 	uint32_t bit_buffer;
@@ -65,7 +79,20 @@ struct bit_stream
 	uint8_t bit_buffer_size;
 };
 
-/* TODO add initialize and free functions ? */
+int bit_stream_initialize(
+     bit_stream_t **bit_stream,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     libcerror_error_t **error );
+
+int bit_stream_free(
+     bit_stream_t **bit_stream,
+     libcerror_error_t **error );
+
+int bit_stream_read(
+     bit_stream_t *bit_stream,
+     uint8_t number_of_bits,
+     libcerror_error_t **error );
 
 int bit_stream_get_value(
      bit_stream_t *bit_stream,

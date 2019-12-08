@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\../src/huffman_tree.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\assorted_test_deflate.c"
 				>
 			</File>
@@ -199,6 +203,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\../src/deflate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\../src/huffman_tree.h"
 				>
 			</File>
 			<File

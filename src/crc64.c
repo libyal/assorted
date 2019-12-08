@@ -24,6 +24,7 @@
 #include <types.h>
 
 #include "assorted_libcerror.h"
+#include "assorted_libcnotify.h"
 #include "crc64.h"
 
 /* Table of the CRC-64 of all 8-bit messages.
@@ -214,19 +215,26 @@ void initialize_crc64_table(
 	crc64_table_computed = 1;
 
 #ifndef DEBUG_PRINT_TABLE
-	for( crc64_table_index = 0;
-	     crc64_table_index < 256;
-	     crc64_table_index++ )
+	if( libcnotify_verbose != 0 )
 	{
-		fprintf( stdout, "0x%08" PRIx64 ",", crc64_table1[ crc64_table_index ] );
+		for( crc64_table_index = 0;
+		     crc64_table_index < 256;
+		     crc64_table_index++ )
+		{
+			libcnotify_printf(
+			 "0x%08" PRIx64 ",",
+			 crc64_table1[ crc64_table_index ] );
 
-		if( ( crc64_table_index % 4 ) == 3 )
-		{
-			fprintf( stdout, "\n" );
-		}
-		else
-		{
-			fprintf( stdout, " " );
+			if( ( crc64_table_index % 4 ) == 3 )
+			{
+				libcnotify_printf(
+				 "\n" );
+			}
+			else
+			{
+				libcnotify_printf(
+				 " " );
+			}
 		}
 	}
 #endif

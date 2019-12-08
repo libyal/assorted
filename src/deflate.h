@@ -27,6 +27,7 @@
 
 #include "assorted_libcerror.h"
 #include "bit_stream.h"
+#include "huffman_tree.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -42,55 +43,21 @@ enum DEFLATE_BLOCK_TYPES
 	DEFLATE_BLOCK_TYPE_RESERVED		= 0x03
 };
 
-typedef struct deflate_huffman_table deflate_huffman_table_t;
-
-struct deflate_huffman_table
-{
-	/* The maximum number of bits representable by the Huffman table
-	 */
-	uint8_t maximum_number_of_bits;
-
-/* TODO create initialize and set size? */
-	/* The codes array
-	 */
-	int codes_array[ 288 ];
-
-	/* The code counts array
-	 */
-	int code_counts_array[ 16 ];
-
-	/* The number of codes
-	 */
-	int number_of_codes;
-};
-
-int deflate_huffman_table_construct(
-     deflate_huffman_table_t *table,
-     const uint16_t *code_sizes_array,
-     int number_of_code_sizes,
-     libcerror_error_t **error );
-
-int deflate_bit_stream_get_huffman_encoded_value(
+int deflate_build_dynamic_huffman_trees(
      bit_stream_t *bit_stream,
-     deflate_huffman_table_t *table,
-     uint32_t *value_32bit,
+     huffman_tree_t *literals_huffman_tree,
+     huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error );
 
-int deflate_initialize_dynamic_huffman_tables(
-     bit_stream_t *bit_stream,
-     deflate_huffman_table_t *literals_table,
-     deflate_huffman_table_t *distances_table,
-     libcerror_error_t **error );
-
-int deflate_initialize_fixed_huffman_tables(
-     deflate_huffman_table_t *literals_table,
-     deflate_huffman_table_t *distances_table,
+int deflate_build_fixed_huffman_trees(
+     huffman_tree_t *literals_huffman_tree,
+     huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error );
 
 int deflate_decode_huffman(
      bit_stream_t *bit_stream,
-     deflate_huffman_table_t *literals_table,
-     deflate_huffman_table_t *distances_table,
+     huffman_tree_t *literals_huffman_tree,
+     huffman_tree_t *distances_huffman_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,

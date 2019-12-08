@@ -335,21 +335,22 @@ int lzfu_decompress(
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	lzfu_header_t lzfu_header;
 	uint8_t lz_buffer[ 4096 ];
 
-	uint8_t *lzfu_data                = 0;
-	uint8_t *lzfu_reference_data      = 0;
-	static char *function             = "lzfu_decompress";
-	size_t compressed_data_iterator   = 0;
-	size_t uncompressed_data_iterator = 0;
-	uint32_t calculated_crc           = 0;
-	uint16_t lz_buffer_iterator       = 0;
-	uint16_t reference_offset         = 0;
-	uint16_t reference_size           = 0;
-	uint16_t reference_iterator       = 0;
-	uint8_t flag_byte_bit_mask        = 0;
-	uint8_t flag_byte                 = 0;
+	lzfu_header_t lzfu_header;
+
+	const uint8_t *lzfu_data           = NULL;
+	const uint8_t *lzfu_reference_data = NULL;
+	static char *function              = "lzfu_decompress";
+	size_t compressed_data_iterator    = 0;
+	size_t uncompressed_data_iterator  = 0;
+	uint32_t calculated_crc            = 0;
+	uint16_t lz_buffer_iterator        = 0;
+	uint16_t reference_iterator        = 0;
+	uint16_t reference_offset          = 0;
+	uint16_t reference_size            = 0;
+	uint8_t flag_byte                  = 0;
+	uint8_t flag_byte_bit_mask         = 0;
 
 	if( uncompressed_data == NULL )
 	{
