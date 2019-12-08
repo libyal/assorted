@@ -1115,6 +1115,7 @@ int deflate_decompress(
 	huffman_tree_t *fixed_huffman_literals_tree    = NULL;
 	static char *function                          = "deflate_decompress";
 	size_t compressed_data_offset                  = 0;
+	size_t safe_uncompressed_data_size             = 0;
 	size_t uncompressed_data_offset                = 0;
 	uint32_t block_size                            = 0;
 	uint32_t block_size_copy                       = 0;
@@ -1196,6 +1197,8 @@ int deflate_decompress(
 
 		return( -1 );
 	}
+	safe_uncompressed_data_size = *uncompressed_data_size;
+
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -1535,7 +1538,7 @@ int deflate_decompress(
 
 					goto on_error;
 				}
-				if( (size_t) block_size > ( *uncompressed_data_size - uncompressed_data_offset ) )
+				if( (size_t) block_size > ( safe_uncompressed_data_size - uncompressed_data_offset ) )
 				{
 					libcerror_error_set(
 					 error,
@@ -1624,7 +1627,7 @@ int deflate_decompress(
 				     fixed_huffman_literals_tree,
 				     fixed_huffman_distances_tree,
 				     uncompressed_data,
-				     *uncompressed_data_size,
+				     safe_uncompressed_data_size,
 				     &uncompressed_data_offset,
 				     error ) != 1 )
 				{
@@ -1690,7 +1693,7 @@ int deflate_decompress(
 				     dynamic_huffman_literals_tree,
 				     dynamic_huffman_distances_tree,
 				     uncompressed_data,
-				     *uncompressed_data_size,
+				     safe_uncompressed_data_size,
 				     &uncompressed_data_offset,
 				     error ) != 1 )
 				{

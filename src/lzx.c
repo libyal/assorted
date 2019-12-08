@@ -823,13 +823,14 @@ int lzx_decompress_adjust_call_instructions(
 
 		return( -1 );
 	}
-	if( uncompressed_data_size > (size_t) SSIZE_MAX )
+	if( ( uncompressed_data_size < 6 )
+	 || ( uncompressed_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid uncompressed data size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid uncompressed data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -890,6 +891,7 @@ int lzx_decompress(
 	huffman_tree_t *lengths_huffman_tree         = NULL;
 	huffman_tree_t *main_huffman_tree            = NULL;
 	static char *function                        = "lzx_decompress";
+	size_t safe_uncompressed_data_size           = 0;
 	size_t uncompressed_data_offset              = 0;
 	uint32_t block_size                          = 0;
 	uint32_t block_type                          = 0;
@@ -949,6 +951,8 @@ int lzx_decompress(
 
 		return( -1 );
 	}
+	safe_uncompressed_data_size = *uncompressed_data_size;
+
 	if( bit_stream_initialize(
 	     &bit_stream,
 	     compressed_data,
@@ -1163,7 +1167,7 @@ int lzx_decompress(
 				     aligned_offsets_huffman_tree,
 				     recent_compression_offsets,
 				     uncompressed_data,
-				     *uncompressed_data_size,
+				     safe_uncompressed_data_size,
 				     &uncompressed_data_offset,
 				     error ) != 1 )
 				{
@@ -1221,22 +1225,36 @@ int lzx_decompress(
 				break;
 
 			case LZX_BLOCK_TYPE_UNCOMPRESSED:
-/* TODO read alignment */
-				if( bit_stream_get_value(
-				     bit_stream,
-				     32,
-				     &( recent_compression_offsets[ 0 ] ),
-				     error ) != 1 )
+/* TODO align byte stream */
+				if( (size_t) 12 > ( safe_uncompressed_data_size - uncompressed_data_offset ) )
 				{
 					libcerror_error_set(
 					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve R0 value from bit stream.",
+					 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+					 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+					 "%s: invalid uncompressed data value too small.",
 					 function );
 
 					goto on_error;
 				}
+				byte_stream_copy_to_uint32_little_endian(
+				 &( compressed_data[ bit_stream->byte_stream_offset ] ),
+				 recent_compression_offsets[ 0 ] );
+
+				bit_stream->byte_stream_offset += 4;
+
+				byte_stream_copy_to_uint32_little_endian(
+				 &( compressed_data[ bit_stream->byte_stream_offset ] ),
+				 recent_compression_offsets[ 1 ] );
+
+				bit_stream->byte_stream_offset += 4;
+
+				byte_stream_copy_to_uint32_little_endian(
+				 &( compressed_data[ bit_stream->byte_stream_offset ] ),
+				 recent_compression_offsets[ 2 ] );
+
+				bit_stream->byte_stream_offset += 4;
+
 				if( recent_compression_offsets[ 0 ] == 0 )
 				{
 					libcerror_error_set(
@@ -1244,21 +1262,6 @@ int lzx_decompress(
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 					 "%s: unsupported R0 value.",
-					 function );
-
-					goto on_error;
-				}
-				if( bit_stream_get_value(
-				     bit_stream,
-				     32,
-				     &( recent_compression_offsets[ 1 ] ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve R1 value from bit stream.",
 					 function );
 
 					goto on_error;
@@ -1274,21 +1277,6 @@ int lzx_decompress(
 
 					goto on_error;
 				}
-				if( bit_stream_get_value(
-				     bit_stream,
-				     32,
-				     &( recent_compression_offsets[ 2 ] ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve R2 value from bit stream.",
-					 function );
-
-					goto on_error;
-				}
 				if( recent_compression_offsets[ 2 ] == 0 )
 				{
 					libcerror_error_set(
@@ -1300,7 +1288,63 @@ int lzx_decompress(
 
 					goto on_error;
 				}
-/* TODO implement */
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+					 "%s: R0 value\t\t\t\t\t\t: 0x%08" PRIx32 "\n",
+					 function,
+					 recent_compression_offsets[ 0 ] );
+
+					libcnotify_printf(
+					 "%s: R1 value\t\t\t\t\t\t: 0x%08" PRIx32 "\n",
+					 function,
+					 recent_compression_offsets[ 1 ] );
+
+					libcnotify_printf(
+					 "%s: R2 value\t\t\t\t\t\t: 0x%08" PRIx32 "\n",
+					 function,
+					 recent_compression_offsets[ 2 ] );
+
+					libcnotify_printf(
+					 "\n" );
+				}
+				if( (size_t) block_size > ( bit_stream->byte_stream_size - bit_stream->byte_stream_offset ) )
+				{
+					block_size = (uint32_t) ( bit_stream->byte_stream_size - bit_stream->byte_stream_offset );
+				}
+				if( (size_t) block_size > ( safe_uncompressed_data_size - uncompressed_data_offset ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+					 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+					 "%s: invalid uncompressed data value too small.",
+					 function );
+
+					goto on_error;
+				}
+				if( memory_copy(
+				     &( uncompressed_data[ uncompressed_data_offset ] ),
+				     &( compressed_data[ bit_stream->byte_stream_offset ] ),
+				     (size_t) block_size ) == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+					 "%s: unable to initialize lz buffer.",
+					 function );
+
+					goto on_error;
+				}
+				bit_stream->byte_stream_offset += block_size;
+				uncompressed_data_offset       += block_size;
+
+				/* Flush the bit-stream buffer
+				 */
+				bit_stream->bit_buffer      = 0;
+				bit_stream->bit_buffer_size = 0;
+
 				break;
 
 			default:
@@ -1313,7 +1357,6 @@ int lzx_decompress(
 
 				return( -1 );
 		}
-/* TODO implement */
 		break;
 	}
 	if( bit_stream_free(

@@ -101,7 +101,8 @@ See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
 | ... | ... | | 249 length code sizes +
 See section: <<huffman_encoded_code_sizes,Huffman encoded code sizes>>
 4+| _If has block type is LZX_BLOCKTYPE_UNCOMPRESSED_
-| ... | ... | 0 | 16-bit alignment padding, which is 16-bit if already aligned
+| ... | ... | 0 | 16-bit alignment padding, which is 16-bit if already aligned +
+This padding ensures the following data is byte aligned
 | ... | 4 | | Recent offset (R0) value
 | ... | 4 | | Recent offset (R1) value
 | ... | 4 | | Recent offset (R2) value
