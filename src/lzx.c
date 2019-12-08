@@ -20,6 +20,7 @@
  */
 
 #include <common.h>
+#include <byte_stream.h>
 #include <memory.h>
 #include <types.h>
 
@@ -37,17 +38,13 @@
 #endif
 #endif
 
-const int32_t lzx_compression_offset_base[ 51 ] = {
+/* Base position - 2
+ */
+const int32_t lzx_compression_offset_base[ 50 ] = {
 	-2, -1, 0, 1, 2, 4, 6, 10, 14, 22, 30, 46, 62, 94, 126, 190,
 	254, 382, 510, 766, 1022, 1534, 2046, 3070, 4094, 6142, 8190, 12286, 16382, 24574, 32766, 49150,
 	65534, 98302, 131070, 196606, 262142, 393214, 524286, 655358, 786430, 917502, 1048574, 1179646, 1310718, 1441790, 1572862, 1703934,
-	1835006, 1966078, 2097150 };
-
-const int32_t lzx_base_position[ 51 ] = {
-	0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
-	256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384, 24576, 32768, 49152,
-	65536, 98304, 131072, 196608, 262144, 393216, 524288, 655360, 786432, 917504, 1048576, 1179648, 1310720, 1441792, 1572864, 1703936,
-	1835008, 1966080, 2097152 };
+	1835006, 1966078 };
 
 const uint8_t lzx_number_of_footer_bits[ 50 ] = {
 	0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
@@ -488,14 +485,14 @@ int lzx_build_aligned_offsets_huffman_tree(
      huffman_tree_t *huffman_tree,
      libcerror_error_t **error )
 {
-	uint8_t code_size_array[ 256 ];
+	uint8_t code_size_array[ 8 ];
 
 	static char *function = "lzx_build_aligned_offsets_huffman_tree";
 	uint32_t code_size    = 0;
 	int code_size_index   = 0;
 
 	for( code_size_index = 0;
-	     code_size_index < 256;
+	     code_size_index < 8;
 	     code_size_index++ )
 	{
 		if( bit_stream_get_value(
@@ -516,7 +513,7 @@ int lzx_build_aligned_offsets_huffman_tree(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: code size: % 3d value\t\t\t: %" PRIu32 "\n",
+			 "%s: code size: % 2d value\t\t: %" PRIu32 "\n",
 			 function,
 			 code_size_index,
 			 code_size );
@@ -526,7 +523,7 @@ int lzx_build_aligned_offsets_huffman_tree(
 	if( huffman_tree_build(
 	     huffman_tree,
 	     code_size_array,
-	     256,
+	     8,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -551,7 +548,6 @@ int lzx_decode_huffman(
      huffman_tree_t *lengths_huffman_tree,
      huffman_tree_t *aligned_offsets_huffman_tree,
      uint32_t *recent_compression_offsets,
-     const uint8_t *number_of_footer_bits,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
@@ -687,8 +683,20 @@ int lzx_decode_huffman(
 			}
 			else
 			{
-				number_of_bits = number_of_footer_bits[ compression_offset_slot ];
+				number_of_bits = lzx_number_of_footer_bits[ compression_offset_slot ];
 
+				if( ( aligned_offsets_huffman_tree != NULL )
+				 && ( compression_offset_slot >= 8 ) )
+				{
+					number_of_bits -= 3;
+				}
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+					 "%s: number of footer bits\t\t\t\t: %" PRIu8 "\n",
+					 function,
+					 number_of_bits );
+				}
 				if( bit_stream_get_value(
 				     bit_stream,
 				     number_of_bits,
@@ -708,7 +716,7 @@ int lzx_decode_huffman(
 				 && ( compression_offset_slot >= 8 ) )
 				{
 					if( huffman_tree_get_symbol_from_bit_stream(
-					     main_huffman_tree,
+					     aligned_offsets_huffman_tree,
 					     bit_stream,
 					     &aligned_offset,
 					     error ) != 1 )
@@ -792,6 +800,79 @@ int lzx_decode_huffman(
 	return( 1 );
 }
 
+/* Adjusts the 32-bit Intel 80x86 CALL (0xe8) instructions after decompression
+ * Returns 1 on success or -1 on error
+ */
+int lzx_decompress_adjust_call_instructions(
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     libcerror_error_t **error )
+{
+	static char *function           = "lzx_decompress_adjust_call_instructions";
+	size_t uncompressed_data_offset = 0;
+	int32_t address                 = 0;
+
+	if( uncompressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	for( uncompressed_data_offset = 0;
+	     uncompressed_data_offset < ( uncompressed_data_size - 6 );
+	     uncompressed_data_offset++ )
+	{
+		if( uncompressed_data[ uncompressed_data_offset ] != 0xe8 )
+		{
+			continue;
+		}
+		byte_stream_copy_to_uint32_little_endian(
+		 &( uncompressed_data[ uncompressed_data_offset + 1 ] ),
+		 address );
+
+		if( address >= 0 )
+		{
+			if( address < 12000000 )
+			{
+				address -= uncompressed_data_offset;
+
+				byte_stream_copy_from_uint32_little_endian(
+				 &( uncompressed_data[ uncompressed_data_offset + 1 ] ),
+				 address );
+			}
+		}
+		else
+		{
+			if( address > ( -1 * (int32_t) uncompressed_data_offset ) )
+			{
+				address += 12000000;
+
+				byte_stream_copy_from_uint32_little_endian(
+				 &( uncompressed_data[ uncompressed_data_offset + 1 ] ),
+				 address );
+			}
+		}
+		uncompressed_data_offset += 4;
+	}
+	return( 1 );
+}
+
 /* Decompresses LZX compressed data
  * Returns 1 on success or -1 on error
  */
@@ -808,7 +889,6 @@ int lzx_decompress(
 	huffman_tree_t *aligned_offsets_huffman_tree = NULL;
 	huffman_tree_t *lengths_huffman_tree         = NULL;
 	huffman_tree_t *main_huffman_tree            = NULL;
-	const uint8_t *number_of_footer_bits         = NULL;
 	static char *function                        = "lzx_decompress";
 	size_t uncompressed_data_offset              = 0;
 	uint32_t block_size                          = 0;
@@ -902,7 +982,7 @@ int lzx_decompress(
 			 "%s: unable to retrieve value from bit stream.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( bit_stream_get_value(
 		     bit_stream,
@@ -917,7 +997,7 @@ int lzx_decompress(
 			 "%s: unable to retrieve value from bit stream.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( block_size != 0 )
 		{
@@ -938,7 +1018,7 @@ int lzx_decompress(
 				 "%s: unable to retrieve value from bit stream.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 /* TODO add extended block size support ? */
 		}
@@ -982,8 +1062,6 @@ int lzx_decompress(
 			libcnotify_printf(
 			 "\n" );
 		}
-		number_of_footer_bits = lzx_number_of_footer_bits;
-
 		switch( block_type )
 		{
 			case LZX_BLOCK_TYPE_ALIGNED:
@@ -1016,7 +1094,6 @@ int lzx_decompress(
 
 					goto on_error;
 				}
-/* TODO set number_of_footer_bits */
 
 			LZX_ATTRIBUTE_FALLTHROUGH;
 			case LZX_BLOCK_TYPE_VERBATIM:
@@ -1085,7 +1162,6 @@ int lzx_decompress(
 				     lengths_huffman_tree,
 				     aligned_offsets_huffman_tree,
 				     recent_compression_offsets,
-				     number_of_footer_bits,
 				     uncompressed_data,
 				     *uncompressed_data_size,
 				     &uncompressed_data_offset,
@@ -1145,7 +1221,85 @@ int lzx_decompress(
 				break;
 
 			case LZX_BLOCK_TYPE_UNCOMPRESSED:
-/* TODO read recent_compression_offsets */
+/* TODO read alignment */
+				if( bit_stream_get_value(
+				     bit_stream,
+				     32,
+				     &( recent_compression_offsets[ 0 ] ),
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve R0 value from bit stream.",
+					 function );
+
+					goto on_error;
+				}
+				if( recent_compression_offsets[ 0 ] == 0 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+					 "%s: unsupported R0 value.",
+					 function );
+
+					goto on_error;
+				}
+				if( bit_stream_get_value(
+				     bit_stream,
+				     32,
+				     &( recent_compression_offsets[ 1 ] ),
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve R1 value from bit stream.",
+					 function );
+
+					goto on_error;
+				}
+				if( recent_compression_offsets[ 1 ] == 0 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+					 "%s: unsupported R1 value.",
+					 function );
+
+					goto on_error;
+				}
+				if( bit_stream_get_value(
+				     bit_stream,
+				     32,
+				     &( recent_compression_offsets[ 2 ] ),
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve R2 value from bit stream.",
+					 function );
+
+					goto on_error;
+				}
+				if( recent_compression_offsets[ 2 ] == 0 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+					 "%s: unsupported R2 value.",
+					 function );
+
+					goto on_error;
+				}
 /* TODO implement */
 				break;
 
@@ -1171,6 +1325,20 @@ int lzx_decompress(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 		 "%s: unable to free bit-stream.",
+		 function );
+
+		goto on_error;
+	}
+	if( lzx_decompress_adjust_call_instructions(
+	     uncompressed_data,
+	     uncompressed_data_offset,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to adjust call instructions.",
 		 function );
 
 		goto on_error;

@@ -37,7 +37,6 @@ extern "C" {
  */
 enum LZX_BLOCK_TYPES
 {
-	LZX_BLOCK_TYPE_INVALID		= 0x00,
 	LZX_BLOCK_TYPE_VERBATIM		= 0x01,
 	LZX_BLOCK_TYPE_ALIGNED		= 0x02,
 	LZX_BLOCK_TYPE_UNCOMPRESSED	= 0x03
@@ -71,7 +70,6 @@ int lzx_decode_huffman(
      huffman_tree_t *lengths_huffman_tree,
      huffman_tree_t *aligned_offsets_huffman_tree,
      uint32_t *recent_compression_offsets,
-     const uint8_t *number_of_footer_bits,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,

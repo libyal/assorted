@@ -72,30 +72,24 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcerror_error_t *error                 = NULL;
-	libcfile_file_t *destination_file        = NULL;
-	libcfile_file_t *source_file             = NULL;
-	system_character_t *option_target_path   = NULL;
-	system_character_t *options_string       = NULL;
-	system_character_t *source               = NULL;
-	uint8_t *buffer                          = NULL;
-	uint8_t *uncompressed_data               = NULL;
-	char *program                            = "lzxdecompress";
-	system_integer_t option                  = 0;
-	size64_t source_size                     = 0;
-	size_t buffer_size                       = 0;
-	size_t uncompressed_data_size            = 0;
-	ssize_t read_count                       = 0;
-	ssize_t write_count                      = 0;
-	off_t source_offset                      = 0;
-	int decompression_method                 = 1;
-	int result                               = 0;
-	int verbose                              = 0;
-
-#if defined( WINAPI )
-	void *workspace                          = NULL;
-	unsigned short winapi_compression_method = 0;
-#endif
+	libcerror_error_t *error               = NULL;
+	libcfile_file_t *destination_file      = NULL;
+	libcfile_file_t *source_file           = NULL;
+	system_character_t *option_target_path = NULL;
+	system_character_t *options_string     = NULL;
+	system_character_t *source             = NULL;
+	uint8_t *buffer                        = NULL;
+	uint8_t *uncompressed_data             = NULL;
+	char *program                          = "lzxdecompress";
+	system_integer_t option                = 0;
+	size64_t source_size                   = 0;
+	size_t buffer_size                     = 0;
+	size_t uncompressed_data_size          = 0;
+	ssize_t read_count                     = 0;
+	ssize_t write_count                    = 0;
+	off_t source_offset                    = 0;
+	int result                             = 0;
+	int verbose                            = 0;
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -277,7 +271,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( uncompressed_data_size == 0 )
 	{
-		uncompressed_data_size = 65536;
+		uncompressed_data_size = 32768;
 	}
 	uncompressed_data = (uint8_t *) memory_allocate(
 	                                 sizeof( uint8_t ) * uncompressed_data_size );

@@ -504,10 +504,12 @@ int huffman_tree_get_symbol_from_bit_stream(
 	 */
 	while( bit_stream->bit_buffer_size < huffman_tree->maximum_code_size )
 	{
-		if( bit_stream_read(
-		     bit_stream,
-		     huffman_tree->maximum_code_size,
-		     error ) != 1 )
+		result = bit_stream_read(
+		          bit_stream,
+		          huffman_tree->maximum_code_size,
+		          error );
+
+		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,
@@ -517,6 +519,10 @@ int huffman_tree_get_symbol_from_bit_stream(
 			 function );
 
 			return( -1 );
+		}
+		else if( result == 0 )
+		{
+			break;
 		}
 	}
 	if( huffman_tree->maximum_code_size < bit_stream->bit_buffer_size )
