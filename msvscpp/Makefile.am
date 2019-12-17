@@ -12,7 +12,6 @@ MSVSCPP_FILES = \
 	assorted_test_huffman_tree/assorted_test_huffman_tree.vcproj \
 	assorted_test_lzfu/assorted_test_lzfu.vcproj \
 	assorted_test_lzvn/assorted_test_lzvn.vcproj \
-	assorted_test_lzx/assorted_test_lzx.vcproj \
 	assorted_test_xor32/assorted_test_xor32.vcproj \
 	assorted_test_xor64/assorted_test_xor64.vcproj \
 	crc32sum/crc32sum.vcproj \

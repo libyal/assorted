@@ -146,7 +146,6 @@ stamp-h[1-9]
 /tests/assorted_test_huffman_tree
 /tests/assorted_test_lzfu
 /tests/assorted_test_lzvn
-/tests/assorted_test_lzx
 /tests/assorted_test_xor32
 /tests/assorted_test_xor64
 /tests/input

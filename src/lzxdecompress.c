@@ -33,8 +33,8 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
+#include "assorted_libfwnt.h"
 #include "assorted_output.h"
-#include "lzx.h"
 
 /* Prints the executable usage information
  */
@@ -343,7 +343,7 @@ int main( int argc, char * const argv[] )
 		 source_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
-	result = lzx_decompress(
+	result = libfwnt_lzx_decompress(
 	          buffer,
 	          (size_t) source_size,
 	          uncompressed_data,

@@ -60,7 +60,7 @@ int huffman_tree_free(
      libcerror_error_t **error );
 
 int huffman_tree_build(
-     huffman_tree_t *tree,
+     huffman_tree_t *huffman_tree,
      const uint8_t *code_sizes_array,
      int number_of_code_sizes,
      libcerror_error_t **error );

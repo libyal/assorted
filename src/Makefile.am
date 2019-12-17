@@ -196,13 +196,12 @@ lzxdecompress_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
+	assorted_libfwnt.h \
 	assorted_output.c assorted_output.h \
-	bit_stream.c bit_stream.h \
-	huffman_tree.c huffman_tree.h \
-	lzx.c lzx.h \
 	lzxdecompress.c
 
 lzxdecompress_LDADD = \
+	@LIBFWNT_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
