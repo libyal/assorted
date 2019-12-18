@@ -198,6 +198,9 @@ lzxdecompress_SOURCES = \
 	assorted_libcnotify.h \
 	assorted_libfwnt.h \
 	assorted_output.c assorted_output.h \
+	assorted_signal.c assorted_signal.h \
+	assorted_unused.h \
+	decompression_handle.c decompression_handle.h \
 	lzxdecompress.c
 
 lzxdecompress_LDADD = \

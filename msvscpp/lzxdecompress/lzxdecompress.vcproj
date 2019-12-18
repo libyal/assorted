@@ -184,6 +184,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\assorted_signal.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\decompression_handle.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\lzxdecompress.c"
 				>
 			</File>
@@ -219,6 +227,18 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_signal.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_unused.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\decompression_handle.h"
 				>
 			</File>
 		</Filter>

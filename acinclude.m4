@@ -4,7 +4,7 @@ dnl Version: 20190317
 
 dnl Function to detect if assorted tools dependencies are available
 AC_DEFUN([AX_ASSORTED_TOOLS_CHECK_LOCAL],
-  [AC_CHECK_HEADERS([math.h])
+  [AC_CHECK_HEADERS([signal.h sys/signal.h math.h unistd.h])
 
   AC_CHECK_LIB(
     m,

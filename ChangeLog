@@ -1,4 +1,5 @@
 TODO
+* create decompress handle for decompression tools
 * add tests for mssearchdecode.c
 
 * create xor tool that will byte-wise xor a file using a "key"
