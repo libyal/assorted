@@ -59,7 +59,7 @@ run_test_with_input()
 		return ${EXIT_IGNORE};
 	fi
 
-	local TEST_PROFILE_DIRECTORY=$(get_test_profile_directory "input" "libassorted");
+	local TEST_PROFILE_DIRECTORY=$(get_test_profile_directory "input" "assorted");
 
 	local IGNORE_LIST=$(read_ignore_list "${TEST_PROFILE_DIRECTORY}");
 

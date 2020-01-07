@@ -1,7 +1,7 @@
 /*
  * Bit-stream functions
  *
- * Copyright (C) 2008-2019, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2020, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -146,7 +146,6 @@ int bit_stream_read(
      libcerror_error_t **error )
 {
 	static char *function          = "bit_stream_read";
-	uint32_t bits                  = 0;
 	uint8_t minimum_number_of_bits = 0;
 	int result                     = 0;
 
@@ -190,10 +189,7 @@ int bit_stream_read(
 		}
 		if( bit_stream->storage_type == BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
 		{
-			bits   = bit_stream->byte_stream[ bit_stream->byte_stream_offset ];
-			bits <<= bit_stream->bit_buffer_size;
-
-			bit_stream->bit_buffer      |= bits;
+			bit_stream->bit_buffer      |= (uint32_t) bit_stream->byte_stream[ bit_stream->byte_stream_offset ] << bit_stream->bit_buffer_size;
 			bit_stream->bit_buffer_size += 8;
 
 			bit_stream->byte_stream_offset += 1;

@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\../src/crc32.c"
+				RelativePath="..\..\src\crc32.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\../src/lzfu.c"
+				RelativePath="..\..\src\lzfu.c"
 				>
 			</File>
 			<File
@@ -194,11 +194,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\tests\../src/crc32.h"
+				RelativePath="..\..\src\crc32.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\../src/lzfu.h"
+				RelativePath="..\..\src\lzfu.h"
 				>
 			</File>
 			<File
