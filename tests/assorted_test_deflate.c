@@ -1523,10 +1523,10 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the deflate_decompress function
+/* Tests the deflate_decompress_zlib function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_deflate_decompress(
+int assorted_test_deflate_decompress_zlib(
      void )
 {
 	uint8_t uncompressed_data[ 8192 ];
@@ -1537,7 +1537,7 @@ int assorted_test_deflate_decompress(
 
 	/* Test regular cases
 	 */
-	result = deflate_decompress(
+	result = deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_byte_stream,
 	          2627,
 	          uncompressed_data,
@@ -1562,7 +1562,7 @@ int assorted_test_deflate_decompress(
 
 	/* Test error cases
 	 */
-	result = deflate_decompress(
+	result = deflate_decompress_zlib(
 	          NULL,
 	          2627,
 	          uncompressed_data,
@@ -1581,7 +1581,7 @@ int assorted_test_deflate_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress(
+	result = deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_byte_stream,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
@@ -1600,7 +1600,7 @@ int assorted_test_deflate_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress(
+	result = deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_byte_stream,
 	          2627,
 	          NULL,
@@ -1619,7 +1619,7 @@ int assorted_test_deflate_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress(
+	result = deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_byte_stream,
 	          2627,
 	          uncompressed_data,
@@ -1687,9 +1687,14 @@ int main(
 	 "deflate_calculate_adler32",
 	 assorted_test_deflate_calculate_adler32 );
 
+/* TODO add tests for deflate_read_data_header */
+/* TODO add tests for deflate_read_block_header */
+/* TODO add tests for deflate_read_block */
+/* TODO add tests for deflate_decompress */
+
 	ASSORTED_TEST_RUN(
-	 "deflate_decompress",
-	 assorted_test_deflate_decompress );
+	 "deflate_decompress_zlib",
+	 assorted_test_deflate_decompress_zlib );
 
 #endif /* defined( __GNUC__ ) */
 

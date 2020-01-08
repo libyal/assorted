@@ -78,7 +78,36 @@ int deflate_compress(
      size_t *compressed_data_size,
      libcerror_error_t **error );
 
+int deflate_read_data_header(
+     const uint8_t *compressed_data,
+     size_t compressed_data_size,
+     size_t *compressed_data_offset,
+     libcerror_error_t **error );
+
+int deflate_read_block_header(
+     bit_stream_t *bit_stream,
+     uint8_t *block_type,
+     uint8_t *last_block_flag,
+     libcerror_error_t **error );
+
+int deflate_read_block(
+     bit_stream_t *bit_stream,
+     uint8_t block_type,
+     huffman_tree_t *literals_huffman_tree,
+     huffman_tree_t *distances_huffman_tree,
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
+     libcerror_error_t **error );
+
 int deflate_decompress(
+     const uint8_t *compressed_data,
+     size_t compressed_data_size,
+     uint8_t *uncompressed_data,
+     size_t *uncompressed_data_size,
+     libcerror_error_t **error );
+
+int deflate_decompress_zlib(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,

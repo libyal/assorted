@@ -331,7 +331,7 @@ int main( int argc, char * const argv[] )
 	}
 	else if( decompression_method == 2 )
 	{
-		if( deflate_decompress(
+		if( deflate_decompress_zlib(
 		     buffer,
 		     source_size,
 		     uncompressed_data,
