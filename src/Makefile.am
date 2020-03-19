@@ -19,6 +19,7 @@ AM_LDFLAGS = @STATIC_LDFLAGS@
 bin_PROGRAMS = \
 	adler32sum \
 	ascii7decompress \
+	banalyze \
 	crc32sum \
 	crc64sum \
 	fletcher32sum \
@@ -63,6 +64,21 @@ ascii7decompress_SOURCES = \
 	assorted_output.c assorted_output.h
 
 ascii7decompress_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+banalyze_SOURCES = \
+	banalyze.c \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcnotify.h \
+	assorted_output.c assorted_output.h
+
+banalyze_LDADD = \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
