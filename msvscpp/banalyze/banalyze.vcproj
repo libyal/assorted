@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="zcompress"
-	ProjectGUID="{EF7C4661-0CE1-4F25-8702-8F15C5D20FFB}"
-	RootNamespace="zcompress"
+	Name="banalyze"
+	ProjectGUID="{999CD443-3419-4544-9B15-89DCB94E85F0}"
+	RootNamespace="banalyze"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -184,19 +184,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\bit_stream.c"
+				RelativePath="..\..\src\banalyze.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\deflate.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\huffman_tree.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\zcompress.c"
+				RelativePath="..\..\src\digest_hash.c"
 				>
 			</File>
 		</Filter>
@@ -218,11 +210,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcfile.h"
+				RelativePath="..\..\src\assorted_libcnotify.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcnotify.h"
+				RelativePath="..\..\src\assorted_libhmac.h"
 				>
 			</File>
 			<File
@@ -230,15 +222,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\bit_stream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\deflate.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\huffman_tree.h"
+				RelativePath="..\..\src\digest_hash.h"
 				>
 			</File>
 		</Filter>

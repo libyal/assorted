@@ -118,6 +118,7 @@ stamp-h[1-9]
 /src/*.exe
 /src/adler32sum
 /src/ascii7decompress
+/src/banalyze
 /src/crc32sum
 /src/crc64sum
 /src/fletcher32sum

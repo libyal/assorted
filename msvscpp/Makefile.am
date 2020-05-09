@@ -14,6 +14,7 @@ MSVSCPP_FILES = \
 	assorted_test_lzvn/assorted_test_lzvn.vcproj \
 	assorted_test_xor32/assorted_test_xor32.vcproj \
 	assorted_test_xor64/assorted_test_xor64.vcproj \
+	banalyze/banalyze.vcproj \
 	crc32sum/crc32sum.vcproj \
 	crc64sum/crc64sum.vcproj \
 	fletcher32sum/fletcher32sum.vcproj \

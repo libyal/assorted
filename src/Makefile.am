@@ -10,9 +10,11 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBFCRYPTO_CPPFLAGS@ \
 	@LIBFWNT_CPPFLAGS@ \
-	@LIBHMAC_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
-	@BZIP2_CPPFLAGS@
+	@BZIP2_CPPFLAGS@ \
+	@LIBCRYPTO_CPPFLAGS@ \
+	@LIBHMAC_CPPFLAGS@ \
+	@PTHREAD_CPPFLAGS@
 
 AM_LDFLAGS = @STATIC_LDFLAGS@
 
@@ -71,19 +73,25 @@ ascii7decompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 banalyze_SOURCES = \
-	banalyze.c \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcnotify.h \
-	assorted_output.c assorted_output.h
+	assorted_libhmac.h \
+	assorted_output.c assorted_output.h \
+	banalyze.c \
+	digest_hash.c digest_hash.h
 
 banalyze_LDADD = \
+	@LIBHMAC_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBCRYPTO_LIBADD@ \
+	@LIBDL_LIBADD@ \
+	@PTHREAD_LIBADD@
 
 crc32sum_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \

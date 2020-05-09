@@ -36,7 +36,11 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
+#include "assorted_libhmac.h"
 #include "assorted_output.h"
+#include "digest_hash.h"
+
+#define DIGEST_HASH_STRING_SIZE_MD5	33
 
 /* Prints the executable usage information
  */
@@ -49,10 +53,12 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use banalyze to analyze blocks of data.\n\n" );
 
-	fprintf( stream, "Usage: banalyze [-b block_size] [-hvV] source\n\n" );
+	fprintf( stream, "Usage: banalyze [-b block_size] [-12hvV] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
+	fprintf( stream, "\t-1:     calculate block entropy (default)\n" );
+	fprintf( stream, "\t-2:     calculate block message digest hashes\n" );
 	fprintf( stream, "\t-b:     specify the block size (default is: 512)\n" );
 	fprintf( stream, "\t-h:     shows this usage information\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
@@ -166,7 +172,11 @@ int banalyze_calculate_byte_entropy(
 			entropy    += probability * ( log( probability ) / log( 2 ) );
 		}
 	}
-	*byte_entropy = -1.0 * entropy;
+	if( entropy < 0.0 )
+	{
+		entropy *= -1.0;
+	}
+	*byte_entropy = entropy;
 
 	return( 1 );
 }
@@ -175,50 +185,101 @@ int banalyze_calculate_byte_entropy(
  * Returns 1 if successful or -1 on error
  */
 int banalyze_analyze_block(
+     int analysis_method,
      const uint8_t *block_buffer,
      size_t block_size,
      libcerror_error_t **error )
 {
 	uint64_t distribution_table[ 256 ];
+	uint8_t md5_hash[ LIBHMAC_MD5_HASH_SIZE ];
+	system_character_t md5_hash_string[ DIGEST_HASH_STRING_SIZE_MD5 ];
 
 	static char *function = "banalyze_analyze_block";
 	double entropy        = 0.0;
 
-	if( banalyze_determine_byte_distribution(
-	     block_buffer,
-	     block_size,
-	     distribution_table,
-	     error ) != 1 )
+	switch( analysis_method )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine byte distribution.",
-		 function );
+		case 1:
+			if( banalyze_determine_byte_distribution(
+			     block_buffer,
+			     block_size,
+			     distribution_table,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to determine byte distribution.",
+				 function );
 
-		return( -1 );
+				return( -1 );
+			}
+			if( banalyze_calculate_byte_entropy(
+			     block_size,
+			     distribution_table,
+			     &entropy,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to calculate byte entropy.",
+				 function );
+
+				return( -1 );
+			}
+			fprintf(
+			 stdout,
+			 "banalyze_analyze_block: byte entropy:\t%f\n",
+			 entropy );
+
+			break;
+
+		case 2:
+			if( libhmac_md5_calculate(
+			     block_buffer,
+			     block_size,
+			     md5_hash,
+			     LIBHMAC_MD5_HASH_SIZE,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to calculate MD5.",
+				 function );
+
+				return( -1 );
+			}
+			if( digest_hash_copy_to_string(
+			     md5_hash,
+			     LIBHMAC_MD5_HASH_SIZE,
+			     md5_hash_string,
+			     DIGEST_HASH_STRING_SIZE_MD5,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to set MD5 hash string.",
+				 function );
+
+				return( -1 );
+			}
+			fprintf(
+			 stdout,
+			 "banalyze_analyze_block: MD5:\t%" PRIs_SYSTEM "\n",
+			 md5_hash_string );
+
+			break;
+
+		default:
+			break;
 	}
-	if( banalyze_calculate_byte_entropy(
-	     block_size,
-	     distribution_table,
-	     &entropy,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to calculate byte entropy.",
-		 function );
-
-		return( -1 );
-	}
-	fprintf(
-	 stdout,
-	 "banalyze_analyze_block: byte entropy:\t%f.\n",
-	 entropy );
-
 	return( 1 );
 }
 
@@ -241,6 +302,7 @@ int main( int argc, char * const argv[] )
 	size_t buffer_size           = 0;
 	ssize_t read_count           = 0;
 	off_t source_offset          = 0;
+	int analysis_method          = 1;
 	int verbose                  = 0;
 
 	assorted_output_version_fprint(
@@ -250,7 +312,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = assorted_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "b:hvV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "12b:hvV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -266,6 +328,16 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_FAILURE );
 
+
+			case '1':
+				analysis_method = 1;
+
+				break;
+
+			case '2':
+				analysis_method = 2;
+
+				break;
 			case 'b':
 				block_size = atol( optarg );
 
@@ -423,6 +495,7 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 		if( banalyze_analyze_block(
+		     analysis_method,
 		     buffer,
 		     buffer_size,
 		     &error ) != 1 )
