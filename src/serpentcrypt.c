@@ -233,13 +233,19 @@ int main( int argc, char * const argv[] )
 				break;
 
 			case (system_integer_t) 'o':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_offset = _wtol( optarg );
+#else
 				source_offset = atol( optarg );
-
+#endif
 				break;
 
 			case (system_integer_t) 's':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_size = _wtol( optarg );
+#else
 				source_size = atol( optarg );
-
+#endif
 				break;
 
 			case (system_integer_t) 't':

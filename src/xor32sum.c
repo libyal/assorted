@@ -127,18 +127,27 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case 'i':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				initial_value = _wtol( optarg );
+#else
 				initial_value = atol( optarg );
-
+#endif
 				break;
 
 			case 'o':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_offset = _wtol( optarg );
+#else
 				source_offset = atol( optarg );
-
+#endif
 				break;
 
 			case 's':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_size = _wtol( optarg );
+#else
 				source_size = atol( optarg );
-
+#endif
 				break;
 
 			case 'v':

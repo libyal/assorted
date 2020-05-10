@@ -160,18 +160,27 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case 'l':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				compression_level = _wtol( optarg );
+#else
 				compression_level = atol( optarg );
-
+#endif
 				break;
 
 			case 'o':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_offset = _wtol( optarg );
+#else
 				source_offset = atol( optarg );
-
+#endif
 				break;
 
 			case 's':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_size = _wtol( optarg );
+#else
 				source_size = atol( optarg );
-
+#endif
 				break;
 
 			case 'v':

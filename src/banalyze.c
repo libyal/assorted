@@ -345,9 +345,13 @@ int main( int argc, char * const argv[] )
 				analysis_method = 2;
 
 				break;
-			case 'b':
-				block_size = atol( optarg );
 
+			case 'b':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				block_size = _wtol( optarg );
+#else
+				block_size = atol( optarg );
+#endif
 				break;
 
 			case 'h':

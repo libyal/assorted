@@ -4,6 +4,7 @@ TODO
 * msvscpp build
 ** fix missing VERSION
 ** remove ASSORTED_DLL_IMPORT from msvscpp files
+** fix autogen.ps1
 
 * create xor tool that will byte-wise xor a file using a "key"
 * create equivalent of sigfind that is more powerful
