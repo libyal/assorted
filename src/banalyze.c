@@ -188,6 +188,7 @@ int banalyze_analyze_block(
      int analysis_method,
      const uint8_t *block_buffer,
      size_t block_size,
+     off64_t block_offset,
      libcerror_error_t **error )
 {
 	uint64_t distribution_table[ 256 ];
@@ -232,7 +233,9 @@ int banalyze_analyze_block(
 			}
 			fprintf(
 			 stdout,
-			 "banalyze_analyze_block: byte entropy:\t%f\n",
+			 "block 0x%08" PRIx64 " - 0x%08" PRIx64 ": byte entropy: %f\n",
+			 block_offset,
+			 block_offset + block_size,
 			 entropy );
 
 			break;
@@ -272,7 +275,9 @@ int banalyze_analyze_block(
 			}
 			fprintf(
 			 stdout,
-			 "banalyze_analyze_block: MD5:\t%" PRIs_SYSTEM "\n",
+			 "block 0x%08" PRIx64 " - 0x%08" PRIx64 ": MD5: %" PRIs_SYSTEM "\n",
+			 block_offset,
+			 block_offset + block_size,
 			 md5_hash_string );
 
 			break;
@@ -480,6 +485,20 @@ int main( int argc, char * const argv[] )
 
 	while( (size64_t) source_offset < source_size )
 	{
+		/* Clear buffer before read since in some cases like volsnap.sys
+		 * read will return successful without actually filling the buffer
+		 */
+		if( memory_set(
+		     buffer,
+		     0,
+		     buffer_size ) == NULL )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to clear read buffer.\n" );
+
+			goto on_error;
+		}
 		read_count = libcfile_file_read_buffer(
 			      source_file,
 			      buffer,
@@ -498,6 +517,7 @@ int main( int argc, char * const argv[] )
 		     analysis_method,
 		     buffer,
 		     buffer_size,
+		     source_offset,
 		     &error ) != 1 )
 		{
 			fprintf(
