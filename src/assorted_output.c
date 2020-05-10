@@ -74,7 +74,7 @@ void assorted_output_version_fprint(
         fprintf(
 	 stream,
 	 "%s %s\n\n",
-         program,
+	 program,
 	 VERSION );
 }
 

@@ -1,6 +1,9 @@
 TODO
 * create decompress handle for decompression tools
 * add tests for mssearchdecode.c
+* msvscpp build
+** fix missing VERSION
+** remove ASSORTED_DLL_IMPORT from msvscpp files
 
 * create xor tool that will byte-wise xor a file using a "key"
 * create equivalent of sigfind that is more powerful

@@ -80,6 +80,7 @@ int main( int argc, char * const argv[] )
 	off_t source_offset          = 0;
 	uint32_t fletcher32          = 0;
 	uint32_t previous_key        = 0;
+	int result                   = 0;
 	int verbose                  = 0;
 
 	assorted_output_version_fprint(
@@ -196,11 +197,20 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libcfile_file_open(
-	     source_file,
-	     source,
-	     LIBCFILE_OPEN_READ,
-	     &error ) != 1 )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libcfile_file_open_wide(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#else
+	result = libcfile_file_open(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#endif
+ 	if( result != 1 )
 	{
 		fprintf(
 		 stderr,

@@ -189,6 +189,7 @@ int main( int argc, char * const argv[] )
 	ssize_t read_count                     = 0;
 	ssize_t write_count                    = 0;
 	off_t source_offset                    = 0;
+	int result                             = 0;
 	int verbose                            = 0;
 
 	libcnotify_stream_set(
@@ -300,11 +301,20 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libcfile_file_open(
-	     source_file,
-	     source,
-	     LIBCFILE_OPEN_READ,
-	     &error ) != 1 )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libcfile_file_open_wide(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#else
+	result = libcfile_file_open(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#endif
+ 	if( result != 1 )
 	{
 		fprintf(
 		 stderr,
@@ -505,11 +515,20 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		if( libcfile_file_open(
-		     destination_file,
-		     option_target_path,
-		     LIBCFILE_OPEN_WRITE,
-		     &error ) != 1 )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libcfile_file_open_wide(
+		          destination_file,
+		          option_target_path,
+		          LIBCFILE_OPEN_WRITE,
+		          &error );
+#else
+		result = libcfile_file_open(
+		          destination_file,
+		          option_target_path,
+		          LIBCFILE_OPEN_WRITE,
+		          &error );
+#endif
+	 	if( result != 1 )
 		{
 			fprintf(
 			 stderr,

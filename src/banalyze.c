@@ -305,9 +305,11 @@ int main( int argc, char * const argv[] )
 	size64_t block_size          = 512;
 	size64_t source_size         = 0;
 	size_t buffer_size           = 0;
+	size_t read_size             = 0;
 	ssize_t read_count           = 0;
 	off_t source_offset          = 0;
 	int analysis_method          = 1;
+	int result                   = 0;
 	int verbose                  = 0;
 
 	assorted_output_version_fprint(
@@ -397,11 +399,20 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libcfile_file_open(
-	     source_file,
-	     source,
-	     LIBCFILE_OPEN_READ,
-	     &error ) != 1 )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libcfile_file_open_wide(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#else
+	result = libcfile_file_open(
+	          source_file,
+	          source,
+	          LIBCFILE_OPEN_READ,
+	          &error );
+#endif
+ 	if( result != 1 )
 	{
 		fprintf(
 		 stderr,
@@ -499,13 +510,19 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
+		read_size = buffer_size;
+
+		if( read_size > ( source_size - source_offset ) )
+		{
+			read_size = (size_t) ( source_size - source_offset );
+		}
 		read_count = libcfile_file_read_buffer(
 			      source_file,
 			      buffer,
-			      buffer_size,
+			      read_size,
 		              &error );
 
-		if( read_count != (ssize_t) buffer_size )
+		if( read_count != (ssize_t) read_size )
 		{
 			fprintf(
 			 stderr,
@@ -516,7 +533,7 @@ int main( int argc, char * const argv[] )
 		if( banalyze_analyze_block(
 		     analysis_method,
 		     buffer,
-		     buffer_size,
+		     read_size,
 		     source_offset,
 		     &error ) != 1 )
 		{
@@ -526,7 +543,7 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		source_offset += buffer_size;
+		source_offset += read_size;
 	}
 	/* Clean up
 	 */
