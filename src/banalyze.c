@@ -53,7 +53,7 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use banalyze to analyze blocks of data.\n\n" );
 
-	fprintf( stream, "Usage: banalyze [-b block_size] [-12hvV] source\n\n" );
+	fprintf( stream, "Usage: banalyze [-b block_size] [ -o offset ] [ -s size ] [-12hvV] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
@@ -61,6 +61,8 @@ void usage_fprint(
 	fprintf( stream, "\t-2:     calculate block message digest hashes\n" );
 	fprintf( stream, "\t-b:     specify the block size (default is: 512)\n" );
 	fprintf( stream, "\t-h:     shows this usage information\n" );
+	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
+	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
 	fprintf( stream, "\t-V:     print version\n" );
 	fprintf( stream, "\n" );
@@ -307,7 +309,7 @@ int main( int argc, char * const argv[] )
 	size_t buffer_size           = 0;
 	size_t read_size             = 0;
 	ssize_t read_count           = 0;
-	off_t source_offset          = 0;
+	off64_t source_offset        = 0;
 	int analysis_method          = 1;
 	int result                   = 0;
 	int verbose                  = 0;
@@ -319,7 +321,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = assorted_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "12b:hvV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "12b:ho:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -359,6 +361,23 @@ int main( int argc, char * const argv[] )
 				 stdout );
 
 				return( EXIT_SUCCESS );
+
+			case 'o':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_offset = _wtol( optarg );
+#else
+				source_offset = atol( optarg );
+#endif
+				break;
+
+			case 's':
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				source_size = _wtol( optarg );
+#else
+				source_size = atol( optarg );
+#endif
+				break;
+
 
 			case 'v':
 				verbose = 1;
@@ -493,7 +512,7 @@ int main( int argc, char * const argv[] )
 	}
 	fprintf(
 	 stdout,
-	 "Starting block analysis of: %" PRIs_SYSTEM " at offset: %" PRIjd " (0x%08" PRIjx ").\n",
+	 "Starting block analysis of: %" PRIs_SYSTEM " at offset: %" PRIi64 " (0x%08" PRIx64 ").\n",
 	 source,
 	 source_offset,
 	 source_offset );
