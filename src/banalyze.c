@@ -53,7 +53,7 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use banalyze to analyze blocks of data.\n\n" );
 
-	fprintf( stream, "Usage: banalyze [-b block_size] [ -o offset ] [ -s size ] [-12hvV] source\n\n" );
+	fprintf( stream, "Usage: banalyze [-b block_size] [ -o offset ] [ -s size ] [-12hrvV] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
@@ -62,6 +62,8 @@ void usage_fprint(
 	fprintf( stream, "\t-b:     specify the block size (default is: 512)\n" );
 	fprintf( stream, "\t-h:     shows this usage information\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
+	fprintf( stream, "\t-r:     output the offset relative from the data offset instead of the data\n"
+	                 "\t        offset.\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
 	fprintf( stream, "\t-V:     print version\n" );
@@ -309,8 +311,10 @@ int main( int argc, char * const argv[] )
 	size_t buffer_size           = 0;
 	size_t read_size             = 0;
 	ssize_t read_count           = 0;
+	off64_t block_offset         = 0;
 	off64_t source_offset        = 0;
 	int analysis_method          = 1;
+	int output_relative_offset   = 0;
 	int result                   = 0;
 	int verbose                  = 0;
 
@@ -321,7 +325,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = assorted_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "12b:ho:s:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "12b:ho:rs:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -368,6 +372,11 @@ int main( int argc, char * const argv[] )
 #else
 				source_offset = atol( optarg );
 #endif
+				break;
+
+			case 'r':
+				output_relative_offset = 1;
+
 				break;
 
 			case 's':
@@ -517,7 +526,7 @@ int main( int argc, char * const argv[] )
 	 source_offset,
 	 source_offset );
 
-	while( (size64_t) source_offset < source_size )
+	while( (size64_t) block_offset < source_size )
 	{
 		/* Clear buffer before read since in some cases like volsnap.sys
 		 * read will return successful without actually filling the buffer
@@ -535,9 +544,9 @@ int main( int argc, char * const argv[] )
 		}
 		read_size = buffer_size;
 
-		if( read_size > ( source_size - source_offset ) )
+		if( read_size > ( source_size - block_offset ) )
 		{
-			read_size = (size_t) ( source_size - source_offset );
+			read_size = (size_t) ( source_size - block_offset );
 		}
 		read_count = libcfile_file_read_buffer(
 			      source_file,
@@ -553,20 +562,35 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		if( banalyze_analyze_block(
-		     analysis_method,
-		     buffer,
-		     read_size,
-		     source_offset,
-		     &error ) != 1 )
+		if( output_relative_offset != 0 )
+		{
+			result = banalyze_analyze_block(
+			          analysis_method,
+			          buffer,
+			          read_size,
+			          block_offset,
+			          &error );
+		}
+		else
+		{
+			result = banalyze_analyze_block(
+			          analysis_method,
+			          buffer,
+			          read_size,
+			          source_offset + block_offset,
+			          &error );
+		}
+		if( result != 1 )
 		{
 			fprintf(
 			 stderr,
-			 "Unable to analyze block.\n" );
+			 "Unable to analyze block at offset: %" PRIi64 " (0x%08" PRIx64 ").\n",
+			 source_offset + block_offset,
+			 source_offset + block_offset );
 
 			goto on_error;
 		}
-		source_offset += read_size;
+		block_offset += read_size;
 	}
 	/* Clean up
 	 */
