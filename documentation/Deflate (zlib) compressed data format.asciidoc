@@ -23,7 +23,7 @@ Analysis of deflate (zlib) compressed data
 == License
 
 ....
-Copyright (C) 2010-2019, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2010-2020, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
 published by the Free Software Foundation; with no Invariant Sections, no
@@ -43,6 +43,7 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.4 | J.B. Metz | February 2016 | Additional changes.
 | 0.0.5 | J.B. Metz | July 2019 | Changes for formatting.
 | 0.0.6 | J.B. Metz | December 2019 | Textual changes.
+| 0.0.7 | J.B. Metz | July 2020 | Textual changes.
 |===
 
 :numbered:
@@ -146,7 +147,7 @@ To determine the corresponding window size:
 
 E.g. a compression information value of 7 indicates a 32768 bytes window size.
 Values larger than 7 are not allowed according to `[RFC1950]` and thus the
-maximum windows size is 32768 bytes.
+maximum window size is 32768 bytes.
 
 === [[compression_level]]Compression level
 
