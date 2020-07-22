@@ -25,6 +25,10 @@
 
 #include "assorted_i18n.h"
 
+#if !defined( VERSION )
+#define VERSION "@VERSION@"
+#endif
+
 /* Prints the copyright information
  */
 void assorted_output_copyright_fprint(

@@ -113,8 +113,8 @@ void usage_fprint(
 	fprintf( stream, "\t-1:     use the LZ77 + DIRECT2 decompression method (default)\n" );
 	fprintf( stream, "\t-2:     use the Huffman decompression method\n" );
 #if defined( WINAPI )
-	fprintf( stream, "\t-2:     use the WINAPI LZ77 + DIRECT2 decompression method\n" );
-	fprintf( stream, "\t-3:     use the WINAPI Huffman decompression method\n" );
+	fprintf( stream, "\t-3:     use the WINAPI LZ77 + DIRECT2 decompression method\n" );
+	fprintf( stream, "\t-4:     use the WINAPI Huffman decompression method\n" );
 #endif
 	fprintf( stream, "\t-d:     size of the decompressed data (default is 65536).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
@@ -492,16 +492,48 @@ int main( int argc, char * const argv[] )
 		memory_free(
 		 workspace );
 
-		if( result != 0 )
-		{
-			result = -1;
-		}
-		else
+		if( result == STATUS_SUCCESS )
 		{
 			result = 1;
 		}
+		else
+		{
+			switch( result )
+			{
+				case STATUS_INVALID_PARAMETER:
+					fprintf(
+					 stderr,
+					 "Invalid parameter.\n" );
+
+					break;
+
+				case STATUS_UNSUPPORTED_COMPRESSION:
+					fprintf(
+					 stderr,
+					 "Unsupported compression.\n" );
+
+					break;
+
+				case STATUS_BAD_COMPRESSION_BUFFER:
+					fprintf(
+					 stderr,
+					 "Bad compression buffer.\n" );
+
+					break;
+
+				default:
+					fprintf(
+					 stderr,
+					 "Unknown error: 0x%08x.\n",
+					 result );
+
+					break;
+			}
+			result = -1;
+		}
 	}
-#endif
+#endif /* defined( WINAPI ) */
+
 	if( result == -1 )
 	{
 		fprintf(
