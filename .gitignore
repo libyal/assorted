@@ -130,6 +130,7 @@ stamp-h[1-9]
 /src/lzxdecompress
 /src/lzxpressdecompress
 /src/mssearchdecode
+/src/plistinfo
 /src/rc4crypt
 /src/serpentcrypt
 /src/xor32sum
@@ -162,6 +163,9 @@ stamp-h[1-9]
 /libcsystem
 /libcthreads
 /libfcrypto
+/libfguid
+/libfplist
+/libfvalue
 /libfwnt
 /libhmac
 /libuna

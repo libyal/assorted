@@ -2,10 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="xor32sum"
-	ProjectGUID="{5ED411A7-C79F-4DC7-A03B-A3AF7BBA3E32}"
-	RootNamespace="xor32sum"
-	Keyword="Win32Proj"
+	Name="libfguid"
+	ProjectGUID="{5DFF2C28-923E-42F7-948A-006B437D7B13}"
+	RootNamespace="libfguid"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -20,9 +19,8 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="4"
 			CharacterSet="1"
-			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,8 +39,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror;..\..\libcthreads;..\..\libcdata;..\..\libclocale;..\..\libcnotify;..\..\libuna;..\..\libcfile;..\..\libfcrypto;..\..\libfguid;..\..\libfvalue;..\..\libfplist;..\..\libfwnt;..\..\..\zlib;..\..\..\bzip2;..\..\libhmac"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBCTHREADS;HAVE_LOCAL_LIBCDATA;HAVE_LOCAL_LIBCLOCALE;HAVE_LOCAL_LIBCNOTIFY;HAVE_LOCAL_LIBUNA;HAVE_LOCAL_LIBCFILE;HAVE_LOCAL_LIBFCRYPTO;HAVE_LOCAL_LIBFGUID;HAVE_LOCAL_LIBFVALUE;HAVE_LOCAL_LIBFPLIST;HAVE_LOCAL_LIBFWNT;ZLIB_DLL;BZ_DLL;HAVE_LOCAL_LIBHMAC;ASSORTED_DLL_IMPORT"
+				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBFGUID"
 				RuntimeLibrary="2"
 				WarningLevel="4"
 				CompileAs="1"
@@ -57,21 +55,13 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;"
-				SubSystem="1"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="2"
-				DataExecutionPrevention="2"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
+				ModuleDefinitionFile=""
+				IgnoreAllDefaultLibraries="false"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -83,9 +73,6 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -93,7 +80,7 @@
 			Name="VSDebug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="4"
 			CharacterSet="1"
 			>
 			<Tool
@@ -114,8 +101,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror;..\..\libcthreads;..\..\libcdata;..\..\libclocale;..\..\libcnotify;..\..\libuna;..\..\libcfile;..\..\libfcrypto;..\..\libfguid;..\..\libfvalue;..\..\libfplist;..\..\libfwnt;..\..\..\zlib;..\..\..\bzip2;..\..\libhmac"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBCTHREADS;HAVE_LOCAL_LIBCDATA;HAVE_LOCAL_LIBCLOCALE;HAVE_LOCAL_LIBCNOTIFY;HAVE_LOCAL_LIBUNA;HAVE_LOCAL_LIBCFILE;HAVE_LOCAL_LIBFCRYPTO;HAVE_LOCAL_LIBFGUID;HAVE_LOCAL_LIBFVALUE;HAVE_LOCAL_LIBFPLIST;HAVE_LOCAL_LIBFWNT;ZLIB_DLL;BZ_DLL;HAVE_LOCAL_LIBHMAC;ASSORTED_DLL_IMPORT"
+				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBFGUID"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
 				RuntimeLibrary="3"
@@ -133,22 +120,13 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;"
-				GenerateDebugInformation="true"
-				SubSystem="1"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="1"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
+				ModuleDefinitionFile=""
+				IgnoreAllDefaultLibraries="false"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -158,9 +136,6 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -176,19 +151,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_getopt.c"
+				RelativePath="..\..\libfguid\libfguid_error.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.c"
+				RelativePath="..\..\libfguid\libfguid_identifier.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\xor32sum.c"
+				RelativePath="..\..\libfguid\libfguid_support.c"
 				>
 			</File>
 		</Filter>
@@ -198,31 +169,35 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_getopt.h"
+				RelativePath="..\..\libfguid\libfguid_definitions.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_i18n.h"
+				RelativePath="..\..\libfguid\libfguid_error.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcerror.h"
+				RelativePath="..\..\libfguid\libfguid_extern.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcfile.h"
+				RelativePath="..\..\libfguid\libfguid_identifier.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcnotify.h"
+				RelativePath="..\..\libfguid\libfguid_libcerror.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.h"
+				RelativePath="..\..\libfguid\libfguid_support.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.h"
+				RelativePath="..\..\libfguid\libfguid_types.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfguid\libfguid_unused.h"
 				>
 			</File>
 		</Filter>

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="xor32sum"
-	ProjectGUID="{5ED411A7-C79F-4DC7-A03B-A3AF7BBA3E32}"
-	RootNamespace="xor32sum"
+	Name="plistinfo"
+	ProjectGUID="{1876BD26-6DDD-4D39-8C4F-D8CD09FD2416}"
+	RootNamespace="plistinfo"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -184,11 +184,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\xor32sum.c"
+				RelativePath="..\..\src\plistinfo.c"
 				>
 			</File>
 		</Filter>
@@ -218,11 +214,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.h"
+				RelativePath="..\..\src\assorted_libfplist.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.h"
+				RelativePath="..\..\src\assorted_libuna.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_output.h"
 				>
 			</File>
 		</Filter>
