@@ -79,13 +79,13 @@ int deflate_build_dynamic_huffman_trees(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of literal codes\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
+		 "%s: number of literal codes\t\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
 		 function,
 		 number_of_literal_codes + 257,
 		 number_of_literal_codes );
 
 		libcnotify_printf(
-		 "%s: number of distance codes\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
+		 "%s: number of distance codes\t\t: %" PRIu32 " (0x%02" PRIx32 ")\n",
 		 function,
 		 number_of_distance_codes + 1,
 		 number_of_distance_codes );
@@ -150,7 +150,7 @@ int deflate_build_dynamic_huffman_trees(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: code size: % 2" PRIu8 "\t\t\t: %" PRIu32 "\n",
+			 "%s: code size: % 3" PRIu8 "\t\t\t: %" PRIu32 "\n",
 			 function,
 			 code_size_sequence,
 			 code_size );
@@ -165,7 +165,7 @@ int deflate_build_dynamic_huffman_trees(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: code size: % 2" PRIu8 "\t\t\t: 0\n",
+			 "%s: code size: % 3" PRIu8 "\t\t\t: 0\n",
 			 function,
 			 code_size_sequence );
 		}
@@ -239,7 +239,7 @@ int deflate_build_dynamic_huffman_trees(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: code size: % 3" PRIu32 " value\t\t\t: %" PRIu32 "\n",
+				 "%s: code size: % 3" PRIu32 " value\t\t: %" PRIu32 "\n",
 				 function,
 				 code_size_index,
 				 symbol );
@@ -334,7 +334,7 @@ int deflate_build_dynamic_huffman_trees(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: times to repeat\t\t: %" PRIu32 "\n",
+			 "%s: times to repeat\t\t\t: %" PRIu32 "\n",
 			 function,
 			 times_to_repeat );
 		}
@@ -354,7 +354,7 @@ int deflate_build_dynamic_huffman_trees(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: code size: % 3" PRIu32 " value\t\t\t: %" PRIu32 "\n",
+				 "%s: code size: % 3" PRIu32 " value\t\t: %" PRIu32 "\n",
 				 function,
 				 code_size_index,
 				 code_size );
@@ -1366,7 +1366,7 @@ int deflate_read_block_header(
 		 *last_block_flag );
 
 		libcnotify_printf(
-		 "%s: block header block type\t\t\t\t: %" PRIu8 " (",
+		 "%s: block header block type\t\t\t: %" PRIu8 " (",
 		 function,
 		 *block_type );
 
