@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [assorted],
- [20200722],
+ [20200803],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -84,6 +84,15 @@ AX_LIBCFILE_CHECK_ENABLE
 dnl Check for enabling libfcrypto for encryption types support
 AX_LIBFCRYPTO_CHECK_ENABLE
 
+dnl Check if libfguid or required headers and functions are available
+AX_LIBFGUID_CHECK_ENABLE
+
+dnl Check if libfvalue or required headers and functions are available
+AX_LIBFVALUE_CHECK_ENABLE
+
+dnl Check if libfplist or required headers and functions are available
+AX_LIBFPLIST_CHECK_ENABLE
+
 dnl Check for enabling libfwnt for file Windows NT type support
 AX_LIBFWNT_CHECK_ENABLE
 
@@ -130,6 +139,9 @@ AC_CONFIG_FILES([libcnotify/Makefile])
 AC_CONFIG_FILES([libuna/Makefile])
 AC_CONFIG_FILES([libcfile/Makefile])
 AC_CONFIG_FILES([libfcrypto/Makefile])
+AC_CONFIG_FILES([libfguid/Makefile])
+AC_CONFIG_FILES([libfvalue/Makefile])
+AC_CONFIG_FILES([libfplist/Makefile])
 AC_CONFIG_FILES([libfwnt/Makefile])
 AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([src/Makefile])
@@ -153,6 +165,9 @@ Building:
    libuna support:                                 $ac_cv_libuna
    libcfile support:                               $ac_cv_libcfile
    libfcrypto support:                             $ac_cv_libfcrypto
+   libfguid support:                               $ac_cv_libfguid
+   libfvalue support:                              $ac_cv_libfvalue
+   libfplist support:                              $ac_cv_libfplist
    libfwnt support:                                $ac_cv_libfwnt
    ADLER32 checksum support:                       $ac_cv_adler32
    DEFLATE compression support:                    $ac_cv_zlib

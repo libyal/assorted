@@ -9,6 +9,9 @@ AM_CPPFLAGS = \
 	@LIBUNA_CPPFLAGS@ \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBFCRYPTO_CPPFLAGS@ \
+	@LIBFGUID_CPPFLAGS@ \
+	@LIBFVALUE_CPPFLAGS@ \
+	@LIBFPLIST_CPPFLAGS@ \
 	@LIBFWNT_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@BZIP2_CPPFLAGS@ \
@@ -32,6 +35,7 @@ bin_PROGRAMS = \
 	lzxdecompress \
 	lzxpressdecompress \
 	mssearchdecode \
+	plistinfo \
 	rc4crypt \
 	serpentcrypt \
 	xor32sum \
@@ -269,6 +273,28 @@ mssearchdecode_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+plistinfo_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libfplist.h \
+	assorted_libuna.h \
+	assorted_output.c assorted_output.h \
+	plistinfo.c
+
+plistinfo_LDADD = \
+	@LIBFPLIST_LIBADD@ \
+	@LIBFVALUE_LIBADD@ \
+	@LIBFGUID_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
 rc4crypt_SOURCES = \
