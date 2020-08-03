@@ -38,6 +38,22 @@
 
 #if defined( WINAPI )
 
+#if !defined( STATUS_SUCCESS )
+#define STATUS_SUCCESS	0x00000000
+#endif
+
+#if !defined( STATUS_INVALID_PARAMETER )
+#define STATUS_INVALID_PARAMETER	0xc000000d
+#endif
+
+#if !defined( STATUS_UNSUPPORTED_COMPRESSION )
+#define STATUS_UNSUPPORTED_COMPRESSION	0xc000025f
+#endif
+
+#if !defined( STATUS_BAD_COMPRESSION_BUFFER )
+#define STATUS_BAD_COMPRESSION_BUFFER	0xc0000242
+#endif
+
 /* Cross Windows safe version of RtlDecompressBufferEx
  * Returns 0 if successful or an error code on error
  */
