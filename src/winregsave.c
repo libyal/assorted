@@ -50,11 +50,13 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use winregsave save a Windows Registry key to a Registry hive file.\n\n" );
 
-	fprintf( stream, "Usage: winregsave [ -hvV ] key_path target\n\n" );
+	fprintf( stream, "Usage: winregsave [ -12hvV ] key_path target\n\n" );
 
 	fprintf( stream, "\tkey_path: the path of the Windows Registry key.\n" );
 	fprintf( stream, "\ttarget:   specify the target file to write the output data.\n\n" );
 
+	fprintf( stream, "\t-1:       write output in REG_STANDARD_FORMAT (default)\n" );
+	fprintf( stream, "\t-2:       write output in REG_LATEST_FORMAT\n" );
 	fprintf( stream, "\t-h:       shows this help\n" );
 	fprintf( stream, "\t-v:       verbose output to stderr\n" );
 	fprintf( stream, "\t-V:       print version\n" );
@@ -78,7 +80,15 @@ int main( int argc, char * const argv[] )
 	int verbose                        = 0;
 
 #if defined( WINAPI )
+	TOKEN_PRIVILEGES priviledges_token;
+	LUID local_identifier;
+
+	HANDLE process_handle              = NULL;
+	HANDLE process_token               = NULL;
 	HKEY key_handle                    = NULL;
+	DWORD disposition                  = 0;
+	DWORD process_identifier           = 0;
+	DWORD save_key_flags               = REG_STANDARD_FORMAT;
 	LONG result                        = 0;
 #endif
 
@@ -86,7 +96,7 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
-	options_string = _SYSTEM_STRING( "hvV" );
+	options_string = _SYSTEM_STRING( "12hvV" );
 
 	while( ( option = assorted_getopt(
 	                   argc,
@@ -106,6 +116,18 @@ int main( int argc, char * const argv[] )
 				 stdout );
 
 				return( EXIT_FAILURE );
+
+			case (system_integer_t) '1':
+#if defined( WINAPI )
+				save_key_flags = REG_STANDARD_FORMAT;
+#endif
+				break;
+
+			case (system_integer_t) '2':
+#if defined( WINAPI )
+				save_key_flags = REG_LATEST_FORMAT;
+#endif
+				break;
 
 			case (system_integer_t) 'h':
 				usage_fprint(
@@ -158,26 +180,121 @@ int main( int argc, char * const argv[] )
 	 verbose );
 
 #if defined( WINAPI )
+	process_identifier = GetCurrentProcessId();
+
+	process_handle = OpenProcess(
+	                  PROCESS_QUERY_INFORMATION,
+	                  FALSE,
+	                  process_identifier );
+
+	if( process_handle == NULL )
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to open process handle." );
+
+		goto on_error;
+	}
+	if( OpenProcessToken(
+	     process_handle,
+	     TOKEN_ADJUST_PRIVILEGES,
+	     &process_token ) == FALSE )
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to open process token." );
+
+		goto on_error;
+	}
+	/* Need SE_BACKUP_NAME priviledge to open key with REG_OPTION_BACKUP_RESTORE
+	 */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	result = RegOpenKeyExW(
+	if( LookupPrivilegeValueW(
+	     NULL,
+	     SE_BACKUP_NAME,
+	     &local_identifier ) == FALSE )
+#else
+	if( LookupPrivilegeValueA(
+	     NULL,
+	     SE_BACKUP_NAME,
+	     &local_identifier ) == FALSE )
+#endif
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to look up SE_BACKUP_NAME priviledge." );
+
+		goto on_error;
+	}
+	priviledges_token.PrivilegeCount           = 1;
+	priviledges_token.Privileges[0].Luid       = local_identifier;
+	priviledges_token.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+	if( AdjustTokenPrivileges(
+	     process_token,
+	     FALSE,
+	     &priviledges_token,
+	     sizeof( TOKEN_PRIVILEGES ),
+	     NULL,
+	     NULL ) == FALSE )
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to enable SE_BACKUP_NAME priviledge." );
+
+		goto on_error;
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = RegCreateKeyExW(
 	          HKEY_CURRENT_USER,
 	          L"TestKey",
 	          0,
-	          KEY_READ,
-	          &key_handle );
+	          NULL,
+	          REG_OPTION_BACKUP_RESTORE,
+	          KEY_READ | ACCESS_SYSTEM_SECURITY,
+	          NULL,
+	          &key_handle,
+	          &disposition );
 #else
-	result = RegOpenKeyExA(
+	result = RegCreateKeyExA(
 	          HKEY_CURRENT_USER,
 	          "TestKey",
 	          0,
-	          KEY_READ,
-	          &key_handle );
+	          NULL,
+	          REG_OPTION_BACKUP_RESTORE,
+	          KEY_READ | ACCESS_SYSTEM_SECURITY,
+	          NULL,
+	          &key_handle,
+	          &disposition );
 #endif
 	if( result != ERROR_SUCCESS )
 	{
-		fprintf(
-		 stderr,
-		 "Unable to open key.\n" );
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to open key." );
 
 		goto on_error;
 	}
@@ -186,19 +303,22 @@ int main( int argc, char * const argv[] )
 	          key_handle,
 	          target_path,
 	          NULL,
-	          REG_STANDARD_FORMAT );
+	          save_key_flags );
 #else
 	result = RegSaveKeyExA(
 	          key_handle,
 	          target_path,
 	          NULL,
-	          REG_STANDARD_FORMAT );
+	          save_key_flags );
 #endif
 	if( result != ERROR_SUCCESS )
 	{
-		fprintf(
-		 stderr,
-		 "Unable to save key to file.\n" );
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to save key to file." );
 
 		goto on_error;
 	}
@@ -214,6 +334,38 @@ int main( int argc, char * const argv[] )
 		goto on_error;
 	}
 	key_handle = NULL;
+
+	if( CloseHandle(
+	     process_token ) == FALSE )
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to close process token." );
+
+		goto on_error;
+	}
+	process_token = NULL;
+
+	if( CloseHandle(
+	     process_handle ) == FALSE )
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to close process handle." );
+
+		goto on_error;
+	}
+	process_handle = NULL;
 
 	return( EXIT_SUCCESS );
 #else
@@ -238,6 +390,16 @@ on_error:
 	{
 		RegCloseKey(
 		 key_handle );
+	}
+	if( process_token != NULL )
+	{
+		 CloseHandle(
+		 process_token );
+	}
+	if( process_handle != NULL )
+	{
+		 CloseHandle(
+		 process_handle );
 	}
 #endif
 	return( EXIT_FAILURE );
