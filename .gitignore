@@ -134,6 +134,7 @@ stamp-h[1-9]
 /src/rc4crypt
 /src/serpentcrypt
 /src/winregsave
+/src/winshelllink
 /src/xor32sum
 /src/xor64sum
 /src/zcompress
