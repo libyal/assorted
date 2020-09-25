@@ -64,6 +64,445 @@ void usage_fprint(
 	fprintf( stream, "\n" );
 }
 
+#if defined( WINAPI )
+
+/* Prints the executable usage information
+ */
+int winshellfolder_print_shell_folder(
+     IShellFolder *shell_folder,
+     libcerror_error_t **error )
+{
+	system_character_t display_name_string[ MAX_PATH ];
+	SHDESCRIPTIONID description;
+	STRRET display_name_shell_string;
+
+	IShellFolder *first_folder          = NULL;
+	ITEMIDLIST *item_list               = NULL;
+	ITEMIDLIST *program_files_item_list = NULL;
+	system_character_t *guid_string     = NULL;
+	static char *function               = "winshellfolder_print_shell_folder";
+	ULONG attributes                    = 0;
+	LPENUMIDLIST enumeration_list       = NULL;
+	ULONG number_of_elements            = 0;
+	HRESULT result                      = 0;
+
+	if( shell_folder == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid shell folder.",
+		 function );
+
+		return( -1 );
+	}
+	result = shell_folder->lpVtbl->EnumObjects(
+	          shell_folder,
+	          NULL,
+	          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS,
+	          &enumeration_list );
+
+	if( FAILED( result ) )
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to create enumeration list." );
+
+		goto on_error;
+	}
+	while( ( enumeration_list->lpVtbl->Next(
+	          enumeration_list,
+	          1,
+	          &item_list,
+	          &number_of_elements ) == S_OK )
+	    && ( number_of_elements == 1 ) )
+	{
+		result = shell_folder->lpVtbl->GetDisplayNameOf(
+		          shell_folder,
+		          item_list,
+		          SHGDN_INFOLDER,
+		          &display_name_shell_string );
+
+		if( FAILED( result ) )
+		{
+			result = GetLastError();
+
+			libcerror_system_set_error(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 (uint32_t) result,
+			 "unable to retrieve display name." );
+
+			goto on_error;
+		}
+		result = StrRetToBuf(
+		          &display_name_shell_string,
+		          item_list,
+		          display_name_string,
+		          MAX_PATH );
+
+		if( FAILED( result ) )
+		{
+			result = GetLastError();
+
+			libcerror_system_set_error(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 (uint32_t) result,
+			 "unable to convert display name to string." );
+
+			goto on_error;
+		}
+		result = SHGetDataFromIDListA(
+		          shell_folder,
+		          item_list,
+		          SHGDFIL_DESCRIPTIONID,
+		          &description,
+		          sizeof( SHDESCRIPTIONID ) );
+
+		libcnotify_printf(
+		 "Display name\t\t: %" PRIs_SYSTEM "\n",
+		 display_name_string );
+
+		libcnotify_printf(
+		 "Shell item type\t\t: %d",
+		 description.dwDescriptionId );
+
+		switch( description.dwDescriptionId )
+		{
+			case 1:
+				libcnotify_printf(
+				 " (SHDID_ROOT_REGITEM)" );
+				break;
+
+			case 2:
+				libcnotify_printf(
+				 " (SHDID_FS_FILE)" );
+				break;
+
+			case 3:
+				libcnotify_printf(
+				 " (SHDID_FS_DIRECTORY)" );
+				break;
+
+			case 4:
+				libcnotify_printf(
+				 " (SHDID_FS_OTHER)" );
+				break;
+
+			case 5:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_DRIVE35)" );
+				break;
+
+			case 6:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_DRIVE525)" );
+				break;
+
+			case 7:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_REMOVABLE)" );
+				break;
+
+			case 8:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_FIXED)" );
+				break;
+
+			case 9:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_NETDRIVE)" );
+				break;
+
+			case 10:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_CDROM)" );
+				break;
+
+			case 11:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_RAMDISK)" );
+				break;
+
+			case 12:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_OTHER)" );
+				break;
+
+			case 13:
+				libcnotify_printf(
+				 " (SHDID_NET_DOMAIN)" );
+				break;
+
+			case 14:
+				libcnotify_printf(
+				 " (SHDID_NET_SERVER)" );
+				break;
+
+			case 15:
+				libcnotify_printf(
+				 " (SHDID_NET_SHARE)" );
+				break;
+
+			case 16:
+				libcnotify_printf(
+				 " (SHDID_NET_RESTOFNET)" );
+				break;
+
+			case 17:
+				libcnotify_printf(
+				 " (SHDID_NET_OTHER)" );
+				break;
+
+			case 18:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_IMAGING)" );
+				break;
+
+			case 19:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_AUDIO)" );
+				break;
+
+			case 20:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_SHAREDDOCS)" );
+				break;
+
+			case 21:
+				libcnotify_printf(
+				 " (SHDID_MOBILE_DEVICE)" );
+				break;
+
+			default:
+				libcnotify_printf(
+				 " (UNKNOWN)" );
+				break;
+		}
+		libcnotify_printf(
+		 "\n" );
+
+		result = StringFromCLSID(
+		          &( description.clsid ),
+		          &guid_string );
+
+		if( FAILED( result ) )
+		{
+			result = GetLastError();
+
+			libcerror_system_set_error(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 (uint32_t) result,
+			 "unable to convert class identifier to string." );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "Class identifier\t: %" PRIs_SYSTEM "\n",
+		 guid_string );
+
+		CoTaskMemFree(
+		 guid_string );
+
+		guid_string = NULL;
+
+		libcnotify_printf(
+		 "Shell item data:\n" );
+		libcnotify_print_data(
+		 (uint8_t *) item_list,
+		 item_list->mkid.cb + 2,
+		 0 );
+
+		if( first_folder != NULL )
+		{
+			attributes = SFGAO_FOLDER;
+
+			result = desktop_folder->lpVtbl->GetAttributesOf(
+			         desktop_folder,
+			         1,
+				 (ITEMIDLIST **) &item_list,
+			         &attributes );
+
+			if( FAILED( result ) )
+			{
+				result = GetLastError();
+
+				libcerror_system_set_error(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GENERIC,
+				 (uint32_t) result,
+				 "unable to retrieve Program Files folder attributes." );
+
+				goto on_error;
+			}
+			if( ( attributes & SFGAO_FOLDER ) != 0 )
+			{
+				result = desktop_folder->lpVtbl->BindToObject(
+				          desktop_folder,
+				          item_list,
+				          NULL,
+				          &IID_IShellFolder,
+				          (void *) &first_folder );
+
+				if( FAILED( result ) )
+				{
+					result = GetLastError();
+
+					libcerror_system_set_error(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GENERIC,
+					 (uint32_t) result,
+					 "unable to bind first folder list item to IShellFolder." );
+
+					goto on_error;
+				}
+			}
+		}
+		CoTaskMemFree(
+		 item_list);
+
+		item_list = NULL;
+	}
+	fprintf(
+	 stdout,
+	 "\n\n" );
+
+	enumeration_list->lpVtbl->Release(
+	 enumeration_list );
+
+	enumeration_list = NULL;
+
+	if( first_folder )
+	{
+		result = first_folder->lpVtbl->EnumObjects(
+		          first_folder,
+		          NULL,
+		          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS,
+		          &enumeration_list );
+
+		if( FAILED( result ) )
+		{
+			result = GetLastError();
+
+			libcerror_system_set_error(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 (uint32_t) result,
+			 "unable to create enumeration list." );
+
+			goto on_error;
+		}
+		while( ( enumeration_list->lpVtbl->Next(
+		          enumeration_list,
+		          1,
+		          &item_list,
+		          &number_of_elements) == S_OK )
+		    && ( number_of_elements == 1 ) )
+		{
+			result = first_folder->lpVtbl->GetDisplayNameOf(
+			          first_folder,
+			          item_list,
+			          SHGDN_INFOLDER,
+			          &display_name_shell_string );
+
+			if( FAILED( result ) )
+			{
+				result = GetLastError();
+
+				libcerror_system_set_error(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GENERIC,
+				 (uint32_t) result,
+				 "unable to retrieve display name." );
+
+				goto on_error;
+			}
+			result = StrRetToBuf(
+			          &display_name_shell_string,
+			          item_list,
+			          display_name_string,
+			          MAX_PATH );
+
+			if( FAILED( result ) )
+			{
+				result = GetLastError();
+
+				libcerror_system_set_error(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GENERIC,
+				 (uint32_t) result,
+				 "unable to convert display name to string." );
+
+				goto on_error;
+			}
+			fprintf(
+			 stdout,
+			 "Display name\t\t: %" PRIs_SYSTEM "\n",
+			 display_name_string );
+
+			CoTaskMemFree(
+			 item_list);
+
+			item_list = NULL;
+		}
+		enumeration_list->lpVtbl->Release(
+		 enumeration_list );
+
+		enumeration_list = NULL;
+
+		first_folder->lpVtbl->Release(
+		 first_folder );
+
+		first_folder = NULL;
+	}
+	return( 1 );
+
+on_error:
+	if( first_folder != NULL )
+	{
+		first_folder->lpVtbl->Release(
+		 first_folder );
+	}
+	if( guid_string != NULL )
+	{
+		CoTaskMemFree(
+		 guid_string );
+
+		guid_string = NULL;
+	}
+	if( item_list != NULL )
+	{
+		CoTaskMemFree(
+		 item_list );
+
+		item_list = NULL;
+	}
+	if( enumeration_list != NULL )
+	{
+		enumeration_list->lpVtbl->Release(
+		 enumeration_list );
+	}
+	return( -1 );
+}
+
+#endif /* defined( WINAPI ) */
+
 /* The main program
  */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -80,19 +519,9 @@ int main( int argc, char * const argv[] )
 	int verbose                         = 0;
 
 #if defined( WINAPI )
-	system_character_t display_name_string[ MAX_PATH ];
-	SHDESCRIPTIONID description;
-	STRRET display_name_shell_string;
-
 	IShellFolder *desktop_folder        = NULL;
-	IShellFolder *first_folder          = NULL;
-	ITEMIDLIST *item_list               = NULL;
 	IShellFolder *program_files_folder  = NULL;
 	ITEMIDLIST *program_files_item_list = NULL;
-	system_character_t *guid_string     = NULL;
-	ULONG attributes                    = 0;
-	LPENUMIDLIST enumeration_list       = NULL;
-	ULONG number_of_elements            = 0;
 	HRESULT result                      = 0;
 #endif
 
@@ -236,383 +665,17 @@ int main( int argc, char * const argv[] )
 		goto on_error;
 	}
 */
-	result = desktop_folder->lpVtbl->EnumObjects(
-	          desktop_folder,
-	          NULL,
-	          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS,
-	          &enumeration_list );
-
-	if( FAILED( result ) )
+	if( winshellfolder_print_shell_folder(
+	     desktop_folder,
+	     &error ) != 1 )
 	{
-		result = GetLastError();
-
-		libcerror_system_set_error(
+		libcerror_set_error(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GENERIC,
-		 (uint32_t) result,
-		 "unable to create enumeration list." );
+		 "unable to print shell folder." );
 
 		goto on_error;
-	}
-	while( ( enumeration_list->lpVtbl->Next(
-	          enumeration_list,
-	          1,
-	          &item_list,
-	          &number_of_elements ) == S_OK )
-	    && ( number_of_elements == 1 ) )
-	{
-		result = desktop_folder->lpVtbl->GetDisplayNameOf(
-		          desktop_folder,
-		          item_list,
-		          SHGDN_INFOLDER,
-		          &display_name_shell_string );
-
-		if( FAILED( result ) )
-		{
-			result = GetLastError();
-
-			libcerror_system_set_error(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GENERIC,
-			 (uint32_t) result,
-			 "unable to retrieve display name." );
-
-			goto on_error;
-		}
-		result = StrRetToBuf(
-		          &display_name_shell_string,
-		          item_list,
-		          display_name_string,
-		          MAX_PATH );
-
-		if( FAILED( result ) )
-		{
-			result = GetLastError();
-
-			libcerror_system_set_error(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GENERIC,
-			 (uint32_t) result,
-			 "unable to convert display name to string." );
-
-			goto on_error;
-		}
-		result = SHGetDataFromIDListA(
-		          desktop_folder,
-		          item_list,
-		          SHGDFIL_DESCRIPTIONID,
-		          &description,
-		          sizeof( SHDESCRIPTIONID ) );
-
-		libcnotify_printf(
-		 "Display name\t: %" PRIs_SYSTEM "\n",
-		 display_name_string );
-
-		libcnotify_printf(
-		 "Shell item type\t: %d",
-		 description.dwDescriptionId );
-
-		switch( description.dwDescriptionId )
-		{
-			case 1:
-				libcnotify_printf(
-				 " (SHDID_ROOT_REGITEM)" );
-				break;
-
-			case 2:
-				libcnotify_printf(
-				 " (SHDID_FS_FILE)" );
-				break;
-
-			case 3:
-				libcnotify_printf(
-				 " (SHDID_FS_DIRECTORY)" );
-				break;
-
-			case 4:
-				libcnotify_printf(
-				 " (SHDID_FS_OTHER)" );
-				break;
-
-			case 5:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_DRIVE35)" );
-				break;
-
-			case 6:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_DRIVE525)" );
-				break;
-
-			case 7:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_REMOVABLE)" );
-				break;
-
-			case 8:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_FIXED)" );
-				break;
-
-			case 9:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_NETDRIVE)" );
-				break;
-
-			case 10:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_CDROM)" );
-				break;
-
-			case 11:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_RAMDISK)" );
-				break;
-
-			case 12:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_OTHER)" );
-				break;
-
-			case 13:
-				libcnotify_printf(
-				 " (SHDID_NET_DOMAIN)" );
-				break;
-
-			case 14:
-				libcnotify_printf(
-				 " (SHDID_NET_SERVER)" );
-				break;
-
-			case 15:
-				libcnotify_printf(
-				 " (SHDID_NET_SHARE)" );
-				break;
-
-			case 16:
-				libcnotify_printf(
-				 " (SHDID_NET_RESTOFNET)" );
-				break;
-
-			case 17:
-				libcnotify_printf(
-				 " (SHDID_NET_OTHER)" );
-				break;
-
-			case 18:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_IMAGING)" );
-				break;
-
-			case 19:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_AUDIO)" );
-				break;
-
-			case 20:
-				libcnotify_printf(
-				 " (SHDID_COMPUTER_SHAREDDOCS)" );
-				break;
-
-			case 21:
-				libcnotify_printf(
-				 " (SHDID_MOBILE_DEVICE)" );
-				break;
-
-			default:
-				libcnotify_printf(
-				 " (UNKNOWN)" );
-				break;
-		}
-		libcnotify_printf(
-		 "\n" );
-
-		result = StringFromCLSID(
-		          description.clsid,
-		          &guid_string );
-
-		if( FAILED( result ) )
-		{
-			result = GetLastError();
-
-			libcerror_system_set_error(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GENERIC,
-			 (uint32_t) result,
-			 "unable to convert class identifier to string." );
-
-			goto on_error;
-		}
-		libcnotify_printf(
-		 "Class identifier\t: %" PRIs_SYSTEM "\n",
-		 guid_string );
-
-		CoTaskMemFree(
-		 guid_string );
-
-		guid_string = NULL;
-
-		libcnotify_printf(
-		 "Shell item GUID\t: %d",
-		 description.dwDescriptionId );
-
-		libcnotify_printf(
-		 "Shell item data:\n" );
-		libcnotify_print_data(
-		 (uint8_t *) item_list,
-		 item_list->mkid.cb,
-		 0 );
-
-		if( first_folder != NULL )
-		{
-			attributes = SFGAO_FOLDER;
-
-			result = desktop_folder->lpVtbl->GetAttributesOf(
-			         desktop_folder,
-			         1,
-				 (ITEMIDLIST **) &item_list,
-			         &attributes );
-
-			if( FAILED( result ) )
-			{
-				result = GetLastError();
-
-				libcerror_system_set_error(
-				 &error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 (uint32_t) result,
-				 "unable to retrieve Program Files folder attributes." );
-
-				goto on_error;
-			}
-			if( ( attributes & SFGAO_FOLDER ) != 0 )
-			{
-				result = desktop_folder->lpVtbl->BindToObject(
-				          desktop_folder,
-				          item_list,
-				          NULL,
-				          &IID_IShellFolder,
-				          (void *) &first_folder );
-
-				if( FAILED( result ) )
-				{
-					result = GetLastError();
-
-					libcerror_system_set_error(
-					 &error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GENERIC,
-					 (uint32_t) result,
-					 "unable to bind first folder list item to IShellFolder." );
-
-					goto on_error;
-				}
-			}
-		}
-		CoTaskMemFree(
-		 item_list);
-
-		item_list = NULL;
-	}
-	fprintf(
-	 stdout,
-	 "\n\n" );
-
-	enumeration_list->lpVtbl->Release(
-	 enumeration_list );
-
-	enumeration_list = NULL;
-
-	if( first_folder )
-	{
-		result = first_folder->lpVtbl->EnumObjects(
-		          first_folder,
-		          NULL,
-		          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS,
-		          &enumeration_list );
-
-		if( FAILED( result ) )
-		{
-			result = GetLastError();
-
-			libcerror_system_set_error(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GENERIC,
-			 (uint32_t) result,
-			 "unable to create enumeration list." );
-
-			goto on_error;
-		}
-		while( ( enumeration_list->lpVtbl->Next(
-		          enumeration_list,
-		          1,
-		          &item_list,
-		          &number_of_elements) == S_OK )
-		    && ( number_of_elements == 1 ) )
-		{
-			result = first_folder->lpVtbl->GetDisplayNameOf(
-			          first_folder,
-			          item_list,
-			          SHGDN_INFOLDER,
-			          &display_name_shell_string );
-
-			if( FAILED( result ) )
-			{
-				result = GetLastError();
-
-				libcerror_system_set_error(
-				 &error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 (uint32_t) result,
-				 "unable to retrieve display name." );
-
-				goto on_error;
-			}
-			result = StrRetToBuf(
-			          &display_name_shell_string,
-			          item_list,
-			          display_name_string,
-			          MAX_PATH );
-
-			if( FAILED( result ) )
-			{
-				result = GetLastError();
-
-				libcerror_system_set_error(
-				 &error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 (uint32_t) result,
-				 "unable to convert display name to string." );
-
-				goto on_error;
-			}
-			fprintf(
-			 stdout,
-			 "Display name\t: %" PRIs_SYSTEM "\n",
-			 display_name_string );
-
-			CoTaskMemFree(
-			 item_list);
-
-			item_list = NULL;
-		}
-		enumeration_list->lpVtbl->Release(
-		 enumeration_list );
-
-		enumeration_list = NULL;
-
-		first_folder->lpVtbl->Release(
-		 first_folder );
-
-		first_folder = NULL;
 	}
 /* TODO
 	CoTaskMemFree(
@@ -652,30 +715,6 @@ on_error:
 		 &error );
 	}
 #if defined( WINAPI )
-	if( first_folder != NULL )
-	{
-		first_folder->lpVtbl->Release(
-		 first_folder );
-	}
-	if( guid_string != NULL )
-	{
-		CoTaskMemFree(
-		 guid_string );
-
-		guid_string = NULL;
-	}
-	if( item_list != NULL )
-	{
-		CoTaskMemFree(
-		 item_list );
-
-		item_list = NULL;
-	}
-	if( enumeration_list != NULL )
-	{
-		enumeration_list->lpVtbl->Release(
-		 enumeration_list );
-	}
 	if( program_files_item_list != NULL )
 	{
 		CoTaskMemFree(
