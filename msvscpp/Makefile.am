@@ -42,6 +42,7 @@ MSVSCPP_FILES = \
 	rc4crypt/rc4crypt.vcproj \
 	serpentcrypt/serpentcrypt.vcproj \
 	winregsave/winregsave.vcproj \
+	winshellfolder/winshellfolder.vcproj \
 	winshelllink/winshelllink.vcproj \
 	xor32sum/xor32sum.vcproj \
 	xor64sum/xor64sum.vcproj \

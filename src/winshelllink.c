@@ -214,7 +214,7 @@ int main( int argc, char * const argv[] )
 	}
 	result = persist_file->lpVtbl->Save(
 	          persist_file,
-	          L"test.bin",
+	          L"test.lnk",
 	          TRUE ); 
 
 	if( FAILED( result ) ) 
@@ -233,8 +233,16 @@ int main( int argc, char * const argv[] )
 	persist_file->lpVtbl->Release(
 	 persist_file ); 
 
+	persist_file = NULL;
+
 	shell_link->lpVtbl->Release(
 	 shell_link ); 
+
+	shell_link = NULL;
+
+	CoUninitialize();
+
+	return( EXIT_SUCCESS );
 #else
 	fprintf(
 	 stderr,
@@ -252,6 +260,21 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
+#if defined( WINAPI )
+	if( persist_file != NULL )
+	{
+		persist_file->lpVtbl->Release(
+		 persist_file ); 
+	}
+	if( shell_link != NULL )
+	{
+		shell_link->lpVtbl->Release(
+		 shell_link ); 
+	}
+	CoUninitialize();
+
+#endif /* defined( WINAPI ) */
+
 	return( EXIT_FAILURE );
 }
 

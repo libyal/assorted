@@ -39,6 +39,7 @@ bin_PROGRAMS = \
 	rc4crypt \
 	serpentcrypt \
 	winregsave \
+	winshellfolder \
 	winshelllink \
 	xor32sum \
 	xor64sum \
@@ -347,6 +348,22 @@ winregsave_SOURCES = \
 	winregsave.c
 
 winregsave_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+winshellfolder_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_output.c assorted_output.h \
+	winshellfolder.c
+
+winshellfolder_LDADD = \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
