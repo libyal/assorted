@@ -81,6 +81,7 @@ int main( int argc, char * const argv[] )
 
 #if defined( WINAPI )
 	system_character_t display_name_string[ MAX_PATH ];
+	SHDESCRIPTIONID description;
 	STRRET display_name_shell_string;
 
 	IShellFolder *desktop_folder        = NULL;
@@ -88,6 +89,7 @@ int main( int argc, char * const argv[] )
 	ITEMIDLIST *item_list               = NULL;
 	IShellFolder *program_files_folder  = NULL;
 	ITEMIDLIST *program_files_item_list = NULL;
+	system_character_t *guid_string     = NULL;
 	ULONG attributes                    = 0;
 	LPENUMIDLIST enumeration_list       = NULL;
 	ULONG number_of_elements            = 0;
@@ -137,6 +139,7 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 		}
 	}
+/* TODO
 	if( optind == argc )
 	{
 		fprintf(
@@ -149,6 +152,7 @@ int main( int argc, char * const argv[] )
 		return( EXIT_FAILURE );
 	}
 	path = argv[ optind++ ];
+*/
 
 	libcnotify_stream_set(
 	 stderr,
@@ -161,8 +165,8 @@ int main( int argc, char * const argv[] )
 	result = CoInitialize(
 	          NULL );
 
-	if( FAILED( result ) ) 
-	{ 
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -174,31 +178,11 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	result = SHGetFolderLocation(
-	          NULL,
-	          CSIDL_PROGRAM_FILES,
-	          NULL,
-	          0,
-	          &program_files_item_list );
-
-	if( FAILED( result ) ) 
-	{ 
-		result = GetLastError();
-
-		libcerror_system_set_error(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GENERIC,
-		 (uint32_t) result,
-		 "unable to retrieve Program Files item list." );
-
-		goto on_error;
-	}
 	result = SHGetDesktopFolder(
 	          &desktop_folder );
 
-	if( FAILED( result ) ) 
-	{ 
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -210,6 +194,27 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+/* TODO
+	result = SHGetFolderLocation(
+	          NULL,
+	          CSIDL_PROGRAM_FILES,
+	          NULL,
+	          0,
+	          &program_files_item_list );
+
+	if( FAILED( result ) )
+	{
+		result = GetLastError();
+
+		libcerror_system_set_error(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 (uint32_t) result,
+		 "unable to retrieve Program Files item list." );
+
+		goto on_error;
+	}
 	result = desktop_folder->lpVtbl->BindToObject(
 	          desktop_folder,
 	          program_files_item_list,
@@ -217,8 +222,8 @@ int main( int argc, char * const argv[] )
 	          &IID_IShellFolder,
 	          (void *) &program_files_folder );
 
-	if( FAILED( result ) ) 
-	{ 
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -230,19 +235,15 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	desktop_folder->lpVtbl->Release(
-	 desktop_folder );
-
-	desktop_folder = NULL;
-
-	result = program_files_folder->lpVtbl->EnumObjects(
-	          program_files_folder,
+*/
+	result = desktop_folder->lpVtbl->EnumObjects(
+	          desktop_folder,
 	          NULL,
 	          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS,
 	          &enumeration_list );
 
-	if( FAILED( result ) ) 
-	{ 
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -261,14 +262,14 @@ int main( int argc, char * const argv[] )
 	          &number_of_elements ) == S_OK )
 	    && ( number_of_elements == 1 ) )
 	{
-		result = program_files_folder->lpVtbl->GetDisplayNameOf(
-		          program_files_folder,
+		result = desktop_folder->lpVtbl->GetDisplayNameOf(
+		          desktop_folder,
 		          item_list,
 		          SHGDN_INFOLDER,
 		          &display_name_shell_string );
 
-		if( FAILED( result ) ) 
-		{ 
+		if( FAILED( result ) )
+		{
 			result = GetLastError();
 
 			libcerror_system_set_error(
@@ -286,8 +287,8 @@ int main( int argc, char * const argv[] )
 		          display_name_string,
 		          MAX_PATH );
 
-		if( FAILED( result ) ) 
-		{ 
+		if( FAILED( result ) )
+		{
 			result = GetLastError();
 
 			libcerror_system_set_error(
@@ -299,23 +300,185 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		fprintf(
-		 stdout,
+		result = SHGetDataFromIDListA(
+		          desktop_folder,
+		          item_list,
+		          SHGDFIL_DESCRIPTIONID,
+		          &description,
+		          sizeof( SHDESCRIPTIONID ) );
+
+		libcnotify_printf(
 		 "Display name\t: %" PRIs_SYSTEM "\n",
 		 display_name_string );
+
+		libcnotify_printf(
+		 "Shell item type\t: %d",
+		 description.dwDescriptionId );
+
+		switch( description.dwDescriptionId )
+		{
+			case 1:
+				libcnotify_printf(
+				 " (SHDID_ROOT_REGITEM)" );
+				break;
+
+			case 2:
+				libcnotify_printf(
+				 " (SHDID_FS_FILE)" );
+				break;
+
+			case 3:
+				libcnotify_printf(
+				 " (SHDID_FS_DIRECTORY)" );
+				break;
+
+			case 4:
+				libcnotify_printf(
+				 " (SHDID_FS_OTHER)" );
+				break;
+
+			case 5:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_DRIVE35)" );
+				break;
+
+			case 6:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_DRIVE525)" );
+				break;
+
+			case 7:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_REMOVABLE)" );
+				break;
+
+			case 8:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_FIXED)" );
+				break;
+
+			case 9:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_NETDRIVE)" );
+				break;
+
+			case 10:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_CDROM)" );
+				break;
+
+			case 11:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_RAMDISK)" );
+				break;
+
+			case 12:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_OTHER)" );
+				break;
+
+			case 13:
+				libcnotify_printf(
+				 " (SHDID_NET_DOMAIN)" );
+				break;
+
+			case 14:
+				libcnotify_printf(
+				 " (SHDID_NET_SERVER)" );
+				break;
+
+			case 15:
+				libcnotify_printf(
+				 " (SHDID_NET_SHARE)" );
+				break;
+
+			case 16:
+				libcnotify_printf(
+				 " (SHDID_NET_RESTOFNET)" );
+				break;
+
+			case 17:
+				libcnotify_printf(
+				 " (SHDID_NET_OTHER)" );
+				break;
+
+			case 18:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_IMAGING)" );
+				break;
+
+			case 19:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_AUDIO)" );
+				break;
+
+			case 20:
+				libcnotify_printf(
+				 " (SHDID_COMPUTER_SHAREDDOCS)" );
+				break;
+
+			case 21:
+				libcnotify_printf(
+				 " (SHDID_MOBILE_DEVICE)" );
+				break;
+
+			default:
+				libcnotify_printf(
+				 " (UNKNOWN)" );
+				break;
+		}
+		libcnotify_printf(
+		 "\n" );
+
+		result = StringFromCLSID(
+		          description.clsid,
+		          &guid_string );
+
+		if( FAILED( result ) )
+		{
+			result = GetLastError();
+
+			libcerror_system_set_error(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 (uint32_t) result,
+			 "unable to convert class identifier to string." );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "Class identifier\t: %" PRIs_SYSTEM "\n",
+		 guid_string );
+
+		CoTaskMemFree(
+		 guid_string );
+
+		guid_string = NULL;
+
+		libcnotify_printf(
+		 "Shell item GUID\t: %d",
+		 description.dwDescriptionId );
+
+		libcnotify_printf(
+		 "Shell item data:\n" );
+		libcnotify_print_data(
+		 (uint8_t *) item_list,
+		 item_list->mkid.cb,
+		 0 );
 
 		if( first_folder != NULL )
 		{
 			attributes = SFGAO_FOLDER;
 
-			result = program_files_folder->lpVtbl->GetAttributesOf(
-			         program_files_folder,
+			result = desktop_folder->lpVtbl->GetAttributesOf(
+			         desktop_folder,
 			         1,
 				 (ITEMIDLIST **) &item_list,
 			         &attributes );
 
-			if( FAILED( result ) ) 
-			{ 
+			if( FAILED( result ) )
+			{
 				result = GetLastError();
 
 				libcerror_system_set_error(
@@ -329,15 +492,15 @@ int main( int argc, char * const argv[] )
 			}
 			if( ( attributes & SFGAO_FOLDER ) != 0 )
 			{
-				result = program_files_folder->lpVtbl->BindToObject(
-				          program_files_folder,
+				result = desktop_folder->lpVtbl->BindToObject(
+				          desktop_folder,
 				          item_list,
 				          NULL,
 				          &IID_IShellFolder,
 				          (void *) &first_folder );
 
-				if( FAILED( result ) ) 
-				{ 
+				if( FAILED( result ) )
+				{
 					result = GetLastError();
 
 					libcerror_system_set_error(
@@ -345,7 +508,7 @@ int main( int argc, char * const argv[] )
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_GENERIC,
 					 (uint32_t) result,
-					 "unable to bind first folder item list to IShellFolder." );
+					 "unable to bind first folder list item to IShellFolder." );
 
 					goto on_error;
 				}
@@ -373,8 +536,8 @@ int main( int argc, char * const argv[] )
 		          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS,
 		          &enumeration_list );
 
-		if( FAILED( result ) ) 
-		{ 
+		if( FAILED( result ) )
+		{
 			result = GetLastError();
 
 			libcerror_system_set_error(
@@ -399,8 +562,8 @@ int main( int argc, char * const argv[] )
 			          SHGDN_INFOLDER,
 			          &display_name_shell_string );
 
-			if( FAILED( result ) ) 
-			{ 
+			if( FAILED( result ) )
+			{
 				result = GetLastError();
 
 				libcerror_system_set_error(
@@ -418,8 +581,8 @@ int main( int argc, char * const argv[] )
 			          display_name_string,
 			          MAX_PATH );
 
-			if( FAILED( result ) ) 
-			{ 
+			if( FAILED( result ) )
+			{
 				result = GetLastError();
 
 				libcerror_system_set_error(
@@ -451,6 +614,7 @@ int main( int argc, char * const argv[] )
 
 		first_folder = NULL;
 	}
+/* TODO
 	CoTaskMemFree(
 	 program_files_item_list );
 
@@ -460,6 +624,12 @@ int main( int argc, char * const argv[] )
 	 program_files_folder );
 
 	program_files_folder = NULL;
+*/
+
+	desktop_folder->lpVtbl->Release(
+	 desktop_folder );
+
+	desktop_folder = NULL;
 
 	CoUninitialize();
 
@@ -486,6 +656,13 @@ on_error:
 	{
 		first_folder->lpVtbl->Release(
 		 first_folder );
+	}
+	if( guid_string != NULL )
+	{
+		CoTaskMemFree(
+		 guid_string );
+
+		guid_string = NULL;
 	}
 	if( item_list != NULL )
 	{
