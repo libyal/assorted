@@ -76,15 +76,14 @@ int winshellfolder_print_shell_folder(
 	SHDESCRIPTIONID description;
 	STRRET display_name_shell_string;
 
-	IShellFolder *first_folder          = NULL;
-	ITEMIDLIST *item_list               = NULL;
-	ITEMIDLIST *program_files_item_list = NULL;
-	system_character_t *guid_string     = NULL;
-	static char *function               = "winshellfolder_print_shell_folder";
-	ULONG attributes                    = 0;
-	LPENUMIDLIST enumeration_list       = NULL;
-	ULONG number_of_elements            = 0;
-	HRESULT result                      = 0;
+	IShellFolder *sub_shell_folder  = NULL;
+	ITEMIDLIST *item_list           = NULL;
+	system_character_t *guid_string = NULL;
+	static char *function           = "winshellfolder_print_shell_folder";
+	ULONG attributes                = 0;
+	LPENUMIDLIST enumeration_list   = NULL;
+	ULONG number_of_elements        = 0;
+	HRESULT result                  = 0;
 
 	if( shell_folder == NULL )
 	{
@@ -324,74 +323,13 @@ int winshellfolder_print_shell_folder(
 		 item_list->mkid.cb + 2,
 		 0 );
 
-		if( first_folder != NULL )
-		{
-			attributes = SFGAO_FOLDER;
+		attributes = SFGAO_FOLDER;
 
-			result = desktop_folder->lpVtbl->GetAttributesOf(
-			         desktop_folder,
-			         1,
-				 (ITEMIDLIST **) &item_list,
-			         &attributes );
-
-			if( FAILED( result ) )
-			{
-				result = GetLastError();
-
-				libcerror_system_set_error(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 (uint32_t) result,
-				 "unable to retrieve Program Files folder attributes." );
-
-				goto on_error;
-			}
-			if( ( attributes & SFGAO_FOLDER ) != 0 )
-			{
-				result = desktop_folder->lpVtbl->BindToObject(
-				          desktop_folder,
-				          item_list,
-				          NULL,
-				          &IID_IShellFolder,
-				          (void *) &first_folder );
-
-				if( FAILED( result ) )
-				{
-					result = GetLastError();
-
-					libcerror_system_set_error(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GENERIC,
-					 (uint32_t) result,
-					 "unable to bind first folder list item to IShellFolder." );
-
-					goto on_error;
-				}
-			}
-		}
-		CoTaskMemFree(
-		 item_list);
-
-		item_list = NULL;
-	}
-	fprintf(
-	 stdout,
-	 "\n\n" );
-
-	enumeration_list->lpVtbl->Release(
-	 enumeration_list );
-
-	enumeration_list = NULL;
-
-	if( first_folder )
-	{
-		result = first_folder->lpVtbl->EnumObjects(
-		          first_folder,
-		          NULL,
-		          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS,
-		          &enumeration_list );
+		result = shell_folder->lpVtbl->GetAttributesOf(
+		         shell_folder,
+		         1,
+			 (ITEMIDLIST **) &item_list,
+		         &attributes );
 
 		if( FAILED( result ) )
 		{
@@ -402,22 +340,18 @@ int winshellfolder_print_shell_folder(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GENERIC,
 			 (uint32_t) result,
-			 "unable to create enumeration list." );
+			 "unable to retrieve shell folder attributes." );
 
 			goto on_error;
 		}
-		while( ( enumeration_list->lpVtbl->Next(
-		          enumeration_list,
-		          1,
-		          &item_list,
-		          &number_of_elements) == S_OK )
-		    && ( number_of_elements == 1 ) )
+		if( ( attributes & SFGAO_FOLDER ) != 0 )
 		{
-			result = first_folder->lpVtbl->GetDisplayNameOf(
-			          first_folder,
+			result = shell_folder->lpVtbl->BindToObject(
+			          shell_folder,
 			          item_list,
-			          SHGDN_INFOLDER,
-			          &display_name_shell_string );
+			          NULL,
+			          &IID_IShellFolder,
+			          (void *) &sub_shell_folder );
 
 			if( FAILED( result ) )
 			{
@@ -428,56 +362,47 @@ int winshellfolder_print_shell_folder(
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GENERIC,
 				 (uint32_t) result,
-				 "unable to retrieve display name." );
+				 "unable to bind sub shell folder list item to IShellFolder." );
 
 				goto on_error;
 			}
-			result = StrRetToBuf(
-			          &display_name_shell_string,
-			          item_list,
-			          display_name_string,
-			          MAX_PATH );
-
-			if( FAILED( result ) )
+			if( winshellfolder_print_shell_folder(
+			     sub_shell_folder,
+			     error ) != 1 )
 			{
-				result = GetLastError();
-
-				libcerror_system_set_error(
+				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 (uint32_t) result,
-				 "unable to convert display name to string." );
+				 "unable to print sub shell folder." );
 
 				goto on_error;
 			}
-			fprintf(
-			 stdout,
-			 "Display name\t\t: %" PRIs_SYSTEM "\n",
-			 display_name_string );
+			sub_shell_folder->lpVtbl->Release(
+			 sub_shell_folder );
 
-			CoTaskMemFree(
-			 item_list);
-
-			item_list = NULL;
+			sub_shell_folder = NULL;
 		}
-		enumeration_list->lpVtbl->Release(
-		 enumeration_list );
+		CoTaskMemFree(
+		 item_list);
 
-		enumeration_list = NULL;
-
-		first_folder->lpVtbl->Release(
-		 first_folder );
-
-		first_folder = NULL;
+		item_list = NULL;
 	}
+	libcnotify_printf(
+	 "\n\n" );
+
+	enumeration_list->lpVtbl->Release(
+	 enumeration_list );
+
+	enumeration_list = NULL;
+
 	return( 1 );
 
 on_error:
-	if( first_folder != NULL )
+	if( sub_shell_folder != NULL )
 	{
-		first_folder->lpVtbl->Release(
-		 first_folder );
+		sub_shell_folder->lpVtbl->Release(
+		 sub_shell_folder );
 	}
 	if( guid_string != NULL )
 	{
@@ -669,7 +594,7 @@ int main( int argc, char * const argv[] )
 	     desktop_folder,
 	     &error ) != 1 )
 	{
-		libcerror_set_error(
+		libcerror_error_set(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GENERIC,
