@@ -48,7 +48,7 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use winregsave save a Windows Registry key to a Registry hive file.\n\n" );
+	fprintf( stream, "Use winregsave to save a Windows Registry key to a Registry hive file.\n\n" );
 
 	fprintf( stream, "Usage: winregsave [ -12hvV ] key_path target\n\n" );
 
