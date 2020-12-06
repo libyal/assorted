@@ -387,8 +387,10 @@ int main( int argc, char * const argv[] )
 		{
 			fprintf(
 			 stdout,
-			 "Mismatch between CRC-32: %" PRIu32 " and calculated CRC-32: %" PRIu32 "\n",
+			 "Mismatch between CRC-32: %" PRIu32 " (0x%08" PRIx32 ") and calculated CRC-32: %" PRIu32 " (0x%08" PRIx32 ")\n",
 			 crc32,
+			 crc32,
+			 calculated_crc32,
 			 calculated_crc32 );
 
 			result = crc32_validate(
@@ -433,8 +435,10 @@ int main( int argc, char * const argv[] )
 		{
 			fprintf(
 			 stdout,
-			 "Match between CRC-32: %" PRIu32 " and calculated CRC-32: %" PRIu32 "\n",
+			 "Match between CRC-32: %" PRIu32 " (0x%08" PRIx32 ") and calculated CRC-32: %" PRIu32 " (0x%08" PRIx32 ") \n",
 			 crc32,
+			 crc32,
+			 calculated_crc32,
 			 calculated_crc32 );
 		}
 	}
