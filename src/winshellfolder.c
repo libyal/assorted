@@ -72,12 +72,14 @@ int winshellfolder_print_shell_folder(
      IShellFolder *shell_folder,
      libcerror_error_t **error )
 {
+	CLSID class_identifier;
 	system_character_t display_name_string[ MAX_PATH ];
 	SHDESCRIPTIONID description;
 	STRRET display_name_shell_string;
 
-	IShellFolder *sub_shell_folder  = NULL;
 	ITEMIDLIST *item_list           = NULL;
+	IPersistFolder *persist_folder  = NULL;
+	IShellFolder *sub_shell_folder  = NULL;
 	system_character_t *guid_string = NULL;
 	static char *function           = "winshellfolder_print_shell_folder";
 	ULONG attributes                = 0;
@@ -122,6 +124,63 @@ int winshellfolder_print_shell_folder(
 	          &number_of_elements ) == S_OK )
 	    && ( number_of_elements == 1 ) )
 	{
+		result = shell_folder->lpVtbl->BindToObject(
+		          shell_folder,
+		          item_list,
+		          NULL,
+		          &IID_IPersistFolder,
+		          (void *) &persist_folder );
+
+		if( SUCCEEDED( result ) )
+		{
+			result = persist_folder->lpVtbl->GetClassID(
+			          persist_folder,
+			          &class_identifier );
+
+			if( FAILED( result ) )
+			{
+				result = GetLastError();
+
+				libcerror_system_set_error(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GENERIC,
+				 (uint32_t) result,
+				 "unable to retrieve class identifier." );
+
+				goto on_error;
+			}
+			result = StringFromCLSID(
+			          &class_identifier,
+			          &guid_string );
+
+			if( FAILED( result ) )
+			{
+				result = GetLastError();
+
+				libcerror_system_set_error(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GENERIC,
+				 (uint32_t) result,
+				 "unable to convert class identifier to string." );
+
+				goto on_error;
+			}
+			libcnotify_printf(
+			 "IPersist CLSID\t\t: %" PRIs_SYSTEM "\n",
+			 guid_string );
+
+			CoTaskMemFree(
+			 guid_string );
+
+			guid_string = NULL;
+
+			persist_folder->lpVtbl->Release(
+			 persist_folder );
+
+			persist_folder = NULL;
+		}
 		result = shell_folder->lpVtbl->GetDisplayNameOf(
 		          shell_folder,
 		          item_list,
@@ -410,6 +469,11 @@ on_error:
 		 guid_string );
 
 		guid_string = NULL;
+	}
+	if( persist_folder != NULL )
+	{
+		persist_folder->lpVtbl->Release(
+		 persist_folder );
 	}
 	if( item_list != NULL )
 	{
