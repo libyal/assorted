@@ -1,7 +1,7 @@
 /*
  * XOR-32 checksum testing program
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
