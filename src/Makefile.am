@@ -22,6 +22,7 @@ AM_CPPFLAGS = \
 AM_LDFLAGS = @STATIC_LDFLAGS@
 
 bin_PROGRAMS = \
+	adcdecompress \
 	adler32sum \
 	ascii7decompress \
 	banalyze \
@@ -45,6 +46,23 @@ bin_PROGRAMS = \
 	xor64sum \
 	zcompress \
 	zdecompress
+
+adcdecompress_SOURCES = \
+	adc.c adc.h \
+	adcdecompress.c \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_output.c assorted_output.h
+
+adcdecompress_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
 
 adler32sum_SOURCES = \
 	adler32.c adler32.h \

@@ -328,21 +328,23 @@ int lzvn_decompress(
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	static char *function           = "lzvn_decompress";
-	size_t compressed_data_offset   = 0;
-	size_t match_offset             = 0;
-	size_t uncompressed_data_offset = 0;
-	uint16_t distance               = 0;
-	uint16_t literal_size           = 0;
-	uint16_t match_size             = 0;
-	uint8_t oppcode                 = 0;
-	uint8_t oppcode_type            = 0;
-	uint8_t oppcode_value           = 0;
+	static char *function              = "lzvn_decompress";
+	size_t compressed_data_offset      = 0;
+	size_t match_offset                = 0;
+	size_t safe_uncompressed_data_size = 0;
+	size_t uncompressed_data_offset    = 0;
+	uint16_t distance                  = 0;
+	uint16_t literal_size              = 0;
+	uint16_t match_size                = 0;
+	uint8_t oppcode                    = 0;
+	uint8_t oppcode_type               = 0;
+	uint8_t oppcode_value              = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	size_t debug_match_offset       = 0;
-	size_t oppcode_data_offset      = 0;
-	size_t oppcode_data_size        = 0;
+	size_t debug_match_offset          = 0;
+	size_t oppcode_data_offset         = 0;
+	size_t oppcode_data_size           = 0;
+	uint16_t debug_match_size          = 0;
 #endif
 
 	if( compressed_data == NULL )
@@ -389,7 +391,9 @@ int lzvn_decompress(
 
 		return( -1 );
 	}
-	if( *uncompressed_data_size > (size_t) SSIZE_MAX )
+	safe_uncompressed_data_size = *uncompressed_data_size;
+
+	if( safe_uncompressed_data_size > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
@@ -402,7 +406,7 @@ int lzvn_decompress(
 	}
 	while( compressed_data_offset < compressed_data_size )
 	{
-		if( uncompressed_data_offset >= *uncompressed_data_size )
+		if( uncompressed_data_offset >= safe_uncompressed_data_size )
 		{
 			break;
 		}
@@ -621,8 +625,8 @@ int lzvn_decompress(
 
 				return( -1 );
 			}
-			if( ( (size_t) literal_size > *uncompressed_data_size )
-			 || ( uncompressed_data_offset > ( *uncompressed_data_size - literal_size ) ) )
+			if( ( (size_t) literal_size > safe_uncompressed_data_size )
+			 || ( uncompressed_data_offset > ( safe_uncompressed_data_size - literal_size ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -677,8 +681,8 @@ int lzvn_decompress(
 			}
 			match_offset = uncompressed_data_offset - distance;
 
-			if( ( (size_t) match_size > *uncompressed_data_size )
-			 || ( uncompressed_data_offset > ( *uncompressed_data_size - match_size ) ) )
+			if( ( (size_t) match_size > safe_uncompressed_data_size )
+			 || ( uncompressed_data_offset > ( safe_uncompressed_data_size - match_size ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -693,6 +697,7 @@ int lzvn_decompress(
 			if( libcnotify_verbose != 0 )
 			{
 				debug_match_offset = match_offset;
+				debug_match_size   = match_size;
 
 				libcnotify_printf(
 				 "%s: match offset\t\t\t\t\t\t: 0x%" PRIzx "\n",
@@ -714,7 +719,7 @@ int lzvn_decompress(
 				 function );
 				libcnotify_print_data(
 				 &( uncompressed_data[ debug_match_offset ] ),
-				 match_size,
+				 debug_match_size,
 				 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 			}
 #endif
