@@ -1,5 +1,5 @@
 /*
- * LZVN (un)compression testing program
+ * LZFSE (un)compression testing program
  *
  * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,37 +33,39 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/lzvn.h"
+#include "../src/lzfse.h"
 
-/* Define to make assorted_test_lzvn generate verbose output
-#define ASSORTED_TEST_LZVN_VERBOSE
+/* Define to make assorted_test_lzfse generate verbose output
+#define ASSORTED_TEST_LZFSE_VERBOSE
  */
 
-uint8_t assorted_test_lzvn_compressed_data[ 16 ] = {
-	0x78, 0xda, 0xbd, 0x59, 0x6d, 0x8f, 0xdb, 0xb8, 0x11, 0xfe, 0x7c, 0xfa, 0x15, 0xc4, 0x7e, 0xb9 };
+uint8_t assorted_test_lzfse_compressed_data[ 10 ] = {
+	0x83, 0xfe, 0xed, 0xfa, 0xce, 0x00, 0x00, 0x40, 0x00, 0x06 };
 
 #if defined( __GNUC__ )
 
-/* Tests the lzvn_decompress function
+/* Tests the lzfse_decompress function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_lzvn_decompress(
+int assorted_test_lzfse_decompress(
      void )
 {
 	uint8_t uncompressed_data[ 16 ];
 
-	libcerror_error_t *error      = NULL;
-	size_t uncompressed_data_size = 0;
-	int result                    = 0;
+	uint8_t expected_uncompressed_data[ 11 ] = {
+		0xfe, 0xed, 0xfa, 0xce, 0xce, 0xce, 0xce, 0xfe, 0xed, 0xfa, 0xce };
+
+	libcerror_error_t *error                 = NULL;
+	size_t uncompressed_data_size            = 0;
+	int result                               = 0;
 
 	/* Test regular cases
 	 */
-/* TODO add representative test data
 	uncompressed_data_size = 16;
 
-	result = lzvn_decompress(
-	          assorted_test_lzvn_compressed_data,
-	          16,
+	result = lzfse_decompress(
+	          assorted_test_lzfse_compressed_data,
+	          10,
 	          uncompressed_data,
 	          &uncompressed_data_size,
 	          &error );
@@ -73,23 +75,36 @@ int assorted_test_lzvn_decompress(
 	 result,
 	 1 );
 
+/* TODO
 	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
 	 "uncompressed_data_size",
 	 uncompressed_data_size,
-	 (size_t) 18 );
+	 (size_t) 11 );
+*/
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+
+/* TODO
+	result = memory_compare(
+	          uncompressed_data,
+	          expected_uncompressed_data,
+	          11 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
 */
 
 	/* Test error cases
 	 */
 	uncompressed_data_size = 16;
 
-	result = lzvn_decompress(
+	result = lzfse_decompress(
 	          NULL,
-	          16,
+	          10,
 	          uncompressed_data,
 	          &uncompressed_data_size,
 	          &error );
@@ -106,8 +121,8 @@ int assorted_test_lzvn_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzvn_decompress(
-	          assorted_test_lzvn_compressed_data,
+	result = lzfse_decompress(
+	          assorted_test_lzfse_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
 	          &uncompressed_data_size,
@@ -125,9 +140,9 @@ int assorted_test_lzvn_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzvn_decompress(
-	          assorted_test_lzvn_compressed_data,
-	          16,
+	result = lzfse_decompress(
+	          assorted_test_lzfse_compressed_data,
+	          10,
 	          NULL,
 	          &uncompressed_data_size,
 	          &error );
@@ -144,9 +159,9 @@ int assorted_test_lzvn_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzvn_decompress(
-	          assorted_test_lzvn_compressed_data,
-	          16,
+	result = lzfse_decompress(
+	          assorted_test_lzfse_compressed_data,
+	          10,
 	          uncompressed_data,
 	          NULL,
 	          &error );
@@ -165,9 +180,9 @@ int assorted_test_lzvn_decompress(
 
 	uncompressed_data_size = (size_t) SSIZE_MAX + 1;
 
-	result = lzvn_decompress(
-	          assorted_test_lzvn_compressed_data,
-	          16,
+	result = lzfse_decompress(
+	          assorted_test_lzfse_compressed_data,
+	          10,
 	          uncompressed_data,
 	          &uncompressed_data_size,
 	          &error );
@@ -207,7 +222,7 @@ int main(
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argc )
 	ASSORTED_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZVN_VERBOSE )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( ASSORTED_TEST_LZFSE_VERBOSE )
 	libcnotify_verbose_set(
 	 1 );
 	libcnotify_stream_set(
@@ -218,8 +233,8 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "lzvn_decompress",
-	 assorted_test_lzvn_decompress );
+	 "lzfse_decompress",
+	 assorted_test_lzfse_decompress );
 
 #endif /* defined( __GNUC__ ) */
 

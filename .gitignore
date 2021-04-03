@@ -124,6 +124,7 @@ stamp-h[1-9]
 /src/crc64sum
 /src/fletcher32sum
 /src/fletcher64sum
+/src/lzfsedecompress
 /src/lzfudecompress
 /src/lznt1decompress
 /src/lzvndecompress
@@ -141,6 +142,7 @@ stamp-h[1-9]
 /src/xor64sum
 /src/zcompress
 /src/zdecompress
+/tests/assorted_test_adc
 /tests/assorted_test_adler32
 /tests/assorted_test_ascii7
 /tests/assorted_test_bit_stream
@@ -150,6 +152,7 @@ stamp-h[1-9]
 /tests/assorted_test_fletcher32
 /tests/assorted_test_fletcher64
 /tests/assorted_test_huffman_tree
+/tests/assorted_test_lzfse
 /tests/assorted_test_lzfu
 /tests/assorted_test_lzvn
 /tests/assorted_test_xor32
