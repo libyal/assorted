@@ -191,6 +191,10 @@
 				RelativePath="..\..\src\lzfsedecompress.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\lzvn.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -223,6 +227,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\lzfse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\lzvn.h"
 				>
 			</File>
 		</Filter>

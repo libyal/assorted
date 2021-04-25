@@ -170,6 +170,7 @@ assorted_test_huffman_tree_LDADD = \
 
 assorted_test_lzfse_SOURCES = \
 	../src/lzfse.c ../src/lzfse.h \
+	../src/lzvn.c ../src/lzvn.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
 	assorted_test_lzfse.c \

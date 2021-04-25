@@ -61,7 +61,7 @@ LZFSE compressed data stream consist of:
 [cols="1,5",options="header"]
 |===
 | Characteristics | Description
-| Byte order | big-endian
+| Byte order | little-endian
 |===
 
 == LZFSE block
@@ -124,9 +124,9 @@ consits of:
 | Offset | Size | Value | Description
 4+| Block header
 | 0 | 4 | "bvx1" | Block signature
-| 4 | 4 | | Encoded (compressed) data size
-| 8 | 4 | | Uncompressed data size
-| 12 | 4 | | Number of literal bytes output by bloc
+| 4 | 4 | | Uncompressed data size
+| 8 | 4 | | Encoded (compressed) data size
+| 12 | 4 | | Number of literal bytes output by block
 | 16 | 4 | | Number of matches in block (which is also the number of literals)
 | 20 | 4 | | Number of bytes used to encode literals
 | 24 | 4 | | Number of bytes used to encode matches
@@ -136,12 +136,10 @@ consits of:
 | 44 | 2 | | [yellow-background]*Unknown (Final L (literal length) state)*
 | 46 | 2 | | [yellow-background]*Unknown (Final M (literal length) state)*
 | 48 | 2 | | [yellow-background]*Unknown (Final D (literal length) state)*
-| 50 | 20 x 2 | | [yellow-background]*Unknown (frequency table for L stream)*
-| 90 | 20 x 2 | | [yellow-background]*Unknown (frequency table for M stream)*
-| 130 | 64 x 2 | | [yellow-background]*Unknown (frequency table for D stream)*
-| 158 | 256 x 2 | | [yellow-background]*Unknown (literal frequency table)*
+| 50 | 720 | | Frequency table +
+See section: <<lzfse_frequency_table,LZFSE frequency table>>
 4+|
-| 670 | ... | | LZFSE encoded data
+| 770 | ... | | LZFSE encoded data
 |===
 
 === LZFSE compressed block with compressed tables
@@ -154,12 +152,34 @@ consits of:
 | Offset | Size | Value | Description
 4+| Block header
 | 0 | 4 | "bvx2" | Block signature
-| 4 | 4 | | Encoded (compressed) data size
-| 8 | 2 x 8 | | [yellow-background]*Unknown (packed fields)*
-| 24 | ... | | [yellow-background]*Unknown (frequency tables)*
+| 4 | 4 | | Uncompressed data size
+4+| 3 x 64-bit packed fields
+| 8.0 | 20 bits | | 
+| 10.4 | 20 bits | | 
+| 13.0 | 20 bits | | 
+| 15.4 | 3 bits | | 
+| 14.7 | 1 bit | | [yellow-background]*Unknown (unused)*
+| 16.0 | 10 bits | | 
+| 17.2 | 10 bits | | 
+| 18.4 | 10 bits | | 
+| 19.6 | 10 bits | | 
+| 21.0 | 20 bits | | 
+| 22.4 | 3 bits | | 
+| 23.7 | 1 bit | | [yellow-background]*Unknown (unused)*
+| 24.0 | 32 bits | | Block header size
+| 28.0 | 10 bits | | [yellow-background]*Unknown (Final L (literal length) state)*
+| 29.2 | 10 bits | | [yellow-background]*Unknown (Final M (literal length) state)*
+| 30.4 | 10 bits | | [yellow-background]*Unknown (Final D (literal length) state)*
+| 31.6 | 2 bits | | [yellow-background]*Unknown (unused)*
+4+|
+| 32 | ... | | Bit stream containing Huffman encoded frequency table +
+See section: <<lzfse_frequency_table,LZFSE frequency table>>
 4+|
 | ... | ... | | LZFSE encoded data
 |===
+
+[NOTE]
+If the block header size is 32 the block does not contain frequency tables.
 
 === LZVN compressed block
 
@@ -170,11 +190,57 @@ A LZVN compressed block is variable of size and consits of:
 | Offset | Size | Value | Description
 4+| Block header
 | 0 | 4 | "bvxn" | Block signature
-| 4 | 4 | | Encoded (compressed) data size
-| 8 | 4 | | Uncompressed data size
+| 4 | 4 | | Uncompressed data size
+| 8 | 4 | | Encoded (compressed) data size
 4+|
 | 12 | ... | | LZVN encoded data
 |===
+
+=== [[lzfse_frequency_table]]LZFSE frequency table
+
+A LZFSE frequency table is 720 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 20 x 2 = 40 | | Literal run-lengths (L stream frequency values)
+| 40 | 20 x 2 = 40 | | Match sizes (M stream frequency values)
+| 80 | 64 x 2 = 128 | | Match distances (D stream frequency values)
+| 208 | 256 x 2 = 512 | | Literals (Literal frequency values)
+|===
+
+==== Decoding the Huffman encoded frequency table
+
+[yellow-background]*TODO: describe how to decode the Huffman encoded frequency table*
+
+....
+  5-bits encoded value, special cases 8 and 14
+
+  lzfse_freq_nbits_table[32] = {
+      2, 3, 2, 5, 2, 3, 2, 8, 2, 3, 2, 5, 2, 3, 2, 14,
+      2, 3, 2, 5, 2, 3, 2, 8, 2, 3, 2, 5, 2, 3, 2, 14};
+  lzfse_freq_value_table[32] = {
+      0, 2, 1, 4, 0, 3, 1, -1, 0, 2, 1, 5, 0, 3, 1, -1,
+      0, 2, 1, 6, 0, 3, 1, -1, 0, 2, 1, 7, 0, 3, 1, -1};
+....
+
+=== Decoding LZFSE compressed data
+
+....
+literals are encoded separately with 4 interleaved FSE streams
+main symbol stream is encoded as sequences of {literal run length, match length, match distance}, called {L, M, D}
+
+initialize literals decoder table
+initialize L state values decoder table
+initialize M state values decoder table
+initialize D state values decoder table
+
+decode literals from bit stream
+
+Initialize L, M, D decode streams
+
+Decode LMD from bit stream
+....
 
 :numbered!:
 [appendix]

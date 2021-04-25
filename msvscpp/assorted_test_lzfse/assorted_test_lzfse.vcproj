@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\lzvn.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\assorted_test_lzfse.c"
 				>
 			</File>
@@ -191,6 +195,10 @@
 			>
 			<File
 				RelativePath="..\..\src\lzfse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\lzvn.h"
 				>
 			</File>
 			<File

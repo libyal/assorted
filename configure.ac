@@ -169,11 +169,16 @@ Building:
    libfvalue support:                              $ac_cv_libfvalue
    libfplist support:                              $ac_cv_libfplist
    libfwnt support:                                $ac_cv_libfwnt
+   ADC compression support:                        local
    ADLER32 checksum support:                       $ac_cv_adler32
    DEFLATE compression support:                    $ac_cv_zlib
    BZIP2 compression support:                      $ac_cv_bzip2
+   LZFSE compression support:                      local
+   LZFU compression support:                       local
    LZNT1 compression support:                      $ac_cv_libfwnt
+   LZX compression support:                        $ac_cv_libfwnt
    LZXPRESS compression support:                   $ac_cv_libfwnt
+   LZVN compression support:                       local
    libhmac support:                                $ac_cv_libhmac
    MD5 support:                                    $ac_cv_libhmac_md5
    SHA1 support:                                   $ac_cv_libhmac_sha1
