@@ -10,9 +10,11 @@ SUBDIRS = \
 	libuna \
 	libcfile \
 	libfcrypto \
+	libfdatetime \
 	libfguid \
 	libfvalue \
 	libfplist \
+	libfwevt \
 	libfwnt \
 	libhmac \
 	src \
@@ -51,9 +53,11 @@ splint:
 	(cd $(srcdir)/libuna && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcfile && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfcrypto && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libfdatetime && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfguid && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfvalue && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfplist && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libfwevt && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfwnt && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libhmac && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/src && $(MAKE) splint $(AM_MAKEFLAGS))

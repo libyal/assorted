@@ -1,5 +1,5 @@
 /*
- * Shows information obtained from a Property List (plist) file
+ * Shows information obtained from a Windows Event Log binary XML document file
  *
  * Copyright (C) 2008-2021, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -35,7 +35,7 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_libfplist.h"
+#include "assorted_libfwevt.h"
 #include "assorted_libuna.h"
 #include "assorted_output.h"
 
@@ -48,9 +48,9 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use plistinfo to determine information about a Property List (plist) file.\n\n" );
+	fprintf( stream, "Use wevtinfo to determine information about a Windows Event Log binary XML document file.\n\n" );
 
-	fprintf( stream, "Usage: plistinfo [ -o offset ] [ -s size ] [ -hvV ] source\n\n" );
+	fprintf( stream, "Usage: wevtinfo [ -o offset ] [ -s size ] [ -hvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
@@ -70,19 +70,19 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcerror_error_t *error                 = NULL;
-	libcfile_file_t *source_file             = NULL;
-	libfplist_property_list_t *property_list = NULL;
-	system_character_t *source               = NULL;
-	uint8_t *buffer                          = NULL;
-	char *program                            = "plistinfo";
-	system_integer_t option                  = 0;
-	size64_t source_size                     = 0;
-	size_t buffer_size                       = 0;
-	ssize_t read_count                       = 0;
-	off_t source_offset                      = 0;
-	int result                               = 0;
-	int verbose                              = 0;
+	libcerror_error_t *error              = NULL;
+	libcfile_file_t *source_file          = NULL;
+	libfwevt_xml_document_t *xml_document = NULL;
+	system_character_t *source            = NULL;
+	uint8_t *buffer                       = NULL;
+	char *program                         = "wevtinfo";
+	system_integer_t option               = 0;
+	size64_t source_size                  = 0;
+	size_t buffer_size                    = 0;
+	ssize_t read_count                    = 0;
+	off_t source_offset                   = 0;
+	int result                            = 0;
+	int verbose                           = 0;
 
 	libcnotify_stream_set(
 	 stderr,
@@ -258,13 +258,13 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libfplist_property_list_initialize(
-	     &property_list,
+	if( libfwevt_xml_document_initialize(
+	     &xml_document,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to create property list.\n" );
+		 "Unable to create XML document.\n" );
 
 		goto on_error;
 	}
@@ -282,29 +282,32 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libfplist_property_list_copy_from_byte_stream(
-	     property_list,
+	if( libfwevt_xml_document_read(
+	     xml_document,
 	     buffer,
 	     buffer_size,
+	     0,
+	     1252,
+	     LIBFWEVT_XML_DOCUMENT_READ_FLAG_HAS_DATA_OFFSETS | LIBFWEVT_XML_DOCUMENT_READ_FLAG_HAS_DATA_OFFSETS,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to read property list.\n" );
+		 "Unable to read XML document.\n" );
 
 		goto on_error;
 	}
-/* TODO print plist info */
+/* TODO print wevt info */
 
 	/* Clean up
 	 */
-	if( libfplist_property_list_free(
-	     &property_list,
+	if( libfwevt_xml_document_free(
+	     &xml_document,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to free property list.\n" );
+		 "Unable to free XML document.\n" );
 
 		goto on_error;
 	}
@@ -343,10 +346,10 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
-	if( property_list != NULL )
+	if( xml_document != NULL )
 	{
-		libfplist_property_list_free(
-		 &property_list,
+		libfwevt_xml_document_free(
+		 &xml_document,
 		 NULL );
 	}
 	if( buffer != NULL )

@@ -11,7 +11,9 @@ AM_CPPFLAGS = \
 	@LIBFCRYPTO_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
 	@LIBFVALUE_CPPFLAGS@ \
+	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFPLIST_CPPFLAGS@ \
+	@LIBFWEVT_CPPFLAGS@ \
 	@LIBFWNT_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@BZIP2_CPPFLAGS@ \
@@ -40,6 +42,7 @@ bin_PROGRAMS = \
 	plistinfo \
 	rc4crypt \
 	serpentcrypt \
+	wevtinfo \
 	winregsave \
 	winshellfolder \
 	winshelllink \
@@ -373,6 +376,30 @@ serpentcrypt_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+wevtinfo_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libfwevt.h \
+	assorted_libuna.h \
+	assorted_output.c assorted_output.h \
+	wevtinfo.c
+
+wevtinfo_LDADD = \
+	@LIBFWEVT_LIBADD@ \
+	@LIBFVALUE_LIBADD@ \
+	@LIBFWNT_LIBADD@ \
+	@LIBFGUID_LIBADD@ \
+	@LIBFDATETIME_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
 winregsave_SOURCES = \
