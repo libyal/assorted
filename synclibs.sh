@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script that synchronizes the local library dependencies
 #
-# Version: 20191229
+# Version: 20210513
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -143,6 +143,14 @@ SED_SCRIPT="/^$/ {
 		fi
 	fi
 
+	# Make the necessary changes to libfplist/Makefile.am
+	if test ${LOCAL_LIB} = "libfplist";
+	then
+		if test -f "m4/libfdatetime.m4";
+		then
+			sed -i'~' '/@LIBFGUID_CPPFLAGS@/{h; s/FGUID/FDATETIME/; p; g;}' ${LOCAL_LIB_MAKEFILE_AM};
+		fi
+	fi
 	# Make the necessary changes to libfvalue/Makefile.am
 	if test ${LOCAL_LIB} = "libfvalue";
 	then
