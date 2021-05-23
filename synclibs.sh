@@ -151,6 +151,7 @@ SED_SCRIPT="/^$/ {
 			sed -i'~' '/@LIBFGUID_CPPFLAGS@/{h; s/FGUID/FDATETIME/; p; g;}' ${LOCAL_LIB_MAKEFILE_AM};
 		fi
 	fi
+
 	# Make the necessary changes to libfvalue/Makefile.am
 	if test ${LOCAL_LIB} = "libfvalue";
 	then
