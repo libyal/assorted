@@ -219,7 +219,7 @@ int main( int argc, char * const argv[] )
 		 stderr,
 		 "Invalid source size value is zero.\n" );
 
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
 	if( source_size > (size_t) SSIZE_MAX )
 	{
@@ -227,7 +227,7 @@ int main( int argc, char * const argv[] )
 		 stderr,
 		 "Invalid source size value exceeds maximum.\n" );
 
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
 	/* Create the input buffer
 	 */
@@ -242,7 +242,7 @@ int main( int argc, char * const argv[] )
 		 stderr,
 		 "Unable to create buffer.\n" );
 
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
 	/* Position the source file at the right offset
 	 */
