@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="xor64sum"
-	ProjectGUID="{BA5B636A-520E-429D-B87F-252A5AA4E5CF}"
-	RootNamespace="xor64sum"
+	Name="wevtinfo"
+	ProjectGUID="{1130DC25-B2DA-4DE1-80D4-AB3FB02F4282}"
+	RootNamespace="wevtinfo"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -184,11 +184,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor64.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\xor64sum.c"
+				RelativePath="..\..\src\wevtinfo.c"
 				>
 			</File>
 		</Filter>
@@ -218,11 +214,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.h"
+				RelativePath="..\..\src\assorted_libfwevt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor64.h"
+				RelativePath="..\..\src\assorted_libuna.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_output.h"
 				>
 			</File>
 		</Filter>

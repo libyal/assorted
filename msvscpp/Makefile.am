@@ -29,9 +29,11 @@ MSVSCPP_FILES = \
 	libcnotify/libcnotify.vcproj \
 	libcthreads/libcthreads.vcproj \
 	libfcrypto/libfcrypto.vcproj \
+	libfdatetime/libfdatetime.vcproj \
 	libfguid/libfguid.vcproj \
 	libfplist/libfplist.vcproj \
 	libfvalue/libfvalue.vcproj \
+	libfwevt/libfwevt.vcproj \
 	libfwnt/libfwnt.vcproj \
 	libhmac/libhmac.vcproj \
 	libuna/libuna.vcproj \
@@ -45,6 +47,7 @@ MSVSCPP_FILES = \
 	plistinfo/plistinfo.vcproj \
 	rc4crypt/rc4crypt.vcproj \
 	serpentcrypt/serpentcrypt.vcproj \
+	wevtinfo/wevtinfo.vcproj \
 	winregsave/winregsave.vcproj \
 	winshellfolder/winshellfolder.vcproj \
 	winshelllink/winshelllink.vcproj \
