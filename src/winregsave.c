@@ -1,7 +1,7 @@
 /*
  * Saves a Windows Registry key to a Registry hive file using RegSaveKeyEx
  *
- * Copyright (C) 2008-2021, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
