@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script that runs the tests
 #
-# Version: 20190103
+# Version: 20220718
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -412,7 +412,14 @@ fi
 
 if test ${HAVE_ENABLE_STATIC_EXECUTABLES} -eq 0;
 then
-	run_configure_make_check "--enable-static-executables";
+	CONFIGURE_OPTIONS="--enable-static-executables";
+
+	if test ${HAVE_WITH_OPENSSL} -eq 0;
+	then
+		CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --with-openssl=no";
+	fi
+
+	run_configure_make_check ${CONFIGURE_OPTIONS};
 	RESULT=$?;
 
 	if test ${RESULT} -ne ${EXIT_SUCCESS};

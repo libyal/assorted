@@ -1255,7 +1255,7 @@ int deflate_read_data_header(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: preset dictionary identifier\t\t: 0x%08" PRIx32 "\n",
+			 "%s: preset dictionary identifier\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 preset_dictionary_identifier );
 		}

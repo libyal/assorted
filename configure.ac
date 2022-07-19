@@ -1,4 +1,4 @@
-AC_PREREQ( 2.59 )
+AC_PREREQ([2.71])
 
 AC_INIT(
  [assorted],
@@ -19,7 +19,7 @@ dnl Check for large file support
 AC_SYS_LARGEFILE
 
 dnl Check for libtool DLL support
-AC_LIBTOOL_WIN32_DLL
+LT_INIT([win32-dll])
 
 dnl Checks for programs
 AC_PROG_CC
@@ -28,7 +28,6 @@ AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
 dnl Check for libtool
-AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
 dnl Check for pkg-config
@@ -36,7 +35,7 @@ AC_PATH_PROG(PKGCONFIG,[pkg-config])
 
 dnl Support of internationalization (i18n)
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18.1])
+AM_GNU_GETTEXT_VERSION([0.21])
 
 dnl Check for compiler language support
 AC_C_CONST
