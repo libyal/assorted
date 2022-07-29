@@ -28,6 +28,7 @@ bin_PROGRAMS = \
 	adler32sum \
 	ascii7decompress \
 	banalyze \
+	bz2decompress \
 	crc32sum \
 	crc64sum \
 	fletcher32sum \
@@ -121,6 +122,27 @@ banalyze_LDADD = \
 	@LIBCRYPTO_LIBADD@ \
 	@LIBDL_LIBADD@ \
 	@PTHREAD_LIBADD@
+
+bz2decompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_output.c assorted_output.h \
+	assorted_system_string.h \
+	bit_stream.c bit_stream.h \
+	bz2decompress.c \
+	bzip.c bzip.h \
+	huffman_tree.c huffman_tree.h
+
+bz2decompress_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@BZIP2_LIBADD@
 
 crc32sum_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \

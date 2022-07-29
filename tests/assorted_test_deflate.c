@@ -1700,7 +1700,11 @@ int main(
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

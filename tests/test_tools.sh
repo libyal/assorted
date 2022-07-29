@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="adc adler32 ascii7 bit_stream crc32 crc64 deflate fletcher32 fletcher64 huffman_tree lzfse lzfu lzvn xor32 xor64";
+LIBRARY_TESTS="adc adler32 ascii7 bit_stream bzip crc32 crc64 deflate fletcher32 fletcher64 huffman_tree lzfse lzfu lzvn xor32 xor64";
 LIBRARY_TESTS_WITH_INPUT="";
 OPTION_SETS="";
 

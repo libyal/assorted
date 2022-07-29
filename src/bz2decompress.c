@@ -1,5 +1,5 @@
 /*
- * zdecompress decompresses zlib compressed data
+ * bz2decompress decompresses bzip2 compressed data
  *
  * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -30,8 +30,8 @@
 #include <stdlib.h>
 #endif
 
-#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
-#include <zlib.h>
+#if defined( HAVE_BZLIB ) || defined( BZ_DLL )
+#include <bzlib.h>
 #endif
 
 #include "assorted_getopt.h"
@@ -39,7 +39,8 @@
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
-#include "deflate.h"
+#include "assorted_system_string.h"
+#include "bzip.h"
 
 /* Prints the executable usage information
  */
@@ -50,13 +51,13 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use zdecompress to decompress data as zlib compressed data.\n\n" );
+	fprintf( stream, "Use bz2decompress to decompress data as bzip2 compressed data.\n\n" );
 
-	fprintf( stream, "Usage: zdecompress [ -o offset ] [ -s size ] [ -12hvV ] source\n\n" );
+	fprintf( stream, "Usage: bz2decompress [ -o offset ] [ -s size ] [ -12hvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
-	fprintf( stream, "\t-1:     use the zlib decompression method\n" );
+	fprintf( stream, "\t-1:     use the bzip2 decompression method\n" );
 	fprintf( stream, "\t-2:     use the internal decompression method (default)\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
@@ -76,26 +77,26 @@ int main( int argc, char * const argv[] )
 {
 	char destination[ 128 ];
 
-	libcerror_error_t *error           = NULL;
-	libcfile_file_t *destination_file  = NULL;
-	libcfile_file_t *source_file       = NULL;
-	system_character_t *source         = NULL;
-	uint8_t *buffer                    = NULL;
-	uint8_t *uncompressed_data         = NULL;
-	char *program                      = "zdecompress";
-	system_integer_t option            = 0;
-	size64_t source_size               = 0;
-	size_t uncompressed_data_size      = 0;
-	ssize_t read_count                 = 0;
-	ssize_t write_count                = 0;
-	off_t source_offset                = 0;
-	int decompression_method           = 2;
-	int print_count                    = 0;
-	int result                         = 0;
-	int verbose                        = 0;
+	libcerror_error_t *error                  = NULL;
+	libcfile_file_t *destination_file         = NULL;
+	libcfile_file_t *source_file              = NULL;
+	system_character_t *source                = NULL;
+	uint8_t *buffer                           = NULL;
+	uint8_t *uncompressed_data                = NULL;
+	char *program                             = "bz2decompress";
+	system_integer_t option                   = 0;
+	size64_t source_size                      = 0;
+	size_t uncompressed_data_size             = 0;
+	ssize_t read_count                        = 0;
+	ssize_t write_count                       = 0;
+	off_t source_offset                       = 0;
+	int decompression_method                  = 2;
+	int print_count                           = 0;
+	int result                                = 0;
+	int verbose                               = 0;
 
-#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
-	uLongf zlib_uncompressed_data_size = 0;
+#if defined( HAVE_BZLIB ) || defined( BZ_DLL )
+	unsigned int bzip2_uncompressed_data_size = 0;
 #endif
 
 	assorted_output_version_fprint(
@@ -138,19 +139,13 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case 'o':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_offset = _wtol( optarg );
-#else
-				source_offset = atol( optarg );
-#endif
+				source_offset = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 's':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_size = _wtol( optarg );
-#else
-				source_size = atol( optarg );
-#endif
+				source_size = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 'v':
@@ -288,7 +283,7 @@ int main( int argc, char * const argv[] )
 	print_count = narrow_string_snprintf(
 	               destination,
 	               128,
-	               "%s.zdecompressed",
+	               "%s.bz2decompressed",
 	               source );
 
 	if( ( print_count < 0 )
@@ -318,21 +313,23 @@ int main( int argc, char * const argv[] )
 	}
 	if( decompression_method == 1 )
 	{
-#if !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL )
+#if !defined( HAVE_BZLIB ) && !defined( BZ_DLL )
 		fprintf(
 		 stderr,
-		 "Missing zlib support.\n" );
+		 "Missing bzip2 support.\n" );
 
 		goto on_error;
 
 #else
-		zlib_uncompressed_data_size = (uLongf) uncompressed_data_size;
+		bzip2_uncompressed_data_size = (unsigned int) uncompressed_data_size;
 
-		if( uncompress(
-		     (Bytef *) uncompressed_data,
-		     &zlib_uncompressed_data_size,
-		     (Bytef *) buffer,
-		     (uLong) source_size ) != Z_OK )
+		if( BZ2_bzBuffToBuffDecompress(
+		     (char *) uncompressed_data,
+		     &bzip2_uncompressed_data_size,
+		     (char *) buffer,
+		     (unsigned int) source_size,
+		     0,
+		     0 ) != BZ_OK )
 		{
 			fprintf(
 			 stderr,
@@ -340,13 +337,13 @@ int main( int argc, char * const argv[] )
 
 			goto on_error;
 		}
-		uncompressed_data_size = (size_t) zlib_uncompressed_data_size;
+		uncompressed_data_size = (size_t) bzip2_uncompressed_data_size;
 
-#endif /* !defined( HAVE_ZLIB ) && !defined( ZLIB_DLL ) */
+#endif /* !defined( HAVE_BZLIB ) && !defined( BZ_DLL ) */
 	}
 	else if( decompression_method == 2 )
 	{
-		if( deflate_decompress_zlib(
+		if( bzip_decompress(
 		     buffer,
 		     source_size,
 		     uncompressed_data,
@@ -459,13 +456,13 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stdout,
-		 "zlib decompression:\tFAILURE\n" );
+		 "BZIP2 decompression:\tFAILURE\n" );
 
 		return( EXIT_FAILURE );
 	}
 	fprintf(
 	 stdout,
-	 "zlib decompression:\tSUCCESS\n" );
+	 "BZIP2 decompression:\tSUCCESS\n" );
 
 	return( EXIT_SUCCESS );
 

@@ -31,6 +31,7 @@ check_PROGRAMS = \
 	assorted_test_adler32 \
 	assorted_test_ascii7 \
 	assorted_test_bit_stream \
+	assorted_test_bzip \
 	assorted_test_crc32 \
 	assorted_test_crc64 \
 	assorted_test_deflate \
@@ -89,6 +90,20 @@ assorted_test_bit_stream_SOURCES = \
 	assorted_test_unused.h
 
 assorted_test_bit_stream_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_bzip_SOURCES = \
+	../src/bit_stream.c ../src/bit_stream.h \
+	../src/bzip.c ../src/bzip.h \
+	../src/huffman_tree.c ../src/huffman_tree.h \
+	assorted_test_bzip.c \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_bzip_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 

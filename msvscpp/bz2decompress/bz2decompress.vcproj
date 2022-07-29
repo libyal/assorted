@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fletcher64sum"
-	ProjectGUID="{AA7ABCCE-B373-428D-B704-247EA1A3BC57}"
-	RootNamespace="fletcher64sum"
+	Name="bz2decompress"
+	ProjectGUID="{CEB33F1A-9092-4A39-BF14-DBCE793CB9F5}"
+	RootNamespace="bz2decompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -184,11 +184,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fletcher64.c"
+				RelativePath="..\..\src\bit_stream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fletcher64sum.c"
+				RelativePath="..\..\src\bz2decompress.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\bzip.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\huffman_tree.c"
 				>
 			</File>
 		</Filter>
@@ -222,7 +230,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fletcher64.h"
+				RelativePath="..\..\src\assorted_system_string.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\bit_stream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\bzip.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\huffman_tree.h"
 				>
 			</File>
 		</Filter>

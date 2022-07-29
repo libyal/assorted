@@ -121,6 +121,7 @@ stamp-h[1-9]
 /src/adler32sum
 /src/ascii7decompress
 /src/banalyze
+/src/bz2decompress
 /src/crc32sum
 /src/crc64sum
 /src/fletcher32sum
@@ -148,6 +149,7 @@ stamp-h[1-9]
 /tests/assorted_test_adler32
 /tests/assorted_test_ascii7
 /tests/assorted_test_bit_stream
+/tests/assorted_test_bzip
 /tests/assorted_test_crc32
 /tests/assorted_test_crc64
 /tests/assorted_test_deflate

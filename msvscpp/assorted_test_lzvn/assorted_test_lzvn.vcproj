@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_lzvn"
-	ProjectGUID="{60BFFDAF-94C0-4CAF-8191-A29E4316BDD9}"
+	ProjectGUID="{16F5A0AB-DA03-4955-9115-11DE3F3AEBDF}"
 	RootNamespace="assorted_test_lzvn"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

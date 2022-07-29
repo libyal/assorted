@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fletcher64sum"
-	ProjectGUID="{AA7ABCCE-B373-428D-B704-247EA1A3BC57}"
-	RootNamespace="fletcher64sum"
+	Name="assorted_test_bzip"
+	ProjectGUID="{AC3A9D40-20CF-4855-AB34-DEA7A6CEA6AE}"
+	RootNamespace="assorted_test_bzip"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -41,8 +41,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror;..\..\libcthreads;..\..\libcdata;..\..\libclocale;..\..\libcnotify;..\..\libuna;..\..\libcfile;..\..\libfcrypto;..\..\libfguid;..\..\libfvalue;..\..\libfdatetime;..\..\libfplist;..\..\libfwevt;..\..\libfwnt;..\..\..\zlib;..\..\..\bzip2;..\..\libhmac"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBCTHREADS;HAVE_LOCAL_LIBCDATA;HAVE_LOCAL_LIBCLOCALE;HAVE_LOCAL_LIBCNOTIFY;HAVE_LOCAL_LIBUNA;HAVE_LOCAL_LIBCFILE;HAVE_LOCAL_LIBFCRYPTO;HAVE_LOCAL_LIBFGUID;HAVE_LOCAL_LIBFVALUE;HAVE_LOCAL_LIBFDATETIME;HAVE_LOCAL_LIBFPLIST;HAVE_LOCAL_LIBFWEVT;HAVE_LOCAL_LIBFWNT;ZLIB_DLL;BZ_DLL;HAVE_LOCAL_LIBHMAC;ASSORTED_DLL_IMPORT"
+				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror;..\..\libcthreads;..\..\libcdata;..\..\libclocale;..\..\libcnotify;..\..\libuna;..\..\libcfile;..\..\libfcrypto;..\..\libfwnt;..\..\libhmac;..\..\..\zlib;..\..\..\bzip2"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBCTHREADS;HAVE_LOCAL_LIBCDATA;HAVE_LOCAL_LIBCLOCALE;HAVE_LOCAL_LIBCNOTIFY;HAVE_LOCAL_LIBUNA;HAVE_LOCAL_LIBCFILE;HAVE_LOCAL_LIBFCRYPTO;HAVE_LOCAL_LIBFWNT;HAVE_LOCAL_LIBHMAC;ZLIB_DLL;BZ_DLL;ASSORTED_DLL_IMPORT"
 				RuntimeLibrary="2"
 				WarningLevel="4"
 				CompileAs="1"
@@ -114,8 +114,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror;..\..\libcthreads;..\..\libcdata;..\..\libclocale;..\..\libcnotify;..\..\libuna;..\..\libcfile;..\..\libfcrypto;..\..\libfguid;..\..\libfvalue;..\..\libfdatetime;..\..\libfplist;..\..\libfwevt;..\..\libfwnt;..\..\..\zlib;..\..\..\bzip2;..\..\libhmac"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBCTHREADS;HAVE_LOCAL_LIBCDATA;HAVE_LOCAL_LIBCLOCALE;HAVE_LOCAL_LIBCNOTIFY;HAVE_LOCAL_LIBUNA;HAVE_LOCAL_LIBCFILE;HAVE_LOCAL_LIBFCRYPTO;HAVE_LOCAL_LIBFGUID;HAVE_LOCAL_LIBFVALUE;HAVE_LOCAL_LIBFDATETIME;HAVE_LOCAL_LIBFPLIST;HAVE_LOCAL_LIBFWEVT;HAVE_LOCAL_LIBFWNT;ZLIB_DLL;BZ_DLL;HAVE_LOCAL_LIBHMAC;ASSORTED_DLL_IMPORT"
+				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcerror;..\..\libcthreads;..\..\libcdata;..\..\libclocale;..\..\libcnotify;..\..\libuna;..\..\libcfile;..\..\libfcrypto;..\..\libfwnt;..\..\libhmac;..\..\..\zlib;..\..\..\bzip2"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBCTHREADS;HAVE_LOCAL_LIBCDATA;HAVE_LOCAL_LIBCLOCALE;HAVE_LOCAL_LIBCNOTIFY;HAVE_LOCAL_LIBUNA;HAVE_LOCAL_LIBCFILE;HAVE_LOCAL_LIBFCRYPTO;HAVE_LOCAL_LIBFWNT;HAVE_LOCAL_LIBHMAC;ZLIB_DLL;BZ_DLL;ASSORTED_DLL_IMPORT"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
 				RuntimeLibrary="3"
@@ -176,19 +176,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_getopt.c"
+				RelativePath="..\..\src\bit_stream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.c"
+				RelativePath="..\..\src\bzip.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fletcher64.c"
+				RelativePath="..\..\src\huffman_tree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fletcher64sum.c"
+				RelativePath="..\..\tests\assorted_test_bzip.c"
 				>
 			</File>
 		</Filter>
@@ -198,31 +198,31 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_getopt.h"
+				RelativePath="..\..\src\bit_stream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_i18n.h"
+				RelativePath="..\..\src\bzip.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcerror.h"
+				RelativePath="..\..\src\huffman_tree.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcfile.h"
+				RelativePath="..\..\tests\assorted_test_libcerror.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_libcnotify.h"
+				RelativePath="..\..\tests\assorted_test_libcnotify.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.h"
+				RelativePath="..\..\tests\assorted_test_macros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fletcher64.h"
+				RelativePath="..\..\tests\assorted_test_unused.h"
 				>
 			</File>
 		</Filter>

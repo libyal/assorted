@@ -2116,7 +2116,7 @@ int deflate_decompress_zlib(
 		 "%s: unable to read data header.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( compressed_data_offset >= compressed_data_size )
 	{
