@@ -38,24 +38,24 @@
 int bzip_reverse_burrows_wheeler_transform(
      const uint8_t *input_data,
      size_t input_data_size,
+     size_t *permutations,
      uint32_t origin_pointer,
      uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
      libcerror_error_t **error )
 {
 	size_t distributions[ 256 ];
-	size_t permutations[ BLOCK_DATA_SIZE ];
 
-	static char *function              = "bzip_reverse_burrows_wheeler_transform";
-	size_t input_data_offset           = 0;
-	size_t uncompressed_data_offset    = 0;
-	size_t distribution_value          = 0;
-	size_t number_of_values            = 0;
-	size_t permutation_value           = 0;
-	size_t safe_uncompressed_data_size = 0;
-	uint16_t byte_value                = 0;
-	uint16_t last_byte_value           = 0;
-	uint8_t number_of_last_byte_values = 0;
+	static char *function                = "bzip_reverse_burrows_wheeler_transform";
+	size_t input_data_offset             = 0;
+	size_t distribution_value            = 0;
+	size_t number_of_values              = 0;
+	size_t permutation_value             = 0;
+	size_t safe_uncompressed_data_offset = 0;
+	uint16_t byte_value                  = 0;
+	uint16_t last_byte_value             = 0;
+	uint8_t number_of_last_byte_values   = 0;
 
 	if( input_data == NULL )
 	{
@@ -79,6 +79,17 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		return( -1 );
 	}
+	if( permutations == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid permutations.",
+		 function );
+
+		return( -1 );
+	}
 	if( uncompressed_data == NULL )
 	{
 		libcerror_error_set(
@@ -90,18 +101,7 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		return( -1 );
 	}
-	if( uncompressed_data_size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid uncompressed data size.",
-		 function );
-
-		return( -1 );
-	}
-	if( *uncompressed_data_size > (size_t) SSIZE_MAX )
+	if( uncompressed_data_size > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
@@ -112,7 +112,29 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		return( -1 );
 	}
-	safe_uncompressed_data_size = *uncompressed_data_size;
+	if( uncompressed_data_offset == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data offset.",
+		 function );
+
+		return( -1 );
+	}
+	if( *uncompressed_data_offset > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data offset value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	safe_uncompressed_data_offset = *uncompressed_data_offset;
 
 	if( memory_set(
 	     distributions,
@@ -124,20 +146,6 @@ int bzip_reverse_burrows_wheeler_transform(
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 		 "%s: unable to clear distributions.",
-		 function );
-
-		return( -1 );
-	}
-	if( memory_set(
-	     permutations,
-	     0,
-	     sizeof( size_t ) * BLOCK_DATA_SIZE ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear permutations.",
 		 function );
 
 		return( -1 );
@@ -182,8 +190,8 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		if( number_of_last_byte_values == 4 )
 		{
-			if( ( byte_value > safe_uncompressed_data_size )
-			 || ( uncompressed_data_offset > ( safe_uncompressed_data_size - byte_value ) ) )
+			if( ( byte_value > uncompressed_data_size )
+			 || ( safe_uncompressed_data_offset > ( uncompressed_data_size - byte_value ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -196,7 +204,7 @@ int bzip_reverse_burrows_wheeler_transform(
 			}
 			while( byte_value > 0 )
 			{
-				uncompressed_data[ uncompressed_data_offset++ ] = (uint8_t) last_byte_value;
+				uncompressed_data[ safe_uncompressed_data_offset++ ] = (uint8_t) last_byte_value;
 
 				byte_value--;
 			}
@@ -212,7 +220,7 @@ int bzip_reverse_burrows_wheeler_transform(
 			last_byte_value             = byte_value;
 			number_of_last_byte_values += 1;
 
-			if( uncompressed_data_offset >= safe_uncompressed_data_size )
+			if( safe_uncompressed_data_offset >= uncompressed_data_size )
 			{
 				libcerror_error_set(
 				 error,
@@ -223,11 +231,11 @@ int bzip_reverse_burrows_wheeler_transform(
 
 				return( -1 );
 			}
-			uncompressed_data[ uncompressed_data_offset++ ] = (uint8_t) byte_value;
+			uncompressed_data[ safe_uncompressed_data_offset++ ] = (uint8_t) byte_value;
 		}
 		permutation_value = permutations[ permutation_value ];
 	}
-	*uncompressed_data_size = uncompressed_data_offset;
+	*uncompressed_data_offset = safe_uncompressed_data_offset;
 
 	return( 1 );
 }
@@ -358,28 +366,25 @@ int bzip_read_stream_header(
 	return( 1 );
 }
 
-/* Reads a (stream) block header
+/* Reads a (stream) block header or stream footer signature
  * Returns 1 on success or -1 on error
  */
-int bzip_read_block_header(
+int bzip_read_signature(
      bit_stream_t *bit_stream,
-     uint32_t *origin_pointer,
+     uint64_t *signature,
      libcerror_error_t **error )
 {
-	static char *function        = "bzip_read_block_header";
-	uint64_t signature           = 0;
-	uint32_t checksum            = 0;
-	uint32_t safe_origin_pointer = 0;
-	uint32_t value_32bit         = 0;
-	uint8_t is_randomized        = 0;
+	static char *function   = "bzip_read_signature";
+	uint32_t value_32bit    = 0;
+	uint64_t safe_signature = 0;
 
-	if( origin_pointer == NULL )
+	if( signature == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid origin pointer.",
+		 "%s: invalid signature.",
 		 function );
 
 		return( -1 );
@@ -399,7 +404,7 @@ int bzip_read_block_header(
 
 		return( -1 );
 	}
-	signature = value_32bit;
+	safe_signature = value_32bit;
 
 	if( bit_stream_get_value(
 	     bit_stream,
@@ -416,9 +421,40 @@ int bzip_read_block_header(
 
 		return( -1 );
 	}
-	signature <<= 16;
-	signature  |= value_32bit;
+	safe_signature <<= 16;
+	safe_signature  |= value_32bit;
 
+	*signature = safe_signature;
+
+	return( 1 );
+}
+
+/* Reads a (stream) block header
+ * Returns 1 on success or -1 on error
+ */
+int bzip_read_block_header(
+     bit_stream_t *bit_stream,
+     uint64_t signature,
+     uint32_t *origin_pointer,
+     libcerror_error_t **error )
+{
+	static char *function        = "bzip_read_block_header";
+	uint32_t checksum            = 0;
+	uint32_t safe_origin_pointer = 0;
+	uint32_t value_32bit         = 0;
+	uint8_t is_randomized        = 0;
+
+	if( origin_pointer == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid origin pointer.",
+		 function );
+
+		return( -1 );
+	}
 	if( bit_stream_get_value(
 	     bit_stream,
 	     32,
@@ -1292,52 +1328,28 @@ int bzip_read_block_data(
  */
 int bzip_read_stream_footer(
      bit_stream_t *bit_stream,
+     uint64_t signature,
+     uint32_t *checksum,
      libcerror_error_t **error )
 {
-	static char *function = "bzip_read_stream_footer";
-	uint64_t signature    = 0;
-	uint32_t checksum     = 0;
-	uint32_t value_32bit  = 0;
+	static char *function  = "bzip_read_stream_footer";
+	uint32_t safe_checksum = 0;
 
-	if( bit_stream_get_value(
-	     bit_stream,
-	     32,
-	     &value_32bit,
-	     error ) != 1 )
+	if( checksum == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve value from bit stream.",
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid checksum.",
 		 function );
 
 		return( -1 );
 	}
-	signature = value_32bit;
-
-	if( bit_stream_get_value(
-	     bit_stream,
-	     16,
-	     &value_32bit,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve value from bit stream.",
-		 function );
-
-		return( -1 );
-	}
-	signature <<= 16;
-	signature  |= value_32bit;
-
 	if( bit_stream_get_value(
 	     bit_stream,
 	     32,
-	     &checksum,
+	     &safe_checksum,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1360,7 +1372,7 @@ int bzip_read_stream_footer(
 		libcnotify_printf(
 		 "%s: checksum\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
-		 checksum );
+		 safe_checksum );
 
 		libcnotify_printf(
 		 "\n" );
@@ -1377,6 +1389,8 @@ int bzip_read_stream_footer(
 
 		return( -1 );
 	}
+	*checksum = safe_checksum;
+
 	return( 1 );
 }
 
@@ -1393,16 +1407,21 @@ int bzip_decompress(
 	uint8_t block_data[ BLOCK_DATA_SIZE ];
 	uint8_t symbol_stack[ 256 ];
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
+	size_t permutations[ BLOCK_DATA_SIZE ];
 
 	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 	bit_stream_t *bit_stream           = NULL;
 	static char *function              = "bzip_decompress";
+	size_t block_data_offset           = 0;
 	size_t block_data_size             = 0;
 	size_t compressed_data_offset      = 0;
 	size_t safe_uncompressed_data_size = 0;
 	size_t uncompressed_data_offset    = 0;
+	uint64_t signature                 = 0;
+	uint32_t calculated_checksum       = 0;
 	uint32_t origin_pointer            = 0;
+	uint32_t stored_checksum           = 0;
 	uint32_t value_32bit               = 0;
 	uint16_t number_of_selectors       = 0;
 	uint16_t number_of_symbols         = 0;
@@ -1433,17 +1452,6 @@ int bzip_decompress(
 
 		return( -1 );
 	}
-	if( uncompressed_data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid uncompressed data.",
-		 function );
-
-		return( -1 );
-	}
 	if( uncompressed_data_size == NULL )
 	{
 		libcerror_error_set(
@@ -1451,17 +1459,6 @@ int bzip_decompress(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid uncompressed data size.",
-		 function );
-
-		return( -1 );
-	}
-	if( *uncompressed_data_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid uncompressed data size value exceeds maximum.",
 		 function );
 
 		return( -1 );
@@ -1496,220 +1493,275 @@ int bzip_decompress(
 
 		return( -1 );
 	}
-	if( ( compressed_data[ compressed_data_offset ] == 0x31 )
-	 && ( compressed_data[ compressed_data_offset + 1 ] == 0x41 )
-	 && ( compressed_data[ compressed_data_offset + 2 ] == 0x59 )
-	 && ( compressed_data[ compressed_data_offset + 3 ] == 0x26 )
-	 && ( compressed_data[ compressed_data_offset + 4 ] == 0x53 )
-	 && ( compressed_data[ compressed_data_offset + 5 ] == 0x59 ) )
+	if( bit_stream_initialize(
+	     &bit_stream,
+	     compressed_data,
+	     compressed_data_size,
+	     compressed_data_offset,
+	     BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	     error ) != 1 )
 	{
-		if( bit_stream_initialize(
-		     &bit_stream,
-		     compressed_data,
-		     compressed_data_size,
-		     compressed_data_offset,
-		     BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create bit-stream.",
+		 function );
+
+		goto on_error;
+	}
+	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
+	{
+		if( bzip_read_signature(
+		     bit_stream,
+		     &signature,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read signature.",
+			 function );
+
+			goto on_error;
+		}
+		if( ( signature != 0x177245385090UL )
+		 && ( signature != 0x314159265359UL ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported signature.",
+			 function );
+
+			return( -1 );
+		}
+		if( signature == 0x177245385090UL )
+		{
+			break;
+		}
+		if( bzip_read_block_header(
+		     bit_stream,
+		     signature,
+		     &origin_pointer,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read block header.",
+			 function );
+
+			goto on_error;
+		}
+		if( memory_set(
+		     symbol_stack,
+		     0,
+		     256 ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear symbol stack.",
+			 function );
+
+			goto on_error;
+		}
+		if( bzip_read_symbol_stack(
+		     bit_stream,
+		     symbol_stack,
+		     &number_of_symbols,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read symbol stack.",
+			 function );
+
+			goto on_error;
+		}
+		if( bit_stream_get_value(
+		     bit_stream,
+		     18,
+		     &value_32bit,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create bit-stream.",
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve value from bit stream.",
 			 function );
 
 			goto on_error;
 		}
-		while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
+		number_of_selectors = (uint16_t) ( value_32bit & 0x00007fffUL );
+		value_32bit       >>= 15;
+		number_of_trees     = (uint8_t) ( value_32bit & 0x00000007UL );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
 		{
-			if( bzip_read_block_header(
-			     bit_stream,
-			     &origin_pointer,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read block header.",
-				 function );
+			libcnotify_printf(
+			 "%s: number of trees\t\t\t\t: %" PRIu8 "\n",
+			 function,
+			 number_of_trees );
 
-				goto on_error;
-			}
-			if( memory_set(
-			     symbol_stack,
-			     0,
-			     256 ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-				 "%s: unable to clear symbol stack.",
-				 function );
+			libcnotify_printf(
+			 "%s: number of selectors\t\t\t\t: %" PRIu16 "\n",
+			 function,
+			 number_of_selectors );
 
-				goto on_error;
-			}
-			if( bzip_read_symbol_stack(
-			     bit_stream,
-			     symbol_stack,
-			     &number_of_symbols,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read symbol stack.",
-				 function );
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
+		if( bzip_read_selectors(
+		     bit_stream,
+		     selectors,
+		     number_of_trees,
+		     number_of_selectors,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read selectors.",
+			 function );
 
-				goto on_error;
-			}
-			if( bit_stream_get_value(
-			     bit_stream,
-			     18,
-			     &value_32bit,
+			goto on_error;
+		}
+		if( bzip_read_huffman_trees(
+		     bit_stream,
+		     huffman_trees,
+		     number_of_trees,
+		     number_of_symbols,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read Huffman trees.",
+			 function );
+
+			goto on_error;
+		}
+		block_data_size = BLOCK_DATA_SIZE;
+
+		if( bzip_read_block_data(
+		     bit_stream,
+		     huffman_trees,
+		     number_of_trees,
+		     selectors,
+		     number_of_selectors,
+		     symbol_stack,
+		     number_of_symbols,
+		     block_data,
+		     &block_data_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read block data.",
+			 function );
+
+			goto on_error;
+		}
+		block_data_offset = uncompressed_data_offset;
+
+		if( memory_set(
+		     permutations,
+		     0,
+		     sizeof( size_t ) * BLOCK_DATA_SIZE ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear permutations.",
+			 function );
+
+			goto on_error;
+		}
+		/* Perform Burrows-Wheeler transform
+		 */
+		if( bzip_reverse_burrows_wheeler_transform(
+		     block_data,
+		     block_data_size,
+		     permutations,
+		     origin_pointer,
+		     uncompressed_data,
+		     safe_uncompressed_data_size,
+		     &uncompressed_data_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to reverse Burrows-Wheeler transform.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: block data:\n",
+			 function );
+			libcnotify_print_data(
+			 &( uncompressed_data[ block_data_offset ] ),
+			 uncompressed_data_offset - block_data_offset,
+			 0 );
+		}
+#endif
+		for( tree_index = 0;
+		     tree_index < number_of_trees;
+		     tree_index++ )
+		{
+			if( huffman_tree_free(
+			     &( huffman_trees[ tree_index ] ),
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve value from bit stream.",
-				 function );
-
-				goto on_error;
-			}
-			number_of_selectors = (uint16_t) ( value_32bit & 0x00007fffUL );
-			value_32bit       >>= 15;
-			number_of_trees     = (uint8_t) ( value_32bit & 0x00000007UL );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: number of trees\t\t\t\t: %" PRIu8 "\n",
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free Huffman tree: %" PRIu8 ".",
 				 function,
-				 number_of_trees );
-
-				libcnotify_printf(
-				 "%s: number of selectors\t\t\t\t: %" PRIu16 "\n",
-				 function,
-				 number_of_selectors );
-
-				libcnotify_printf(
-				 "\n" );
-			}
-#endif
-			if( bzip_read_selectors(
-			     bit_stream,
-			     selectors,
-			     number_of_trees,
-			     number_of_selectors,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read selectors.",
-				 function );
+				 tree_index );
 
 				goto on_error;
 			}
-			if( bzip_read_huffman_trees(
-			     bit_stream,
-			     huffman_trees,
-			     number_of_trees,
-			     number_of_symbols,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read Huffman trees.",
-				 function );
-
-				goto on_error;
-			}
-			block_data_size = BLOCK_DATA_SIZE;
-
-			if( bzip_read_block_data(
-			     bit_stream,
-			     huffman_trees,
-			     number_of_trees,
-			     selectors,
-			     number_of_selectors,
-			     symbol_stack,
-			     number_of_symbols,
-			     block_data,
-			     &block_data_size,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read block data.",
-				 function );
-
-				goto on_error;
-			}
-			/* Perform Burrows-Wheeler transform
-			 */
-			if( bzip_reverse_burrows_wheeler_transform(
-			     block_data,
-			     block_data_size,
-			     origin_pointer,
-			     uncompressed_data,
-			     &safe_uncompressed_data_size,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to reverse Burrows-Wheeler transform.",
-				 function );
-
-				goto on_error;
-			}
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: block data:\n",
-				 function );
-				libcnotify_print_data(
-				 uncompressed_data,
-				 block_data_size,
-				 0 );
-			}
-#endif
-			for( tree_index = 0;
-			     tree_index < number_of_trees;
-			     tree_index++ )
-			{
-				if( huffman_tree_free(
-				     &( huffman_trees[ tree_index ] ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-					 "%s: unable to free Huffman tree: %" PRIu8 ".",
-					 function,
-					 tree_index );
-
-					goto on_error;
-				}
-			}
-			break;
 		}
 	}
-/* TODO check stream footer */
+	if( bzip_read_stream_footer(
+	     bit_stream,
+	     signature,
+	     &stored_checksum,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read stream footer.",
+		 function );
+
+		goto on_error;
+	}
+/* TODO calculate and validate checksums */
 
 	if( bit_stream_free(
 	     &bit_stream,

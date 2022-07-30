@@ -69,21 +69,36 @@ int assorted_test_bzip_reverse_burrows_wheeler_transform(
 	       	'a', ' ', 'b' };
 
 	uint8_t output_data[ 35 ];
+	size_t permutations[ 35 ];
 
-	libcerror_error_t *error = NULL;
-	size_t output_data_size  = 0;
-	int result               = 0;
+	libcerror_error_t *error  = NULL;
+	void *memset_result       = NULL;
+	size_t output_data_offset = 0;
+	int result                = 0;
+
+	/* Initialize test
+	 */
+	memset_result = memory_set(
+	                 permutations,
+	                 0,
+	                 sizeof( size_t ) * 32 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
 
 	/* Test regular cases
 	 */
-	output_data_size = 35;
+	output_data_offset = 0;
 
 	result = bzip_reverse_burrows_wheeler_transform(
 	          input_data,
 	          35,
+	          permutations,
 	          30,
 	          output_data,
-	          &output_data_size,
+	          35,
+	          &output_data_offset,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -92,8 +107,8 @@ int assorted_test_bzip_reverse_burrows_wheeler_transform(
 	 1 );
 
 	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
-	 "output_data_size",
-	 output_data_size,
+	 "output_data_offset",
+	 output_data_offset,
 	 (size_t) 35 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
@@ -112,12 +127,16 @@ int assorted_test_bzip_reverse_burrows_wheeler_transform(
 
 	/* Test error cases
 	 */
+	output_data_offset = 0;
+
 	result = bzip_reverse_burrows_wheeler_transform(
 	          NULL,
 	          35,
+	          permutations,
 	          30,
 	          output_data,
-	          &output_data_size,
+	          35,
+	          &output_data_offset,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -196,15 +215,15 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_block_header function
+/* Tests the bzip_read_signature function
  * Returns 1 if successful or 0 if not
  */
-int assorted_test_bzip_read_block_header(
+int assorted_test_bzip_read_signature(
      void )
 {
 	bit_stream_t *bit_stream = NULL;
 	libcerror_error_t *error = NULL;
-	uint32_t origin_pointer  = 0;
+	uint64_t signature       = 0;
 	int result               = 0;
 
 	/* Initialize test
@@ -232,8 +251,134 @@ int assorted_test_bzip_read_block_header(
 
 	/* Test regular cases
 	 */
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x314159265359UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = bzip_read_signature(
+	          NULL,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( 0 );
+}
+
+/* Tests the bzip_read_block_header function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_bzip_read_block_header(
+     void )
+{
+	bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error = NULL;
+	uint64_t signature       = 0;
+	uint32_t origin_pointer  = 0;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bzip_compressed_byte_stream,
+	          125,
+	          4,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x314159265359UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
 	result = bzip_read_block_header(
 	          bit_stream,
+	          signature,
 	          &origin_pointer,
 	          &error );
 
@@ -255,6 +400,7 @@ int assorted_test_bzip_read_block_header(
 	 */
 	result = bzip_read_block_header(
 	          NULL,
+	          signature,
 	          &origin_pointer,
 	          &error );
 
@@ -316,6 +462,7 @@ int assorted_test_bzip_read_symbol_stack(
 	bit_stream_t *bit_stream             = NULL;
 	libcerror_error_t *error             = NULL;
 	void *memset_result                  = NULL;
+	uint64_t signature                   = 0;
 	uint32_t origin_pointer              = 0;
 	uint16_t number_of_symbols           = 0;
 	int result                           = 0;
@@ -343,8 +490,28 @@ int assorted_test_bzip_read_symbol_stack(
 	 "error",
 	 error );
 
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x314159265359UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = bzip_read_block_header(
 	          bit_stream,
+	          signature,
 	          &origin_pointer,
 	          &error );
 
@@ -469,6 +636,7 @@ int assorted_test_bzip_read_selectors(
 	bit_stream_t *bit_stream        = NULL;
 	libcerror_error_t *error        = NULL;
 	void *memset_result             = NULL;
+	uint64_t signature              = 0;
 	uint32_t origin_pointer         = 0;
 	uint32_t value_32bit            = 0;
 	uint16_t number_of_selectors    = 0;
@@ -499,8 +667,28 @@ int assorted_test_bzip_read_selectors(
 	 "error",
 	 error );
 
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x314159265359UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = bzip_read_block_header(
 	          bit_stream,
+	          signature,
 	          &origin_pointer,
 	          &error );
 
@@ -669,6 +857,7 @@ int assorted_test_bzip_read_huffman_tree(
 	huffman_tree_t *huffman_tree = NULL;
 	libcerror_error_t *error     = NULL;
 	void *memset_result          = NULL;
+	uint64_t signature           = 0;
 	uint32_t origin_pointer      = 0;
 	uint32_t value_32bit         = 0;
 	uint16_t number_of_selectors = 0;
@@ -699,8 +888,28 @@ int assorted_test_bzip_read_huffman_tree(
 	 "error",
 	 error );
 
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x314159265359UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = bzip_read_block_header(
 	          bit_stream,
+	          signature,
 	          &origin_pointer,
 	          &error );
 
@@ -915,6 +1124,7 @@ int assorted_test_bzip_read_huffman_trees(
 	bit_stream_t *bit_stream           = NULL;
 	libcerror_error_t *error           = NULL;
 	void *memset_result                = NULL;
+	uint64_t signature                 = 0;
 	uint32_t origin_pointer            = 0;
 	uint32_t value_32bit               = 0;
 	uint16_t number_of_selectors       = 0;
@@ -946,8 +1156,28 @@ int assorted_test_bzip_read_huffman_trees(
 	 "error",
 	 error );
 
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x314159265359UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = bzip_read_block_header(
 	          bit_stream,
+	          signature,
 	          &origin_pointer,
 	          &error );
 
@@ -1162,6 +1392,7 @@ int assorted_test_bzip_read_block_data(
 	libcerror_error_t *error           = NULL;
 	void *memset_result                = NULL;
 	size_t block_data_size             = 0;
+	uint64_t signature                 = 0;
 	uint32_t origin_pointer            = 0;
 	uint32_t value_32bit               = 0;
 	uint16_t number_of_selectors       = 0;
@@ -1193,8 +1424,28 @@ int assorted_test_bzip_read_block_data(
 	 "error",
 	 error );
 
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x314159265359UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = bzip_read_block_header(
 	          bit_stream,
+	          signature,
 	          &origin_pointer,
 	          &error );
 
@@ -1464,6 +1715,10 @@ int main(
 	 assorted_test_bzip_read_stream_header );
 
 	ASSORTED_TEST_RUN(
+	 "bzip_read_signature",
+	 assorted_test_bzip_read_signature );
+
+	ASSORTED_TEST_RUN(
 	 "bzip_read_block_header",
 	 assorted_test_bzip_read_block_header );
 
@@ -1486,6 +1741,10 @@ int main(
 	ASSORTED_TEST_RUN(
 	 "bzip_read_block_data",
 	 assorted_test_bzip_read_block_data );
+
+/* TODO add tests for bzip_read_stream_footer */
+
+/* TODO add tests for bzip_decompress */
 
 #endif /* defined( __GNUC__ ) */
 

@@ -36,9 +36,11 @@ extern "C" {
 int bzip_reverse_burrows_wheeler_transform(
      const uint8_t *input_data,
      size_t input_data_size,
+     size_t *permutations,
      uint32_t origin_pointer,
      uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
 int bzip_read_stream_header(
@@ -47,8 +49,14 @@ int bzip_read_stream_header(
      uint8_t *compression_level,
      libcerror_error_t **error );
 
+int bzip_read_signature(
+     bit_stream_t *bit_stream,
+     uint64_t *signature,
+     libcerror_error_t **error );
+
 int bzip_read_block_header(
      bit_stream_t *bit_stream,
+     uint64_t signature,
      uint32_t *origin_pointer,
      libcerror_error_t **error );
 
@@ -97,6 +105,8 @@ int bzip_read_block_data(
 
 int bzip_read_stream_footer(
      bit_stream_t *bit_stream,
+     uint64_t signature,
+     uint32_t *checksum,
      libcerror_error_t **error );
 
 int bzip_decompress(

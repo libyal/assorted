@@ -266,6 +266,44 @@ int bit_stream_read(
 	return( result );
 }
 
+/* Sets the byte stream offset
+ * Returns 1 on success or -1 on error
+ */
+int bit_stream_set_byte_stream_offset(
+     bit_stream_t *bit_stream,
+     size_t byte_stream_offset,
+     libcerror_error_t **error )
+{
+	static char *function = "bit_stream_set_byte_stream_offset";
+
+	if( bit_stream == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid bit stream.",
+		 function );
+
+		return( -1 );
+	}
+	if( byte_stream_offset > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid byte stream offset value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	bit_stream->byte_stream_offset = byte_stream_offset;
+	bit_stream->bit_buffer_size    = 0;
+
+	return( 1 );
+}
+
 /* Retrieves a value from the bit stream
  * Returns 1 on success or -1 on error
  */

@@ -96,6 +96,11 @@ int bit_stream_read(
      uint8_t number_of_bits,
      libcerror_error_t **error );
 
+int bit_stream_set_byte_stream_offset(
+     bit_stream_t *bit_stream,
+     size_t byte_stream_offset,
+     libcerror_error_t **error );
+
 int bit_stream_get_value(
      bit_stream_t *bit_stream,
      uint8_t number_of_bits,
