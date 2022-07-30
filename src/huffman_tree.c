@@ -119,10 +119,10 @@ int huffman_tree_initialize(
 
 		return( -1 );
 	}
-	array_size = sizeof( int ) * number_of_symbols;
+	array_size = sizeof( uint16_t ) * number_of_symbols;
 
-	( *huffman_tree )->symbols = (int *) memory_allocate(
-	                                      array_size );
+	( *huffman_tree )->symbols = (uint16_t *) memory_allocate(
+	                                           array_size );
 
 	if( ( *huffman_tree )->symbols == NULL )
 	{
@@ -256,11 +256,11 @@ int huffman_tree_build(
 	int *symbol_offsets   = NULL;
 	static char *function = "huffman_tree_build";
 	size_t array_size     = 0;
+	uint16_t symbol       = 0;
 	uint8_t bit_index     = 0;
 	uint8_t code_size     = 0;
 	int code_offset       = 0;
 	int left_value        = 0;
-	int symbol            = 0;
 
 	if( huffman_tree == NULL )
 	{
@@ -284,7 +284,8 @@ int huffman_tree_build(
 
 		return( -1 );
 	}
-	if( number_of_code_sizes < 0 )
+	if( ( number_of_code_sizes < 0 )
+	 || ( number_of_code_sizes > (int) INT16_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -314,7 +315,7 @@ int huffman_tree_build(
 		goto on_error;
 	}
 	for( symbol = 0;
-	     symbol < number_of_code_sizes;
+	     symbol < (uint16_t) number_of_code_sizes;
 	     symbol++ )
 	{
 		code_size = code_sizes_array[ symbol ];
@@ -404,7 +405,7 @@ int huffman_tree_build(
 	/* Fill the symbols sorted by code size
 	 */
 	for( symbol = 0;
-	     symbol < number_of_code_sizes;
+	     symbol < (uint16_t) number_of_code_sizes;
 	     symbol++ )
 	{
 		code_size = code_sizes_array[ symbol ];
@@ -422,7 +423,7 @@ int huffman_tree_build(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid symbol: %d code offset: %d value out of bounds.",
+			 "%s: invalid symbol: %" PRIu16 " code offset: %d value out of bounds.",
 			 function,
 			 symbol,
 			 code_offset );
@@ -453,12 +454,12 @@ on_error:
 int huffman_tree_get_symbol_from_bit_stream(
      huffman_tree_t *huffman_tree,
      bit_stream_t *bit_stream,
-     uint32_t *symbol,
+     uint16_t *symbol,
      libcerror_error_t **error )
 {
 	static char *function  = "huffman_tree_get_symbol_from_bit_stream";
-	uint32_t safe_symbol   = 0;
 	uint32_t value_32bit   = 0;
+	uint16_t safe_symbol   = 0;
 	uint8_t bit_index      = 0;
 	uint8_t number_of_bits = 0;
 	int code_size_count    = 0;

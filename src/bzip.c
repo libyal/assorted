@@ -1071,8 +1071,8 @@ int bzip_read_block_data(
 	size_t symbol_index                  = 0;
 	uint64_t run_length                  = 0;
 	uint64_t run_length_value            = 0;
-	uint32_t symbol                      = 0;
 	uint16_t end_of_block_symbol         = 0;
+	uint16_t symbol                      = 0;
 	uint8_t number_of_run_length_symbols = 0;
 	uint8_t stack_index                  = 0;
 	uint8_t stack_value                  = 0;
@@ -1240,7 +1240,7 @@ int bzip_read_block_data(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: symbol\t\t\t\t\t\t: %" PRIu32 " (run-length)\n",
+				 "%s: symbol\t\t\t\t\t\t: %" PRIu16 " (run-length)\n",
 				 function,
 				 symbol );
 			}
@@ -1265,7 +1265,7 @@ int bzip_read_block_data(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: symbol\t\t\t\t\t\t: %" PRIu32 " (MTF: %" PRIu8 ")\n",
+				 "%s: symbol\t\t\t\t\t\t: %" PRIu16 " (MTF: %" PRIu8 ")\n",
 				 function,
 				 symbol,
 				 stack_value );
@@ -1284,6 +1284,15 @@ int bzip_read_block_data(
 			}
 			block_data[ block_data_offset++ ] = stack_value;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: symbol\t\t\t\t\t\t: %" PRIu16 "\n",
+			 function,
+			 symbol );
+		}
+#endif
 		symbol_index++;
 
 		if( ( symbol_index % 50 ) == 0 )

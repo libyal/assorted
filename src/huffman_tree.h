@@ -42,8 +42,7 @@ struct huffman_tree
 
 	/* The symbols array
 	 */
-/* TODO change to uint16_t */
-	int *symbols;
+	uint16_t *symbols;
 
 	/* The code size counts array
 	 */
@@ -69,7 +68,7 @@ int huffman_tree_build(
 int huffman_tree_get_symbol_from_bit_stream(
      huffman_tree_t *huffman_tree,
      bit_stream_t *bit_stream,
-     uint32_t *symbol,
+     uint16_t *symbol,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

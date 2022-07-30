@@ -487,7 +487,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	bit_stream_t *bit_stream     = NULL;
 	huffman_tree_t *huffman_tree = NULL;
 	libcerror_error_t *error     = NULL;
-	uint32_t symbol              = 0;
+	uint16_t symbol              = 0;
 	int result                   = 0;
 
 	/* Initialize test
@@ -587,10 +587,10 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	 result,
 	 1 );
 
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	ASSORTED_TEST_ASSERT_EQUAL_UINT16(
 	 "symbol",
 	 symbol,
-	 (uint32_t) 141 );
+	 (uint16_t) 141 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -777,7 +777,11 @@ int main(
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

@@ -53,8 +53,8 @@ int deflate_build_dynamic_huffman_trees(
 	uint32_t number_of_code_sizes          = 0;
 	uint32_t number_of_distance_codes      = 0;
 	uint32_t number_of_literal_codes       = 0;
-	uint32_t symbol                        = 0;
 	uint32_t times_to_repeat               = 0;
+	uint16_t symbol                        = 0;
 
 	if( bit_stream_get_value(
 	     bit_stream,
@@ -229,7 +229,7 @@ int deflate_build_dynamic_huffman_trees(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: code size: % 3" PRIu32 " symbol\t\t: %" PRIu32 "\n",
+			 "%s: code size: % 3" PRIu32 " symbol\t\t: %" PRIu16 "\n",
 			 function,
 			 code_size_index,
 			 symbol );
@@ -239,7 +239,7 @@ int deflate_build_dynamic_huffman_trees(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: code size: % 3" PRIu32 " value\t\t: %" PRIu32 "\n",
+				 "%s: code size: % 3" PRIu32 " value\t\t: %" PRIu16 "\n",
 				 function,
 				 code_size_index,
 				 symbol );
@@ -533,10 +533,10 @@ int deflate_decode_huffman(
 	static char *function         = "deflate_decode_huffman";
 	size_t data_offset            = 0;
 	uint32_t extra_bits           = 0;
-	uint32_t symbol               = 0;
 	uint16_t compression_offset   = 0;
 	uint16_t compression_size     = 0;
 	uint16_t number_of_extra_bits = 0;
+	uint16_t symbol               = 0;
 
 	if( uncompressed_data == NULL )
 	{
@@ -593,7 +593,7 @@ int deflate_decode_huffman(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: symbol\t\t\t\t\t\t: %" PRIu32 "\n",
+			 "%s: symbol\t\t\t\t\t\t: %" PRIu16 "\n",
 			 function,
 			 symbol );
 		}
