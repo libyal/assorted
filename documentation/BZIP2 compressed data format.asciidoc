@@ -91,15 +91,15 @@ Format version 0 was used for bzip1
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
-| "1" | | BTW buffer size 100000
-| "2" | | BTW buffer size 200000
-| "3" | | BTW buffer size 300000
-| "4" | | BTW buffer size 400000
-| "5" | | BTW buffer size 500000
-| "6" | | BTW buffer size 600000
-| "7" | | BTW buffer size 700000
-| "8" | | BTW buffer size 800000
-| "9" | | BTW buffer size 900000
+| "1" | | Burrows-Wheeler transform (BWT) encoding buffer size 100000
+| "2" | | Burrows-Wheeler transform (BWT) encoding buffer size 200000
+| "3" | | Burrows-Wheeler transform (BWT) encoding buffer size 300000
+| "4" | | Burrows-Wheeler transform (BWT) encoding buffer size 400000
+| "5" | | Burrows-Wheeler transform (BWT) encoding buffer size 500000
+| "6" | | Burrows-Wheeler transform (BWT) encoding buffer size 600000
+| "7" | | Burrows-Wheeler transform (BWT) encoding buffer size 700000
+| "8" | | Burrows-Wheeler transform (BWT) encoding buffer size 800000
+| "9" | | Burrows-Wheeler transform (BWT) encoding buffer size 900000
 |===
 
 ==== Stream block
@@ -110,9 +110,9 @@ A BZIP2 compressed data block (StreamBlock) consist of:
 * Symbol stack
 * Number of trees (3 bits)
 * Number of selectors (15 bits)
-* Huffman encoded selectors (maximum of 6 bits)
-* Huffman encoded trees
-* stream block data (BlockData)
+* Selectors (maximum of 6 bits)
+* Huffman trees
+* Stream block data (BlockData)
 
 ===== Stream block header
 
@@ -164,6 +164,28 @@ The run-length values are used to encode one or more 0-byte values.
 ....
 number of 0-byte values = ( ( 1 << number of run-length values ) | bit representation of run-length values ) - 1
 ....
+
+===== Selectors
+
+BZip2 uses a Huffman tree selector for every group of 50 symbols.
+
+The selectors are stored Huffman and move-to-front (MTF) encoded.
+
+===== Huffman trees
+
+BZip2 can use upto 6 Huffman trees.
+
+The selectors are stored Huffman encoded.
+
+===== Stream block data
+
+Stream block data is stored using multiple encodings:
+
+* Huffman encoded using selectors to determine which Huffmann tree to use
+* Run-length symbol encoding (RLE2)
+* Move-to-front (MTF) encoding
+* Burrows-Wheeler transform (BWT) encoding
+* Run-length string encoding (RLE1)
 
 ==== Stream footer
 

@@ -1847,6 +1847,8 @@ int deflate_decompress(
 	     &bit_stream,
 	     compressed_data,
 	     compressed_data_size,
+	     compressed_data_offset,
+	     BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1858,9 +1860,7 @@ int deflate_decompress(
 
 		goto on_error;
 	}
-/* TODO add seek byte offset function */
-	bit_stream->byte_stream_offset = compressed_data_offset;
-
+/* TODO find optimized solution to read bit stream from bytes */
 	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
 	{
 		if( deflate_read_block_header(
@@ -2133,6 +2133,8 @@ int deflate_decompress_zlib(
 	     &bit_stream,
 	     compressed_data,
 	     compressed_data_size,
+	     compressed_data_offset,
+	     BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -2144,9 +2146,6 @@ int deflate_decompress_zlib(
 
 		goto on_error;
 	}
-/* TODO add seek byte offset function */
-	bit_stream->byte_stream_offset = compressed_data_offset;
-
 /* TODO find optimized solution to read bit stream from bytes */
 	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
 	{

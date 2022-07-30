@@ -713,6 +713,8 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_byte_stream,
 	          2627,
+	          2,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -727,9 +729,6 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-/* TODO add byte stream seek function */
-	bit_stream->byte_stream_offset = 2;
 
 	result = huffman_tree_initialize(
 	          &literals_huffman_tree,
@@ -1161,6 +1160,8 @@ int assorted_test_deflate_decode_huffman(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_byte_stream,
 	          2627,
+	          2,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1175,9 +1176,6 @@ int assorted_test_deflate_decode_huffman(
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-/* TODO add byte stream seek function */
-	bit_stream->byte_stream_offset = 2;
 
 	result = huffman_tree_initialize(
 	          &literals_huffman_tree,

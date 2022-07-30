@@ -42,6 +42,7 @@ struct huffman_tree
 
 	/* The symbols array
 	 */
+/* TODO change to uint16_t */
 	int *symbols;
 
 	/* The code size counts array

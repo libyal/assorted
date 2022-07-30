@@ -100,6 +100,8 @@ int assorted_test_bit_stream_get_value(
 	          &bit_stream,
 	          assorted_test_bit_stream_data,
 	          16,
+	          0,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -402,7 +404,11 @@ int main(
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

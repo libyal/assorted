@@ -33,14 +33,23 @@
 extern "C" {
 #endif
 
+int bzip_reverse_burrows_wheeler_transform(
+     const uint8_t *input_data,
+     size_t input_data_size,
+     uint32_t origin_pointer,
+     uint8_t *output_data,
+     size_t output_data_size,
+     libcerror_error_t **error );
+
 int bzip_read_stream_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
-     size_t *compressed_data_offset,
+     uint8_t *compression_level,
      libcerror_error_t **error );
 
 int bzip_read_block_header(
      bit_stream_t *bit_stream,
+     uint32_t *origin_pointer,
      libcerror_error_t **error );
 
 int bzip_read_symbol_stack(
@@ -78,10 +87,12 @@ int bzip_read_block_data(
      bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
+     uint8_t *selectors,
+     uint16_t number_of_selectors,
      uint8_t *symbol_stack,
      uint16_t number_of_symbols,
-     uint8_t *uncompressed_data,
-     size_t uncompressed_data_size,
+     uint8_t *block_data,
+     size_t *block_data_size,
      libcerror_error_t **error );
 
 int bzip_read_stream_footer(

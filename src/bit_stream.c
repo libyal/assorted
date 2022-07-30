@@ -36,6 +36,8 @@ int bit_stream_initialize(
      bit_stream_t **bit_stream,
      const uint8_t *byte_stream,
      size_t byte_stream_size,
+     size_t byte_stream_offset,
+     uint8_t storage_type,
      libcerror_error_t **error )
 {
 	static char *function = "bit_stream_initialize";
@@ -58,6 +60,52 @@ int bit_stream_initialize(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 		 "%s: invalid bit stream value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( byte_stream == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid byte stream.",
+		 function );
+
+		return( -1 );
+	}
+	if( byte_stream_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid byte stream size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( byte_stream_offset > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid byte stream offset value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( storage_type != BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
+	 && ( storage_type != BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
+	 && ( storage_type != BIT_STREAM_STORAGE_TYPE_16BIT_LITTLE_ENDIAN ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported storage type.",
 		 function );
 
 		return( -1 );
@@ -90,9 +138,10 @@ int bit_stream_initialize(
 
 		goto on_error;
 	}
-	( *bit_stream )->byte_stream      = byte_stream;
-	( *bit_stream )->byte_stream_size = byte_stream_size;
-	( *bit_stream )->storage_type     = BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT;
+	( *bit_stream )->byte_stream        = byte_stream;
+	( *bit_stream )->byte_stream_size   = byte_stream_size;
+	( *bit_stream )->byte_stream_offset = byte_stream_offset;
+	( *bit_stream )->storage_type       = storage_type;
 
 	return( 1 );
 

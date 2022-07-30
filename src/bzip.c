@@ -30,18 +30,133 @@
 #include "bzip.h"
 #include "huffman_tree.h"
 
+#define BLOCK_DATA_SIZE 8192
+
+/* Reverses a Burrows-Wheeler transform
+ * Returns 1 on success or -1 on error
+ */
+int bzip_reverse_burrows_wheeler_transform(
+     const uint8_t *input_data,
+     size_t input_data_size,
+     uint32_t origin_pointer,
+     uint8_t *output_data,
+     size_t output_data_size,
+     libcerror_error_t **error )
+{
+	size_t distributions[ 256 ];
+	size_t permutations[ BLOCK_DATA_SIZE ];
+
+	static char *function     = "bzip_reverse_burrows_wheeler_transform";
+	size_t data_offset        = 0;
+	size_t distribution_value = 0;
+	size_t number_of_values   = 0;
+	size_t permutation_value  = 0;
+	uint16_t byte_value       = 0;
+
+	if( input_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid input data.",
+		 function );
+
+		return( -1 );
+	}
+	if( input_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid input data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( memory_set(
+	     distributions,
+	     0,
+	     sizeof( size_t ) * 256 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear distributions.",
+		 function );
+
+		return( -1 );
+	}
+	if( memory_set(
+	     permutations,
+	     0,
+	     sizeof( size_t ) * BLOCK_DATA_SIZE ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear permutations.",
+		 function );
+
+		return( -1 );
+	}
+	for( data_offset = 0;
+	     data_offset < input_data_size;
+	     data_offset++ )
+	{
+		byte_value = input_data[ data_offset ];
+
+		distributions[ byte_value ] += 1;
+	}
+	for( byte_value = 0;
+	     byte_value < 256;
+	     byte_value++ )
+	{
+		number_of_values = distributions[ byte_value ];
+
+		distributions[ byte_value ] = distribution_value;
+
+		distribution_value += number_of_values;
+	}
+	for( data_offset = 0;
+	     data_offset < input_data_size;
+	     data_offset++ )
+	{
+		byte_value = input_data[ data_offset ];
+
+		distribution_value = distributions[ byte_value ];
+
+		permutations[ distribution_value ] = data_offset;
+
+		distributions[ byte_value ] += 1;
+	}
+	permutation_value = permutations[ origin_pointer ];
+
+	for( data_offset = 0;
+	     data_offset < input_data_size;
+	     data_offset++ )
+	{
+		output_data[ data_offset ] = input_data[ permutation_value ];
+
+		permutation_value = permutations[ permutation_value ];
+	}
+	return( 1 );
+}
+
 /* Reads the stream header
  * Returns 1 on success or -1 on error
  */
 int bzip_read_stream_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
-     size_t *compressed_data_offset,
+     uint8_t *compression_level,
      libcerror_error_t **error )
 {
-	static char *function              = "bzip_read_stream_header";
-	size_t safe_compressed_data_offset = 0;
-	uint8_t compression_level          = 0;
+	static char *function          = "bzip_read_stream_header";
+	uint8_t safe_compression_level = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -54,54 +169,43 @@ int bzip_read_stream_header(
 
 		return( -1 );
 	}
-	if( compressed_data_size > (size_t) SSIZE_MAX )
+	if( ( compressed_data_size < 4 )
+	 || ( compressed_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid compressed data size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid compressed data size value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
-	if( compressed_data_offset == NULL )
+	if( compression_level == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid compressed data offset.",
+		 "%s: invalid compression level.",
 		 function );
 
 		return( -1 );
 	}
-	safe_compressed_data_offset = *compressed_data_offset;
-
-	if( ( compressed_data_size < 4 )
-	 || ( safe_compressed_data_offset > ( compressed_data_size - 4 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: invalid compressed data value too small.",
-		 function );
-
-		return( -1 );
-	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "%s: stream header data:\n",
 		 function );
 		libcnotify_print_data(
-		 &( compressed_data[ safe_compressed_data_offset ] ),
+		 compressed_data,
 		 4,
 		 0 );
 	}
-	if( ( compressed_data[ safe_compressed_data_offset ] != 'B' )
-	 || ( compressed_data[ safe_compressed_data_offset + 1 ] != 'Z' ) )
+#endif
+	if( ( compressed_data[ 0 ] != 'B' )
+	 || ( compressed_data[ 1 ] != 'Z' ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -112,10 +216,10 @@ int bzip_read_stream_header(
 
 		return( -1 );
 	}
-	compression_level = compressed_data[ safe_compressed_data_offset + 3 ];
+	safe_compression_level = compressed_data[ 3 ];
 
-	if( ( compression_level < '1' )
-	 || ( compression_level > '9' ) )
+	if( ( safe_compression_level < '1' )
+	 || ( safe_compression_level > '9' ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -126,30 +230,33 @@ int bzip_read_stream_header(
 
 		return( -1 );
 	}
-	compression_level -= '0';
+	safe_compression_level -= '0';
 
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "%s: signature\t\t\t\t: %c%c\n",
 		 function,
-		 compressed_data[ safe_compressed_data_offset ],
-		 compressed_data[ safe_compressed_data_offset + 1 ] );
+		 compressed_data[ 0 ],
+		 compressed_data[ 1 ] );
 
 		libcnotify_printf(
 		 "%s: format version\t\t\t\t: 0x%02" PRIx8 "\n",
 		 function,
-		 compressed_data[ safe_compressed_data_offset + 2 ] );
+		 compressed_data[ 2 ] );
 
 		libcnotify_printf(
 		 "%s: compression level\t\t\t: %" PRIu8 "\n",
 		 function,
-		 compression_level );
+		 safe_compression_level );
 
 		libcnotify_printf(
 		 "\n" );
 	}
-	if( compressed_data[ safe_compressed_data_offset + 2 ] != 0x68 )
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+	if( compressed_data[ 2 ] != 0x68 )
 	{
 		libcerror_error_set(
 		 error,
@@ -160,7 +267,7 @@ int bzip_read_stream_header(
 
 		return( -1 );
 	}
-	*compressed_data_offset = safe_compressed_data_offset + 4;
+	*compression_level = safe_compression_level;
 
 	return( 1 );
 }
@@ -170,15 +277,27 @@ int bzip_read_stream_header(
  */
 int bzip_read_block_header(
      bit_stream_t *bit_stream,
+     uint32_t *origin_pointer,
      libcerror_error_t **error )
 {
-	static char *function   = "bzip_read_block_header";
-	uint64_t signature      = 0;
-	uint32_t checksum       = 0;
-	uint32_t origin_pointer = 0;
-	uint32_t value_32bit    = 0;
-	uint8_t is_randomized   = 0;
+	static char *function        = "bzip_read_block_header";
+	uint64_t signature           = 0;
+	uint32_t checksum            = 0;
+	uint32_t safe_origin_pointer = 0;
+	uint32_t value_32bit         = 0;
+	uint8_t is_randomized        = 0;
 
+	if( origin_pointer == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid origin pointer.",
+		 function );
+
+		return( -1 );
+	}
 	if( bit_stream_get_value(
 	     bit_stream,
 	     32,
@@ -244,9 +363,11 @@ int bzip_read_block_header(
 
 		return( -1 );
 	}
-	is_randomized  = (uint8_t) ( value_32bit & 0x00000001UL );
-	origin_pointer = value_32bit >> 1;
+	safe_origin_pointer = value_32bit & 0x00ffffffUL;
+	value_32bit       >>= 24;
+	is_randomized       = (uint8_t) ( value_32bit & 0x00000001UL );
 
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -267,11 +388,13 @@ int bzip_read_block_header(
 		libcnotify_printf(
 		 "%s: origin pointer\t\t\t\t: 0x%06" PRIx32 "\n",
 		 function,
-		 origin_pointer );
+		 safe_origin_pointer );
 
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	if( signature != 0x314159265359UL )
 	{
 		libcerror_error_set(
@@ -294,6 +417,8 @@ int bzip_read_block_header(
 
 		return( -1 );
 	}
+	*origin_pointer = safe_origin_pointer;
+
 	return( 1 );
 }
 
@@ -353,6 +478,7 @@ int bzip_read_symbol_stack(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -360,6 +486,7 @@ int bzip_read_symbol_stack(
 		 function,
 		 level1_value );
 	}
+#endif
 	level1_bitmask = 0x00008000UL;
 
 	for( level1_bit_index = 0;
@@ -383,6 +510,7 @@ int bzip_read_symbol_stack(
 
 				return( -1 );
 			}
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -391,6 +519,7 @@ int bzip_read_symbol_stack(
 				 level1_bit_index,
 				 level2_value );
 			}
+#endif
 			level2_bitmask = 0x00008000UL;
 
 			for( level2_bit_index = 0;
@@ -401,6 +530,7 @@ int bzip_read_symbol_stack(
 				{
 					symbol_value = ( 16 * level1_bit_index ) + level2_bit_index;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 					if( libcnotify_verbose != 0 )
 					{
 						libcnotify_printf(
@@ -409,6 +539,7 @@ int bzip_read_symbol_stack(
 						 symbol_index,
 						 symbol_value );
 					}
+#endif
 					if( symbol_index > 256 )
 					{
 						libcerror_error_set(
@@ -427,11 +558,13 @@ int bzip_read_symbol_stack(
 		}
 		level1_bitmask >>= 1;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif
 	*number_of_symbols = symbol_index + 2;
 
 	return( 1 );
@@ -506,6 +639,7 @@ int bzip_read_selectors(
 
 			return( -1 );
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -514,6 +648,9 @@ int bzip_read_selectors(
 			 selector_index,
 			 tree_index );
 		}
+#endif
+		/* Inverse move-to-front transform
+		 */
 		selector_value = stack[ tree_index ];
 
 		selectors[ selector_index ] = selector_value;
@@ -526,11 +663,13 @@ int bzip_read_selectors(
 		}
 		stack[ 0 ] = selector_value;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif
 	return( 1 );
 }
 
@@ -629,6 +768,7 @@ int bzip_read_huffman_tree(
 
 			return( -1 );
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -637,6 +777,7 @@ int bzip_read_huffman_tree(
 			 symbol_index,
 			 code_size );
 		}
+#endif
 		code_size_array[ symbol_index ] = code_size;
 
 		if( code_size > largest_code_size )
@@ -644,11 +785,13 @@ int bzip_read_huffman_tree(
 			largest_code_size = code_size;
 		}
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif
 	if( largest_code_size > 32 )
 	{
 		libcerror_error_set(
@@ -680,6 +823,7 @@ int bzip_read_huffman_tree(
 
 		return( -1 );
 	}
+/* TODO build tree inside fill array loop ? */
 	if( huffman_tree_build(
 	     huffman_tree,
 	     code_size_array,
@@ -727,6 +871,7 @@ int bzip_read_huffman_trees(
 	     tree_index < number_of_trees;
 	     tree_index++ )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -734,6 +879,7 @@ int bzip_read_huffman_trees(
 			 function,
 			 tree_index );
 		}
+#endif
 		if( huffman_tree_initialize(
 		     &huffman_tree,
 		     number_of_symbols,
@@ -788,15 +934,19 @@ int bzip_read_block_data(
      bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
+     uint8_t *selectors,
+     uint16_t number_of_selectors,
      uint8_t *symbol_stack,
      uint16_t number_of_symbols,
-     uint8_t *uncompressed_data,
-     size_t uncompressed_data_size,
+     uint8_t *block_data,
+     size_t *block_data_size,
      libcerror_error_t **error )
 {
-	huffman_tree_t *huffman_tree         = NULL;
 	static char *function                = "bzip_read_block_data";
-	size_t data_index                    = 0;
+	size_t block_data_index              = 0;
+	size_t safe_block_data_size          = 0;
+	size_t selector_index                = 0;
+	size_t symbol_index                  = 0;
 	uint64_t run_length                  = 0;
 	uint64_t run_length_value            = 0;
 	uint32_t symbol                      = 0;
@@ -805,6 +955,7 @@ int bzip_read_block_data(
 	uint8_t stack_index                  = 0;
 	uint8_t stack_value                  = 0;
 	uint8_t stack_value_index            = 0;
+	uint8_t tree_index                   = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -839,36 +990,60 @@ int bzip_read_block_data(
 
 		return( -1 );
 	}
-	if( uncompressed_data == NULL )
+	if( block_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid uncompressed data.",
+		 "%s: invalid block data.",
 		 function );
 
 		return( -1 );
 	}
-	if( uncompressed_data_size > (size_t) SSIZE_MAX )
+	if( block_data_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data size.",
+		 function );
+
+		return( -1 );
+	}
+	if( *block_data_size > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid uncompressed data size value exceeds maximum.",
+		 "%s: invalid block data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	safe_block_data_size = *block_data_size;
+
+	tree_index = selectors[ 0 ];
+
+	if( tree_index > number_of_trees )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid tree index value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
 	end_of_block_symbol = number_of_symbols - 1;
 
-	huffman_tree = huffman_trees[ 0 ];
-
 	do
 	{
 		if( huffman_tree_get_symbol_from_bit_stream(
-		     huffman_tree,
+		     huffman_trees[ tree_index ],
 		     bit_stream,
 		     &symbol,
 		     error ) != 1 )
@@ -877,8 +1052,9 @@ int bzip_read_block_data(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve symbol from literals Huffman tree.",
-			 function );
+			 "%s: unable to retrieve symbol from Huffman tree: %" PRIu8 ".",
+			 function,
+			 tree_index );
 
 			return( -1 );
 		}
@@ -887,6 +1063,7 @@ int bzip_read_block_data(
 		{
 			run_length = ( ( (uint64_t) 1 << number_of_run_length_symbols ) | run_length_value ) - 1;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -894,10 +1071,42 @@ int bzip_read_block_data(
 				 function,
 				 run_length );
 			}
+#endif
+			if( ( run_length > safe_block_data_size )
+			 || ( block_data_index > ( safe_block_data_size - run_length ) ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid run length value out of bounds.",
+				 function );
+
+				return( -1 );
+			}
 			run_length_value             = 0;
 			number_of_run_length_symbols = 0;
 
-/* TODO MTF transform of run-length */
+			while( run_length > 0 )
+			{
+				/* Inverse move-to-front transform
+				 * Note that 0 is already at the front of the stack hence the stack does not need to be reordered.
+				 */
+				block_data[ block_data_index++ ] = symbol_stack[ 0 ];
+
+				run_length--;
+			}
+		}
+		if( symbol > end_of_block_symbol )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid symbol value out of bounds.",
+			 function );
+
+			return( -1 );
 		}
 		if( ( symbol == 0 )
 		 || ( symbol == 1 ) )
@@ -906,6 +1115,7 @@ int bzip_read_block_data(
 			run_length_value             |= symbol;
 			number_of_run_length_symbols += 1;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -913,9 +1123,12 @@ int bzip_read_block_data(
 				 function,
 				 symbol );
 			}
+#endif
 		}
 		else if( symbol < end_of_block_symbol )
 		{
+			/* Inverse move-to-front transform
+			 */
 			stack_value_index = symbol - 1;
 			stack_value       = symbol_stack[ stack_value_index ];
 
@@ -927,6 +1140,7 @@ int bzip_read_block_data(
 			}
 			symbol_stack[ 0 ] = stack_value;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -935,11 +1149,53 @@ int bzip_read_block_data(
 				 symbol,
 				 stack_value );
 			}
+#endif
+			if( block_data_index > ( safe_block_data_size - 1 ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid block data index value out of bounds.",
+				 function );
+
+				return( -1 );
+			}
+			block_data[ block_data_index++ ] = stack_value;
+		}
+		symbol_index++;
+
+		if( ( symbol_index % 50 ) == 0 )
+		{
+			selector_index = symbol_index / 50;
+
+			if( selector_index > number_of_selectors )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid selector index value out of bounds.",
+				 function );
+
+				return( -1 );
+			}
+			tree_index = selectors[ selector_index ];
+
+			if( tree_index > number_of_trees )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid tree index value out of bounds.",
+				 function );
+
+				return( -1 );
+			}
 		}
 	}
 	while( symbol != end_of_block_symbol );
-
-/* TODO perform BTW */
 
 	return( 1 );
 }
@@ -1006,6 +1262,7 @@ int bzip_read_stream_footer(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -1021,6 +1278,7 @@ int bzip_read_stream_footer(
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif
 	if( signature != 0x177245385090UL )
 	{
 		libcerror_error_set(
@@ -1045,6 +1303,7 @@ int bzip_decompress(
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
+	uint8_t block_data[ BLOCK_DATA_SIZE ];
 	uint8_t symbol_stack[ 256 ];
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
 
@@ -1052,12 +1311,15 @@ int bzip_decompress(
 
 	bit_stream_t *bit_stream           = NULL;
 	static char *function              = "bzip_decompress";
+	size_t block_data_size             = 0;
 	size_t compressed_data_offset      = 0;
 	size_t safe_uncompressed_data_size = 0;
 	size_t uncompressed_data_offset    = 0;
+	uint32_t origin_pointer            = 0;
 	uint32_t value_32bit               = 0;
 	uint16_t number_of_selectors       = 0;
 	uint16_t number_of_symbols         = 0;
+	uint8_t compression_level          = 0;
 	uint8_t number_of_trees            = 0;
 	uint8_t tree_index                 = 0;
 
@@ -1072,13 +1334,14 @@ int bzip_decompress(
 
 		return( -1 );
 	}
-	if( compressed_data_size > (size_t) SSIZE_MAX )
+	if( ( compressed_data_size < 14 )
+	 || ( compressed_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid compressed data size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid compressed data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -1121,7 +1384,7 @@ int bzip_decompress(
 	if( bzip_read_stream_header(
 	     compressed_data,
 	     compressed_data_size,
-	     &compressed_data_offset,
+	     &compression_level,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1133,8 +1396,9 @@ int bzip_decompress(
 
 		goto on_error;
 	}
-	if( ( compressed_data_size < 10 )
-	 || ( compressed_data_offset > ( compressed_data_size - 10 ) ) )
+	compressed_data_offset += 4;
+
+	if( compressed_data_offset > ( compressed_data_size - 10 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1156,6 +1420,8 @@ int bzip_decompress(
 		     &bit_stream,
 		     compressed_data,
 		     compressed_data_size,
+		     compressed_data_offset,
+		     BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1167,15 +1433,11 @@ int bzip_decompress(
 
 			goto on_error;
 		}
-		bit_stream->storage_type = BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK;
-
-/* TODO add seek byte offset function */
-		bit_stream->byte_stream_offset = compressed_data_offset;
-
 		while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
 		{
 			if( bzip_read_block_header(
 			     bit_stream,
+			     &origin_pointer,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -1235,6 +1497,7 @@ int bzip_decompress(
 			value_32bit       >>= 15;
 			number_of_trees     = (uint8_t) ( value_32bit & 0x00000007UL );
 
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -1250,6 +1513,7 @@ int bzip_decompress(
 				libcnotify_printf(
 				 "\n" );
 			}
+#endif
 			if( bzip_read_selectors(
 			     bit_stream,
 			     selectors,
@@ -1282,14 +1546,18 @@ int bzip_decompress(
 
 				goto on_error;
 			}
+			block_data_size = BLOCK_DATA_SIZE;
+
 			if( bzip_read_block_data(
 			     bit_stream,
 			     huffman_trees,
 			     number_of_trees,
+			     selectors,
+			     number_of_selectors,
 			     symbol_stack,
 			     number_of_symbols,
-			     uncompressed_data,
-			     safe_uncompressed_data_size,
+			     block_data,
+			     &block_data_size,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -1301,6 +1569,37 @@ int bzip_decompress(
 
 				goto on_error;
 			}
+			/* Perform Burrows-Wheeler transform
+			 */
+			if( bzip_reverse_burrows_wheeler_transform(
+			     block_data,
+			     block_data_size,
+			     origin_pointer,
+			     uncompressed_data,
+			     safe_uncompressed_data_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to reverse Burrows-Wheeler tranform.",
+				 function );
+
+				return( -1 );
+			}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: block data:\n",
+				 function );
+				libcnotify_print_data(
+				 uncompressed_data,
+				 block_data_size,
+				 0 );
+			}
+#endif
 			for( tree_index = 0;
 			     tree_index < number_of_trees;
 			     tree_index++ )

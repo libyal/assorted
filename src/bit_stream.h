@@ -83,6 +83,8 @@ int bit_stream_initialize(
      bit_stream_t **bit_stream,
      const uint8_t *byte_stream,
      size_t byte_stream_size,
+     size_t byte_stream_offset,
+     uint8_t storage_type,
      libcerror_error_t **error );
 
 int bit_stream_free(

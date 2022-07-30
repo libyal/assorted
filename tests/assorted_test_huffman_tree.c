@@ -496,6 +496,8 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	          &bit_stream,
 	          assorted_test_huffman_tree_data,
 	          2627,
+	          2,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -510,9 +512,6 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-/* TODO add byte stream seek function */
-	bit_stream->byte_stream_offset = 2;
 
 	for( symbol = 0;
 	     symbol < 318;
@@ -655,6 +654,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	libcerror_error_free(
 	 &error );
 
+/* TODO add byte stream seek function */
         bit_stream->byte_stream_offset = 2627;
         bit_stream->bit_buffer_size    = 0;
 
