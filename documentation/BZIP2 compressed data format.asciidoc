@@ -123,7 +123,7 @@ A stream block header (BlockHeader) consist of:
 | Offset | Size | Value | Description
 | 0.0 | 48 bits | 0x314159265359 | Signature
 | 6.0 | 32 bits | | Checksum +
-Contains a CRC-32
+See section: <<checksum,Checksum>>
 | 10.0 | 1 bit | 0 | Is randomized flag
 | 10.1 | 24 bits | | Origin pointer
 |===
@@ -199,9 +199,13 @@ A stream footer (StreamFooter) consist of:
 | Offset | Size | Value | Description
 | 0.0 | 48 bits | 0x177245385090 | Signature
 | 6.0 | 32 bits | | Checksum +
-Contains a CRC-32
+See section: <<checksum,Checksum>>
 | 10.0 | ... | | Byte alignment padding
 |===
+
+=== [[checksum]]Checksum
+
+Contains a CRC-32 with a polynomial of 3988292384 (0xedb88320)
 
 :numbered!:
 [appendix]

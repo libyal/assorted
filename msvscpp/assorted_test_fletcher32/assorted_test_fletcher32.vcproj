@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_fletcher32"
-	ProjectGUID="{054B7D5F-B865-4B38-A889-1329667ABA80}"
+	ProjectGUID="{9921800C-DF88-463C-9FEA-90710C81623F}"
 	RootNamespace="assorted_test_fletcher32"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

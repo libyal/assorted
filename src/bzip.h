@@ -109,6 +109,13 @@ int bzip_read_stream_footer(
      uint32_t *checksum,
      libcerror_error_t **error );
 
+int bzip_calculate_crc32(
+     uint32_t *checksum_value,
+     const uint8_t *data,
+     size_t data_size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
 int bzip_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,

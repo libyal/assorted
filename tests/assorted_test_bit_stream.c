@@ -45,6 +45,301 @@ uint8_t assorted_test_bit_stream_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
+/* Tests the bit_stream_initialize function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_bit_stream_initialize(
+     void )
+{
+	libcerror_error_t *error        = NULL;
+	bit_stream_t *bit_stream        = NULL;
+	int result                      = 0;
+
+#if defined( HAVE_ASSORTED_TEST_MEMORY )
+	int number_of_malloc_fail_tests = 2;
+	int number_of_memset_fail_tests = 1;
+	int test_number                 = 0;
+#endif
+
+	/* Test regular cases
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bit_stream_data,
+	          16,
+	          0,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = bit_stream_initialize(
+	          NULL,
+	          assorted_test_bit_stream_data,
+	          16,
+	          0,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	bit_stream = (bit_stream_t *) 0x12345678UL;
+
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bit_stream_data,
+	          16,
+	          0,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	bit_stream = NULL;
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          NULL,
+	          16,
+	          0,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bit_stream_data,
+	          (size_t) SSIZE_MAX + 1,
+	          0,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bit_stream_data,
+	          16,
+	          (size_t) SSIZE_MAX + 1,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bit_stream_data,
+	          16,
+	          0,
+	          0xff,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_ASSORTED_TEST_MEMORY )
+
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
+	{
+		/* Test bit_stream_initialize with malloc failing
+		 */
+		assorted_test_malloc_attempts_before_fail = test_number;
+
+		result = bit_stream_initialize(
+		          &bit_stream,
+		          assorted_test_bit_stream_data,
+		          16,
+		          0,
+		          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+		          &error );
+
+		if( assorted_test_malloc_attempts_before_fail != -1 )
+		{
+			assorted_test_malloc_attempts_before_fail = -1;
+
+			if( bit_stream != NULL )
+			{
+				bit_stream_free(
+				 &bit_stream,
+				 NULL );
+			}
+		}
+		else
+		{
+			ASSORTED_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			ASSORTED_TEST_ASSERT_IS_NULL(
+			 "bit_stream",
+			 bit_stream );
+
+			ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+	for( test_number = 0;
+	     test_number < number_of_memset_fail_tests;
+	     test_number++ )
+	{
+		/* Test bit_stream_initialize with memset failing
+		 */
+		assorted_test_memset_attempts_before_fail = test_number;
+
+		result = bit_stream_initialize(
+		          &bit_stream,
+		          assorted_test_bit_stream_data,
+		          16,
+		          0,
+		          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+		          &error );
+
+		if( assorted_test_memset_attempts_before_fail != -1 )
+		{
+			assorted_test_memset_attempts_before_fail = -1;
+
+			if( bit_stream != NULL )
+			{
+				bit_stream_free(
+				 &bit_stream,
+				 NULL );
+			}
+		}
+		else
+		{
+			ASSORTED_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			ASSORTED_TEST_ASSERT_IS_NULL(
+			 "bit_stream",
+			 bit_stream );
+
+			ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+#endif /* defined( HAVE_MODI_TEST_MEMORY ) */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the bit_stream_free function
  * Returns 1 if successful or 0 if not
  */
@@ -388,7 +683,9 @@ int main(
 
 #if defined( __GNUC__ )
 
-	/* TODO add tests for bit_stream_initialize */
+	ASSORTED_TEST_RUN(
+	 "bit_stream_initialize",
+	 assorted_test_bit_stream_initialize );
 
 	ASSORTED_TEST_RUN(
 	 "bit_stream_free",

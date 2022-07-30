@@ -65,8 +65,8 @@ int deflate_decode_huffman(
 
 int deflate_calculate_adler32(
      uint32_t *checksum_value,
-     const uint8_t *buffer,
-     size_t size,
+     const uint8_t *data,
+     size_t data_size,
      uint32_t initial_value,
      libcerror_error_t **error );
 

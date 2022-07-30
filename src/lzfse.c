@@ -300,13 +300,14 @@ int lzfse_decompress(
 
 		return( -1 );
 	}
-	if( compressed_data_size > (size_t) SSIZE_MAX )
+	if( ( compressed_data_size < 4 )
+	 || ( compressed_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid compressed data size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid compressed data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -367,52 +368,69 @@ int lzfse_decompress(
 		 &( compressed_data[ compressed_data_offset ] ),
 		 block_marker );
 
-		compressed_data_offset += 4;
-
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			libcnotify_printf(
-			 "%s: block marker\t\t\t\t\t\t: 0x%08" PRIx32 " (",
-			 function,
-			 block_marker );
-
-			switch( block_marker )
+			if( ( block_marker != LZFSE_ENDOFSTREAM_BLOCK_MARKER )
+			 && ( block_marker != LZFSE_UNCOMPRESSED_BLOCK_MARKER )
+			 && ( block_marker != LZFSE_COMPRESSED_BLOCK_V1_MARKER )
+			 && ( block_marker != LZFSE_COMPRESSED_BLOCK_V2_MARKER )
+			 && ( block_marker != LZFSE_COMPRESSED_BLOCK_LZVN_MARKER ) )
 			{
-				case LZFSE_ENDOFSTREAM_BLOCK_MARKER:
-					libcnotify_printf(
-					 "end-of-stream" );
-					break;
-
-				case LZFSE_UNCOMPRESSED_BLOCK_MARKER:
-					libcnotify_printf(
-					 "uncompressed" );
-					break;
-
-				case LZFSE_COMPRESSED_BLOCK_V1_MARKER:
-					libcnotify_printf(
-					 "compressed version 1" );
-					break;
-
-				case LZFSE_COMPRESSED_BLOCK_V2_MARKER:
-					libcnotify_printf(
-					 "compressed version 2" );
-					break;
-
-				case LZFSE_COMPRESSED_BLOCK_LZVN_MARKER:
-					libcnotify_printf(
-					 "compressed LZVN" );
-					break;
-
-				default:
-					libcnotify_printf(
-					 "UNKNOWN" );
-					break;
+				libcnotify_printf(
+				 "%s: block marker\t\t\t\t\t\t: 0x%08" PRIx32 "\n",
+				 function,
+				 block_marker );
 			}
-			libcnotify_printf(
-			 ")\n" );
+			else
+			{
+				libcnotify_printf(
+				 "%s: block marker\t\t\t\t\t\t: %c%c%c%c (",
+				 function,
+				 compressed_data[ compressed_data_offset ],
+				 compressed_data[ compressed_data_offset + 1 ],
+				 compressed_data[ compressed_data_offset + 2 ],
+				 compressed_data[ compressed_data_offset + 3 ] );
+
+				switch( block_marker )
+				{
+					case LZFSE_ENDOFSTREAM_BLOCK_MARKER:
+						libcnotify_printf(
+						 "end-of-stream" );
+						break;
+
+					case LZFSE_UNCOMPRESSED_BLOCK_MARKER:
+						libcnotify_printf(
+						 "uncompressed" );
+						break;
+
+					case LZFSE_COMPRESSED_BLOCK_V1_MARKER:
+						libcnotify_printf(
+						 "compressed version 1" );
+						break;
+
+					case LZFSE_COMPRESSED_BLOCK_V2_MARKER:
+						libcnotify_printf(
+						 "compressed version 2" );
+						break;
+
+					case LZFSE_COMPRESSED_BLOCK_LZVN_MARKER:
+						libcnotify_printf(
+						 "compressed LZVN" );
+						break;
+
+					default:
+						libcnotify_printf(
+						 "UNKNOWN" );
+						break;
+				}
+				libcnotify_printf(
+				 ")\n" );
+			}
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		compressed_data_offset += 4;
 
 		if( block_marker == LZFSE_ENDOFSTREAM_BLOCK_MARKER )
 		{
@@ -730,24 +748,24 @@ int lzfse_decompress(
 				 literal_bits );
 
 				libcnotify_printf(
-				 "%s: literal_state[0]\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: literal_state[ 0 ]\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 literal_state[0] );
+				 literal_state[ 0 ] );
 
 				libcnotify_printf(
-				 "%s: literal_state[1]\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: literal_state[ 1 ]\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 literal_state[1] );
+				 literal_state[ 1 ] );
 
 				libcnotify_printf(
-				 "%s: literal_state[2]\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: literal_state[ 2 ]\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 literal_state[2] );
+				 literal_state[ 2 ] );
 
 				libcnotify_printf(
-				 "%s: literal_state[3]\t\t\t\t\t: %" PRIu16 "\n",
+				 "%s: literal_state[ 3 ]\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 literal_state[3] );
+				 literal_state[ 3 ] );
 
 				libcnotify_printf(
 				 "%s: lmd_bits\t\t\t\t\t\t: %" PRIu32 "\n",
@@ -856,6 +874,9 @@ int lzfse_decompress(
 
 			case LZFSE_COMPRESSED_BLOCK_V1_MARKER:
 			case LZFSE_COMPRESSED_BLOCK_V2_MARKER:
+
+/* TODO decode lmd tables
+ */
 #if defined( HAVE_DEBUG_OUTPUT )
 				if( libcnotify_verbose != 0 )
 				{

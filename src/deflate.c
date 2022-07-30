@@ -76,6 +76,7 @@ int deflate_build_dynamic_huffman_trees(
 	number_of_distance_codes = number_of_code_sizes & 0x0000001fUL;
 	number_of_code_sizes   >>= 5;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -96,6 +97,7 @@ int deflate_build_dynamic_huffman_trees(
 		 number_of_code_sizes + 4,
 		 number_of_code_sizes );
 	}
+#endif
 	number_of_literal_codes += 257;
 
 	if( number_of_literal_codes > 286 )
@@ -147,6 +149,7 @@ int deflate_build_dynamic_huffman_trees(
 
 		code_size_array[ code_size_sequence ] = (uint8_t) code_size;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -155,6 +158,7 @@ int deflate_build_dynamic_huffman_trees(
 			 code_size_sequence,
 			 code_size );
 		}
+#endif
 	}
 	while( code_size_index < 19 )
 	{
@@ -162,6 +166,7 @@ int deflate_build_dynamic_huffman_trees(
 
 		code_size_array[ code_size_sequence ] = 0;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -169,12 +174,15 @@ int deflate_build_dynamic_huffman_trees(
 			 function,
 			 code_size_sequence );
 		}
+#endif
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif
 	if( huffman_tree_initialize(
 	     &pre_codes_huffman_tree,
 	     19,
@@ -226,6 +234,7 @@ int deflate_build_dynamic_huffman_trees(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -234,6 +243,7 @@ int deflate_build_dynamic_huffman_trees(
 			 code_size_index,
 			 symbol );
 		}
+#endif
 		if( symbol < 16 )
 		{
 			if( libcnotify_verbose != 0 )
@@ -331,6 +341,7 @@ int deflate_build_dynamic_huffman_trees(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -338,6 +349,7 @@ int deflate_build_dynamic_huffman_trees(
 			 function,
 			 times_to_repeat );
 		}
+#endif
 		if( times_to_repeat > ( number_of_code_sizes - code_size_index ) )
 		{
 			libcerror_error_set(
@@ -351,6 +363,7 @@ int deflate_build_dynamic_huffman_trees(
 		}
 		while( times_to_repeat > 0 )
 		{
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -359,6 +372,7 @@ int deflate_build_dynamic_huffman_trees(
 				 code_size_index,
 				 code_size );
 			}
+#endif
 			code_size_array[ code_size_index++ ] = (uint8_t) code_size;
 
 			times_to_repeat--;
@@ -590,6 +604,7 @@ int deflate_decode_huffman(
 
 			return( -1 );
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -597,6 +612,7 @@ int deflate_decode_huffman(
 			 function,
 			 symbol );
 		}
+#endif
 		if( symbol < 256 )
 		{
 			if( data_offset >= uncompressed_data_size )
@@ -634,6 +650,7 @@ int deflate_decode_huffman(
 
 				return( -1 );
 			}
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -646,6 +663,7 @@ int deflate_decode_huffman(
 				 function,
 				 extra_bits );
 			}
+#endif
 			compression_size = literal_codes_base[ symbol ] + (uint16_t) extra_bits;
 
 			if( huffman_tree_get_symbol_from_bit_stream(
@@ -663,6 +681,7 @@ int deflate_decode_huffman(
 
 				return( -1 );
 			}
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -670,6 +689,7 @@ int deflate_decode_huffman(
 				 function,
 				 symbol );
 			}
+#endif
 			number_of_extra_bits = distance_codes_number_of_extra_bits[ symbol ];
 
 			if( bit_stream_get_value(
@@ -687,6 +707,7 @@ int deflate_decode_huffman(
 
 				return( -1 );
 			}
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -699,8 +720,10 @@ int deflate_decode_huffman(
 				 function,
 				 extra_bits );
 			}
+#endif
 			compression_offset = distance_codes_base[ symbol ] + (uint16_t) extra_bits;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -718,6 +741,7 @@ int deflate_decode_huffman(
 				 function,
 				 compression_size );
 			}
+#endif
 			if( compression_offset > data_offset )
 			{
 				libcerror_error_set(
@@ -774,13 +798,13 @@ int deflate_decode_huffman(
  */
 int deflate_calculate_adler32(
      uint32_t *checksum_value,
-     const uint8_t *buffer,
-     size_t size,
+     const uint8_t *data,
+     size_t data_size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
 	static char *function = "deflate_calculate_adler32";
-	size_t buffer_offset  = 0;
+	size_t data_offset    = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
 	uint32_t value_32bit  = 0;
@@ -797,24 +821,24 @@ int deflate_calculate_adler32(
 
 		return( -1 );
 	}
-	if( buffer == NULL )
+	if( data == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid buffer.",
+		 "%s: invalid data.",
 		 function );
 
 		return( -1 );
 	}
-	if( size > (size_t) SSIZE_MAX )
+	if( data_size > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid size value exceeds maximum.",
+		 "%s: invalid data size value exceeds maximum.",
 		 function );
 
 		return( -1 );
@@ -822,7 +846,7 @@ int deflate_calculate_adler32(
 	lower_word = initial_value & 0xffff;
 	upper_word = ( initial_value >> 16 ) & 0xffff;
 
-	while( size >= 0x15b0 )
+	while( data_size >= 0x15b0 )
 	{
 		/* The modulo calculation is needed per 5552 (0x15b0) bytes
 		 * 5552 / 16 = 347
@@ -831,52 +855,52 @@ int deflate_calculate_adler32(
 		     block_index < 347;
 		     block_index++ )
 		{
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 		}
 		/* Optimized equivalent of:
@@ -913,68 +937,68 @@ int deflate_calculate_adler32(
 		{
 			upper_word -= 65521;
 		}
-		size -= 0x15b0;
+		data_size -= 0x15b0;
 	}
-	if( size > 0 )
+	if( data_size > 0 )
 	{
-		while( size > 16 )
+		while( data_size > 16 )
 		{
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			size -= 16;
+			data_size -= 16;
 		}
-		while( size > 0 )
+		while( data_size > 0 )
 		{
-			lower_word += buffer[ buffer_offset++ ];
+			lower_word += data[ data_offset++ ];
 			upper_word += lower_word;
 
-			size--;
+			data_size--;
 		}
 		/* Optimized equivalent of:
 		 * lower_word %= 0xfff1
@@ -1161,6 +1185,7 @@ int deflate_read_data_header(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -1171,6 +1196,7 @@ int deflate_read_data_header(
 		 2,
 		 0 );
 	}
+#endif
 	compression_information   = compressed_data[ safe_compressed_data_offset++ ];
 	compression_method        = compression_information & 0x0f;
 	compression_information >>= 4;
@@ -1178,6 +1204,7 @@ int deflate_read_data_header(
 	flags             = compressed_data[ safe_compressed_data_offset++ ];
 	compression_level = flags >> 6;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -1231,6 +1258,8 @@ int deflate_read_data_header(
 		libcnotify_printf(
 		 ")\n" );
 	}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 /* TODO validate check bits */
 	if( ( flags & 0x20 ) != 0 )
 	{
@@ -1252,6 +1281,7 @@ int deflate_read_data_header(
 
 		safe_compressed_data_offset += 4;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -1259,6 +1289,7 @@ int deflate_read_data_header(
 			 function,
 			 preset_dictionary_identifier );
 		}
+#endif
 	}
 	if( compression_method != 8 )
 	{
@@ -1275,6 +1306,7 @@ int deflate_read_data_header(
 	compression_window_bits = (uint8_t) compression_information + 8;
 	compression_window_size = 1UL << compression_window_bits;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -1283,6 +1315,7 @@ int deflate_read_data_header(
 		 compression_window_size,
 		 compression_window_bits );
 	}
+#endif
 	if( compression_window_size > 32768 )
 	{
 		libcerror_error_set(
@@ -1295,11 +1328,13 @@ int deflate_read_data_header(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif
 	*compressed_data_offset = safe_compressed_data_offset;
 
 	return( 1 );
@@ -1358,6 +1393,7 @@ int deflate_read_block_header(
 	value_32bit    >>= 1;
 	*block_type      = (uint8_t) value_32bit;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -1399,6 +1435,8 @@ int deflate_read_block_header(
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	return( 1 );
 }
 
@@ -1477,6 +1515,7 @@ int deflate_read_block(
 			 */
 			skip_bits = bit_stream->bit_buffer_size & 0x07;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -1484,6 +1523,7 @@ int deflate_read_block(
 				 function,
 				 skip_bits );
 			}
+#endif
 			if( skip_bits > 0 )
 			{
 				if( bit_stream_get_value(
@@ -1520,6 +1560,7 @@ int deflate_read_block(
 			block_size_copy = block_size >> 16;
 			block_size     &= 0x0000ffffUL;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -1538,6 +1579,8 @@ int deflate_read_block(
 				 block_size_copy ^ 0x0000ffffUL,
 				 block_size_copy );
 			}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 			block_size_copy = ( block_size >> 16 ) ^ 0x0000ffffUL;
 
 			if( block_size != block_size_copy )
@@ -1730,11 +1773,13 @@ int deflate_read_block(
 
 			goto on_error;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "\n" );
 	}
+#endif
 	return( 1 );
 
 on_error:
@@ -1770,8 +1815,6 @@ int deflate_decompress(
 	size_t compressed_data_offset                = 0;
 	size_t safe_uncompressed_data_size           = 0;
 	size_t uncompressed_data_offset              = 0;
-	uint32_t calculated_checksum                 = 0;
-	uint32_t stored_checksum                     = 0;
 	uint8_t block_type                           = 0;
 	uint8_t last_block_flag                      = 0;
 
@@ -1819,7 +1862,9 @@ int deflate_decompress(
 
 		return( -1 );
 	}
-	if( *uncompressed_data_size > (size_t) SSIZE_MAX )
+	safe_uncompressed_data_size = *uncompressed_data_size;
+
+	if( safe_uncompressed_data_size > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
@@ -1830,8 +1875,6 @@ int deflate_decompress(
 
 		return( -1 );
 	}
-	safe_uncompressed_data_size = *uncompressed_data_size;
-
 	if( compressed_data_offset >= compressed_data_size )
 	{
 		libcerror_error_set(
@@ -2090,7 +2133,9 @@ int deflate_decompress_zlib(
 
 		return( -1 );
 	}
-	if( *uncompressed_data_size > (size_t) SSIZE_MAX )
+	safe_uncompressed_data_size = *uncompressed_data_size;
+
+	if( safe_uncompressed_data_size > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
@@ -2101,8 +2146,6 @@ int deflate_decompress_zlib(
 
 		return( -1 );
 	}
-	safe_uncompressed_data_size = *uncompressed_data_size;
-
 	if( deflate_read_data_header(
 	     compressed_data,
 	     compressed_data_size,
@@ -2266,6 +2309,7 @@ int deflate_decompress_zlib(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
@@ -2278,6 +2322,7 @@ int deflate_decompress_zlib(
 			 function,
 			 calculated_checksum );
 		}
+#endif
 		if( stored_checksum != calculated_checksum )
 		{
 			libcerror_error_set(

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libcthreads"
-	ProjectGUID="{95AA851A-120F-4658-8C4B-65CAA201D770}"
+	ProjectGUID="{E8B3DBEE-C7BC-4E1A-8A1B-6A7B25EB8624}"
 	RootNamespace="libcthreads"
 	TargetFrameworkVersion="131072"
 	>

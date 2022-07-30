@@ -28,6 +28,7 @@
 #include "assorted_libcnotify.h"
 #include "bit_stream.h"
 #include "bzip.h"
+#include "crc32.h"
 #include "huffman_tree.h"
 
 #define BLOCK_DATA_SIZE 8192
@@ -123,7 +124,9 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		return( -1 );
 	}
-	if( *uncompressed_data_offset > (size_t) SSIZE_MAX )
+	safe_uncompressed_data_offset = *uncompressed_data_offset;
+
+	if( safe_uncompressed_data_offset > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
@@ -134,8 +137,6 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		return( -1 );
 	}
-	safe_uncompressed_data_offset = *uncompressed_data_offset;
-
 	if( memory_set(
 	     distributions,
 	     0,
@@ -1403,6 +1404,60 @@ int bzip_read_stream_footer(
 	return( 1 );
 }
 
+/* Calculates a CRC-32 of a buffer
+ * It uses the initial value to calculate a new CRC-32
+ * Returns 1 if successful or -1 on error
+ */
+int bzip_calculate_crc32(
+     uint32_t *checksum_value,
+     const uint8_t *data,
+     size_t data_size,
+     uint32_t initial_value,
+     libcerror_error_t **error )
+{
+	static char *function = "bzip_calculate_crc32";
+	size_t data_offset    = 0;
+	uint32_t value_32bit  = 0;
+	int block_index       = 0;
+
+	if( checksum_value == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid checksum value.",
+		 function );
+
+		return( -1 );
+	}
+	if( data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid data.",
+		 function );
+
+		return( -1 );
+	}
+	if( data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO implement */
+
+	return( 1 );
+}
+
 /* Decompresses data using BZIP2 compression
  * Returns 1 on success or -1 on error
  */
@@ -1770,8 +1825,6 @@ int bzip_decompress(
 
 		goto on_error;
 	}
-/* TODO calculate and validate checksums */
-
 	if( bit_stream_free(
 	     &bit_stream,
 	     error ) != 1 )
@@ -1782,6 +1835,49 @@ int bzip_decompress(
 		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 		 "%s: unable to free bit-stream.",
 		 function );
+
+		goto on_error;
+	}
+	if( bzip_calculate_crc32(
+	     &calculated_checksum,
+	     uncompressed_data,
+	     uncompressed_data_offset,
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to calculate checksum.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: stored checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 function,
+		 stored_checksum );
+
+		libcnotify_printf(
+		 "%s: calculated checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 function,
+		 calculated_checksum );
+	}
+#endif
+	if( stored_checksum != calculated_checksum )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_INPUT,
+		 LIBCERROR_INPUT_ERROR_CHECKSUM_MISMATCH,
+		 "%s: checksum does not match (stored: 0x%08" PRIx32 ", calculated: 0x%08" PRIx32 ").",
+		 function,
+		 stored_checksum,
+		 calculated_checksum );
 
 		goto on_error;
 	}
