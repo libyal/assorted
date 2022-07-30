@@ -32,26 +32,30 @@
 
 #define BLOCK_DATA_SIZE 8192
 
-/* Reverses a Burrows-Wheeler transform
+/* Reverses a Burrows-Wheeler transform and run-length encoded strings
  * Returns 1 on success or -1 on error
  */
 int bzip_reverse_burrows_wheeler_transform(
      const uint8_t *input_data,
      size_t input_data_size,
      uint32_t origin_pointer,
-     uint8_t *output_data,
-     size_t output_data_size,
+     uint8_t *uncompressed_data,
+     size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
 	size_t distributions[ 256 ];
 	size_t permutations[ BLOCK_DATA_SIZE ];
 
-	static char *function     = "bzip_reverse_burrows_wheeler_transform";
-	size_t data_offset        = 0;
-	size_t distribution_value = 0;
-	size_t number_of_values   = 0;
-	size_t permutation_value  = 0;
-	uint16_t byte_value       = 0;
+	static char *function              = "bzip_reverse_burrows_wheeler_transform";
+	size_t input_data_offset           = 0;
+	size_t uncompressed_data_offset    = 0;
+	size_t distribution_value          = 0;
+	size_t number_of_values            = 0;
+	size_t permutation_value           = 0;
+	size_t safe_uncompressed_data_size = 0;
+	uint16_t byte_value                = 0;
+	uint16_t last_byte_value           = 0;
+	uint8_t number_of_last_byte_values = 0;
 
 	if( input_data == NULL )
 	{
@@ -75,6 +79,41 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		return( -1 );
 	}
+	if( uncompressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data size.",
+		 function );
+
+		return( -1 );
+	}
+	if( *uncompressed_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	safe_uncompressed_data_size = *uncompressed_data_size;
+
 	if( memory_set(
 	     distributions,
 	     0,
@@ -103,11 +142,11 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		return( -1 );
 	}
-	for( data_offset = 0;
-	     data_offset < input_data_size;
-	     data_offset++ )
+	for( input_data_offset = 0;
+	     input_data_offset < input_data_size;
+	     input_data_offset++ )
 	{
-		byte_value = input_data[ data_offset ];
+		byte_value = input_data[ input_data_offset ];
 
 		distributions[ byte_value ] += 1;
 	}
@@ -121,28 +160,75 @@ int bzip_reverse_burrows_wheeler_transform(
 
 		distribution_value += number_of_values;
 	}
-	for( data_offset = 0;
-	     data_offset < input_data_size;
-	     data_offset++ )
+	for( input_data_offset = 0;
+	     input_data_offset < input_data_size;
+	     input_data_offset++ )
 	{
-		byte_value = input_data[ data_offset ];
+		byte_value = input_data[ input_data_offset ];
 
 		distribution_value = distributions[ byte_value ];
 
-		permutations[ distribution_value ] = data_offset;
+		permutations[ distribution_value ] = input_data_offset;
 
 		distributions[ byte_value ] += 1;
 	}
 	permutation_value = permutations[ origin_pointer ];
 
-	for( data_offset = 0;
-	     data_offset < input_data_size;
-	     data_offset++ )
+	for( input_data_offset = 0;
+	     input_data_offset < input_data_size;
+	     input_data_offset++ )
 	{
-		output_data[ data_offset ] = input_data[ permutation_value ];
+		byte_value = input_data[ permutation_value ];
 
+		if( number_of_last_byte_values == 4 )
+		{
+			if( ( byte_value > safe_uncompressed_data_size )
+			 || ( uncompressed_data_offset > ( safe_uncompressed_data_size - byte_value ) ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+				 "%s: invalid uncompressed data value too small.",
+				 function );
+
+				return( -1 );
+			}
+			while( byte_value > 0 )
+			{
+				uncompressed_data[ uncompressed_data_offset++ ] = (uint8_t) last_byte_value;
+
+				byte_value--;
+			}
+			last_byte_value            = 0;
+			number_of_last_byte_values = 0;
+		}
+		else
+		{
+			if( byte_value != last_byte_value )
+			{
+				number_of_last_byte_values = 0;
+			}
+			last_byte_value             = byte_value;
+			number_of_last_byte_values += 1;
+
+			if( uncompressed_data_offset >= safe_uncompressed_data_size )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+				 "%s: invalid uncompressed data value too small.",
+				 function );
+
+				return( -1 );
+			}
+			uncompressed_data[ uncompressed_data_offset++ ] = (uint8_t) byte_value;
+		}
 		permutation_value = permutations[ permutation_value ];
 	}
+	*uncompressed_data_size = uncompressed_data_offset;
+
 	return( 1 );
 }
 
@@ -943,7 +1029,7 @@ int bzip_read_block_data(
      libcerror_error_t **error )
 {
 	static char *function                = "bzip_read_block_data";
-	size_t block_data_index              = 0;
+	size_t block_data_offset             = 0;
 	size_t safe_block_data_size          = 0;
 	size_t selector_index                = 0;
 	size_t symbol_index                  = 0;
@@ -1073,7 +1159,7 @@ int bzip_read_block_data(
 			}
 #endif
 			if( ( run_length > safe_block_data_size )
-			 || ( block_data_index > ( safe_block_data_size - run_length ) ) )
+			 || ( block_data_offset > ( safe_block_data_size - run_length ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -1092,7 +1178,7 @@ int bzip_read_block_data(
 				/* Inverse move-to-front transform
 				 * Note that 0 is already at the front of the stack hence the stack does not need to be reordered.
 				 */
-				block_data[ block_data_index++ ] = symbol_stack[ 0 ];
+				block_data[ block_data_offset++ ] = symbol_stack[ 0 ];
 
 				run_length--;
 			}
@@ -1111,8 +1197,7 @@ int bzip_read_block_data(
 		if( ( symbol == 0 )
 		 || ( symbol == 1 ) )
 		{
-			run_length_value            <<= 1;
-			run_length_value             |= symbol;
+			run_length_value             |= (uint64_t) symbol << number_of_run_length_symbols;
 			number_of_run_length_symbols += 1;
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -1150,7 +1235,7 @@ int bzip_read_block_data(
 				 stack_value );
 			}
 #endif
-			if( block_data_index > ( safe_block_data_size - 1 ) )
+			if( block_data_offset > ( safe_block_data_size - 1 ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -1161,7 +1246,7 @@ int bzip_read_block_data(
 
 				return( -1 );
 			}
-			block_data[ block_data_index++ ] = stack_value;
+			block_data[ block_data_offset++ ] = stack_value;
 		}
 		symbol_index++;
 
@@ -1196,6 +1281,8 @@ int bzip_read_block_data(
 		}
 	}
 	while( symbol != end_of_block_symbol );
+
+	*block_data_size = block_data_offset;
 
 	return( 1 );
 }
@@ -1576,17 +1663,17 @@ int bzip_decompress(
 			     block_data_size,
 			     origin_pointer,
 			     uncompressed_data,
-			     safe_uncompressed_data_size,
+			     &safe_uncompressed_data_size,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to reverse Burrows-Wheeler tranform.",
+				 "%s: unable to reverse Burrows-Wheeler transform.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )

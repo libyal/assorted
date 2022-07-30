@@ -37,8 +37,8 @@ int bzip_reverse_burrows_wheeler_transform(
      const uint8_t *input_data,
      size_t input_data_size,
      uint32_t origin_pointer,
-     uint8_t *output_data,
-     size_t output_data_size,
+     uint8_t *uncompressed_data,
+     size_t *uncompressed_data_size,
      libcerror_error_t **error );
 
 int bzip_read_stream_header(

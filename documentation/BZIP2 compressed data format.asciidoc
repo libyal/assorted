@@ -165,6 +165,9 @@ The run-length values are used to encode one or more 0-byte values.
 number of 0-byte values = ( ( 1 << number of run-length values ) | bit representation of run-length values ) - 1
 ....
 
+The first run-length value is the least-significant bit (LSB) of the bit
+representation and the last the most-significant bit (MSB).
+
 ===== Selectors
 
 BZip2 uses a Huffman tree selector for every group of 50 symbols.

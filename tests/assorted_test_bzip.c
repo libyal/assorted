@@ -71,22 +71,30 @@ int assorted_test_bzip_reverse_burrows_wheeler_transform(
 	uint8_t output_data[ 35 ];
 
 	libcerror_error_t *error = NULL;
+	size_t output_data_size  = 0;
 	int result               = 0;
 
 	/* Test regular cases
 	 */
+	output_data_size = 35;
+
 	result = bzip_reverse_burrows_wheeler_transform(
 	          input_data,
 	          35,
 	          30,
 	          output_data,
-	          35,
+	          &output_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
 	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "output_data_size",
+	 output_data_size,
+	 (size_t) 35 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -109,7 +117,7 @@ int assorted_test_bzip_reverse_burrows_wheeler_transform(
 	          35,
 	          30,
 	          output_data,
-	          35,
+	          &output_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1136,13 +1144,24 @@ on_error:
 int assorted_test_bzip_read_block_data(
      void )
 {
+	uint8_t block_data[ 128 ];
 	uint8_t symbol_stack[ 256 ];
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
+
+	uint8_t expected_block_data[ 108 ] = {
+		0x3f, 0x66, 0x73, 0x72, 0x72, 0x64, 0x6b, 0x6b, 0x65, 0x61, 0x64, 0x64, 0x72, 0x72, 0x66, 0x66,
+		0x73, 0x2c, 0x65, 0x73, 0x3f, 0x3f, 0x3f, 0x64, 0x01, 0x20, 0x20, 0x20, 0x20, 0x20, 0x65, 0x65,
+		0x69, 0x69, 0x69, 0x69, 0x65, 0x65, 0x65, 0x65, 0x68, 0x72, 0x70, 0x70, 0x6b, 0x6c, 0x6c, 0x6b,
+		0x70, 0x70, 0x74, 0x74, 0x70, 0x70, 0x68, 0x70, 0x70, 0x50, 0x50, 0x49, 0x6f, 0x6f, 0x74, 0x77,
+		0x70, 0x70, 0x70, 0x70, 0x50, 0x50, 0x63, 0x63, 0x63, 0x63, 0x63, 0x63, 0x6b, 0x6b, 0x20, 0x20,
+		0x20, 0x20, 0x20, 0x20, 0x69, 0x69, 0x70, 0x70, 0x20, 0x20, 0x20, 0x20, 0x65, 0x65, 0x65, 0x65,
+		0x65, 0x65, 0x65, 0x65, 0x65, 0x72, 0x27, 0x72, 0x65, 0x65, 0x20, 0x20 };
 
 	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 	bit_stream_t *bit_stream           = NULL;
 	libcerror_error_t *error           = NULL;
 	void *memset_result                = NULL;
+	size_t block_data_size             = 0;
 	uint32_t origin_pointer            = 0;
 	uint32_t value_32bit               = 0;
 	uint16_t number_of_selectors       = 0;
@@ -1285,11 +1304,69 @@ int assorted_test_bzip_read_block_data(
 
 	/* Test regular cases
 	 */
-/* TODO implement */
+	block_data_size = 128;
+
+	result = bzip_read_block_data(
+	          bit_stream,
+	          huffman_trees,
+	          number_of_trees,
+	          selectors,
+	          number_of_selectors,
+	          symbol_stack,
+	          number_of_symbols,
+	          block_data,
+	          &block_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "block_data_size",
+	 block_data_size,
+	 (size_t) 108 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = memory_compare(
+	          block_data,
+	          expected_block_data,
+	          108 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
 
 	/* Test error cases
 	 */
-/* TODO implement */
+	result = bzip_read_block_data(
+	          NULL,
+	          huffman_trees,
+	          number_of_trees,
+	          selectors,
+	          number_of_selectors,
+	          symbol_stack,
+	          number_of_symbols,
+	          block_data,
+	          &block_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
 
 	/* Clean up
 	 */
