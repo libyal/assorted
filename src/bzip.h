@@ -33,6 +33,16 @@
 extern "C" {
 #endif
 
+void bzip_initialize_crc32_table(
+      void );
+
+int bzip_calculate_crc32(
+     uint32_t *crc32,
+     const uint8_t *data,
+     size_t data_size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
 int bzip_reverse_burrows_wheeler_transform(
      const uint8_t *input_data,
      size_t input_data_size,
@@ -107,13 +117,6 @@ int bzip_read_stream_footer(
      bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *checksum,
-     libcerror_error_t **error );
-
-int bzip_calculate_crc32(
-     uint32_t *checksum_value,
-     const uint8_t *data,
-     size_t data_size,
-     uint32_t initial_value,
      libcerror_error_t **error );
 
 int bzip_decompress(

@@ -62,6 +62,9 @@ BZIP2 compressed data consist of:
 | Byte order | big-endian
 |===
 
+BZip uses a bit ordering where the leading bits in the stream are the most
+significant bits in a byte.
+
 === Stream
 
 A stream (BZipStream) consist of:
@@ -205,7 +208,9 @@ See section: <<checksum,Checksum>>
 
 === [[checksum]]Checksum
 
-Contains a CRC-32 with a polynomial of 3988292384 (0xedb88320)
+Contains a CRC-32 with a polynomial of 79764919 (0x04c11db7)
+
+The checksum algorithm must account for the BZip bit ordering.
 
 :numbered!:
 [appendix]

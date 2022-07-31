@@ -59,7 +59,7 @@ void initialize_crc32_table(
       uint32_t polynomial )
 {
 	uint32_t crc32             = 0;
-	uint32_t crc32_table_index = 0;
+	uint16_t crc32_table_index = 0;
 	uint8_t bit_iterator       = 0;
 
 	for( crc32_table_index = 0;
@@ -105,6 +105,7 @@ int crc32_calculate_modulo2(
 	static char *function = "crc32_calculate_modulo2";
 	size_t buffer_offset  = 0;
 	uint32_t mirror_value = 0;
+	uint32_t safe_crc32   = 0;
 	uint8_t bit_index     = 0;
 	uint8_t byte_value    = 0;
 
@@ -141,11 +142,11 @@ int crc32_calculate_modulo2(
 
 		return( -1 );
 	}
-	*crc32 = initial_value;
+	safe_crc32 = initial_value;
 
 	if( weak_crc == 0 )
 	{
-		*crc32 ^= (uint32_t) 0xffffffffUL;
+		safe_crc32 ^= (uint32_t) 0xffffffffUL;
 	}
 	/* Perform a byte for byte modulo-2 division
 	 */
@@ -168,7 +169,7 @@ int crc32_calculate_modulo2(
 			}
 			byte_value = byte_value >> 1;
 		}
-		*crc32 ^= mirror_value << 24;
+		safe_crc32 ^= mirror_value << 24;
 
 		/* Perform a bit for bit modulo-2 division
 		*/
@@ -176,14 +177,14 @@ int crc32_calculate_modulo2(
 		     bit_index < 8;
 		     bit_index++ )
 		{
-			if( ( *crc32 & 0x80000000UL ) != 0 )
+			if( ( safe_crc32 & 0x80000000UL ) != 0 )
 			{
-				*crc32 <<= 1;
-				*crc32  ^= 0x04c11db7UL;
+				safe_crc32 <<= 1;
+				safe_crc32  ^= 0x04c11db7UL;
 			}
 			else
 			{
-				*crc32 <<= 1;
+				safe_crc32 <<= 1;
 			}
 		}
 	}
@@ -193,18 +194,20 @@ int crc32_calculate_modulo2(
 	     bit_index < 32;
 	     bit_index++ )
 	{
-		if( ( *crc32 & 0x00000001UL ) != 0 )
+		if( ( safe_crc32 & 0x00000001UL ) != 0 )
 		{
 			mirror_value |= ( 1 << ( 31 - bit_index ) );
 		}
-		*crc32 = *crc32 >> 1;
+		safe_crc32 = safe_crc32 >> 1;
 	}
-	*crc32 = mirror_value;
+	safe_crc32 = mirror_value;
 
 	if( weak_crc == 0 )
 	{
-		*crc32 ^= (uint32_t) 0xffffffffUL;
+		safe_crc32 ^= (uint32_t) 0xffffffffUL;
 	}
+	*crc32 = safe_crc32;
+
 	return( 1 );
 }
 
@@ -223,6 +226,7 @@ int crc32_calculate(
 	static char *function      = "crc32_calculate";
 	size_t buffer_offset       = 0;
 	uint32_t crc32_table_index = 0;
+	uint32_t safe_crc32        = 0;
 
 	if( crc32 == NULL )
 	{
@@ -262,24 +266,26 @@ int crc32_calculate(
 		initialize_crc32_table(
 		 0xedb88320UL );
 	}
-	*crc32 = initial_value;
+	safe_crc32 = initial_value;
 
 	if( weak_crc == 0 )
 	{
-		*crc32 ^= (uint32_t) 0xffffffffUL;
+		safe_crc32 ^= (uint32_t) 0xffffffffUL;
 	}
         for( buffer_offset = 0;
 	     buffer_offset < size;
 	     buffer_offset++ )
 	{
-		crc32_table_index = ( *crc32 ^ buffer[ buffer_offset ] ) & 0x000000ffUL;
+		crc32_table_index = ( safe_crc32 ^ buffer[ buffer_offset ] ) & 0x000000ffUL;
 
-		*crc32 = crc32_table[ crc32_table_index ] ^ ( *crc32 >> 8 );
+		safe_crc32 = crc32_table[ crc32_table_index ] ^ ( safe_crc32 >> 8 );
         }
 	if( weak_crc == 0 )
 	{
-	        *crc32 ^= 0xffffffffUL;
+		safe_crc32 ^= 0xffffffffUL;
 	}
+	*crc32 = safe_crc32;
+
 	return( 1 );
 }
 
@@ -294,6 +300,7 @@ int crc32_validate(
 {
 	static char *function      = "crc32_validate";
 	uint32_t crc32_xor_pattern = 0;
+	uint8_t safe_bit_index     = 0;
 	
 	if( bit_index == NULL )
 	{
@@ -310,12 +317,14 @@ int crc32_validate(
 
 	crc32_xor_pattern = 1;
 
-        for( *bit_index = 0;
-	     *bit_index < 32;
-	     *bit_index += 1 )
+        for( safe_bit_index = 0;
+	     safe_bit_index < 32;
+	     safe_bit_index += 1 )
 	{
 		if( crc32_xor_pattern == crc32 )
 		{
+			*bit_index = safe_bit_index;
+
 			return( 1 );
 		}
 		crc32_xor_pattern = ( crc32_xor_pattern << 1 ) ^ ( 0x04c11db7UL & ( crc32_xor_pattern >> 31 ) );

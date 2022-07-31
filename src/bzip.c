@@ -28,10 +28,122 @@
 #include "assorted_libcnotify.h"
 #include "bit_stream.h"
 #include "bzip.h"
-#include "crc32.h"
 #include "huffman_tree.h"
 
 #define BLOCK_DATA_SIZE 8192
+
+/* Table of the CRC-32 of all 8-bit messages.
+ */
+uint32_t bzip_crc32_table[ 256 ];
+
+/* Value to indicate the CRC-32 table been computed
+ */
+int bzip_crc32_table_computed = 0;
+
+/* Initializes the internal CRC-32 table
+ * The table speeds up the CRC-32 calculation
+ * The table is calcuted in reverse bit-order
+ */
+void bzip_initialize_crc32_table(
+      void )
+{
+	uint32_t crc32             = 0;
+	uint16_t crc32_table_index = 0;
+	uint8_t bit_iterator       = 0;
+
+	for( crc32_table_index = 0;
+	     crc32_table_index < 256;
+	     crc32_table_index++ )
+	{
+		crc32 = (uint32_t) crc32_table_index << 24;
+
+		for( bit_iterator = 0;
+		     bit_iterator < 8;
+		     bit_iterator++ )
+		{
+			if( crc32 & 0x80000000UL )
+			{
+				crc32 = 0x04c11db7UL ^ ( crc32 << 1 );
+			}
+			else
+			{
+				crc32 = crc32 << 1;
+			}
+		}
+		bzip_crc32_table[ crc32_table_index ] = crc32;
+	}
+	bzip_crc32_table_computed = 1;
+}
+
+/* Calculates the CRC-32 of a buffer
+ * Use a previous key of 0 to calculate a new CRC-32
+ * Returns 1 if successful or -1 on error
+ */
+int bzip_calculate_crc32(
+     uint32_t *crc32,
+     const uint8_t *data,
+     size_t data_size,
+     uint32_t initial_value,
+     libcerror_error_t **error )
+{
+	static char *function      = "bzip_calculate_crc32";
+	size_t data_offset         = 0;
+	uint32_t crc32_table_index = 0;
+	uint32_t safe_crc32        = 0;
+
+	if( crc32 == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid CRC-32.",
+		 function );
+
+		return( -1 );
+	}
+	if( data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid data.",
+		 function );
+
+		return( -1 );
+	}
+	if( data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+        if( bzip_crc32_table_computed == 0 )
+	{
+		bzip_initialize_crc32_table();
+	}
+	safe_crc32 = initial_value ^ (uint32_t) 0xffffffffUL;
+
+        for( data_offset = 0;
+	     data_offset < data_size;
+	     data_offset++ )
+	{
+		/* Use the upper 8-bits of the pre-calculated CRC-32 values due to BZip bit ordering
+		 */
+		crc32_table_index = ( ( safe_crc32 >> 24 ) ^ data[ data_offset ] ) & 0x000000ffUL;
+
+		safe_crc32 = bzip_crc32_table[ crc32_table_index ] ^ ( safe_crc32 << 8 );
+        }
+        *crc32 = safe_crc32 ^ (uint32_t) 0xffffffffUL;
+
+	return( 1 );
+}
 
 /* Reverses a Burrows-Wheeler transform and run-length encoded strings
  * Returns 1 on success or -1 on error
@@ -1375,12 +1487,12 @@ int bzip_read_stream_footer(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: signature\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: signature\t\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 signature );
 
 		libcnotify_printf(
-		 "%s: checksum\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 safe_checksum );
 
@@ -1400,60 +1512,6 @@ int bzip_read_stream_footer(
 		return( -1 );
 	}
 	*checksum = safe_checksum;
-
-	return( 1 );
-}
-
-/* Calculates a CRC-32 of a buffer
- * It uses the initial value to calculate a new CRC-32
- * Returns 1 if successful or -1 on error
- */
-int bzip_calculate_crc32(
-     uint32_t *checksum_value,
-     const uint8_t *data,
-     size_t data_size,
-     uint32_t initial_value,
-     libcerror_error_t **error )
-{
-	static char *function = "bzip_calculate_crc32";
-	size_t data_offset    = 0;
-	uint32_t value_32bit  = 0;
-	int block_index       = 0;
-
-	if( checksum_value == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid checksum value.",
-		 function );
-
-		return( -1 );
-	}
-	if( data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid data.",
-		 function );
-
-		return( -1 );
-	}
-	if( data_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid data size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-/* TODO implement */
 
 	return( 1 );
 }
