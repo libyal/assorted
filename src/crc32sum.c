@@ -349,7 +349,7 @@ int main( int argc, char * const argv[] )
 	}
 	else if( calculation_method == 2 )
 	{
-                initialize_crc32_table(
+                crc32_initialize_table(
                  polynomial );
 
 		result = crc32_calculate(

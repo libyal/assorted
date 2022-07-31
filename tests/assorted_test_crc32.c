@@ -44,6 +44,20 @@ uint8_t assorted_test_crc32_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
+/* Tests the crc32_initialize_table function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_crc32_initialize_table(
+     void )
+{
+	/* Test invocation of function only
+	 */
+	crc32_initialize_table(
+	 0xedb88320UL );
+
+	return( 1 );
+}
+
 /* Tests the crc32_calculate_modulo2 function
  * Returns 1 if successful or 0 if not
  */
@@ -275,7 +289,9 @@ int main(
 
 #if defined( __GNUC__ )
 
-	/* TODO add tests for initialize_crc32_table */
+	ASSORTED_TEST_RUN(
+	 "crc32_initialize_table",
+	 assorted_test_crc32_initialize_table );
 
 	ASSORTED_TEST_RUN(
 	 "crc32_calculate_modulo2",
@@ -293,7 +309,11 @@ int main(
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

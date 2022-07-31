@@ -55,7 +55,7 @@ int crc32_table_computed = 0;
  * The table speeds up the CRC-32 calculation
  * Use the reversed polynomial
  */
-void initialize_crc32_table(
+void crc32_initialize_table(
       uint32_t polynomial )
 {
 	uint32_t crc32             = 0;
@@ -263,7 +263,7 @@ int crc32_calculate(
 	}
         if( crc32_table_computed == 0 )
 	{
-		initialize_crc32_table(
+		crc32_initialize_table(
 		 0xedb88320UL );
 	}
 	safe_crc32 = initial_value;

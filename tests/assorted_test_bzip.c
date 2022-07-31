@@ -52,6 +52,118 @@ uint8_t assorted_test_bzip_compressed_byte_stream[ 125 ] = {
 
 #if defined( __GNUC__ )
 
+/* Tests the bzip_initialize_crc32_table function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_bzip_initialize_crc32_table(
+     void )
+{
+	/* Test invocation of function only
+	 */
+	bzip_initialize_crc32_table();
+
+	return( 1 );
+}
+
+/* Tests the bzip_calculate_crc32 function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_bzip_calculate_crc32(
+     void )
+{
+	char *data               = "Hello, world!";
+	libcerror_error_t *error = NULL;
+	uint32_t checksum        = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = bzip_calculate_crc32(
+	          &checksum,
+	          (uint8_t *) data,
+	          13,
+	          0,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "checksum",
+	 checksum,
+	 (uint32_t) 0x8e9a7706UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = bzip_calculate_crc32(
+	          NULL,
+	          (uint8_t *) data,
+	          13,
+	          0,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bzip_calculate_crc32(
+	          &checksum,
+	          NULL,
+	          13,
+	          0,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bzip_calculate_crc32(
+	          &checksum,
+	          (uint8_t *) data,
+	          (size_t) SSIZE_MAX + 1,
+	          0,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	return( 0 );
+}
+
 /* Tests the bzip_reverse_burrows_wheeler_transform function
  * Returns 1 if successful or 0 if not
  */
@@ -1705,6 +1817,14 @@ int main(
 #endif
 
 #if defined( __GNUC__ )
+
+	ASSORTED_TEST_RUN(
+	 "bzip_initialize_crc32_table",
+	 assorted_test_bzip_initialize_crc32_table );
+
+	ASSORTED_TEST_RUN(
+	 "bzip_calculate_crc32",
+	 assorted_test_bzip_calculate_crc32 );
 
 	ASSORTED_TEST_RUN(
 	 "bzip_reverse_burrows_wheeler_transform",

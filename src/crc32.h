@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-void initialize_crc32_table(
+void crc32_initialize_table(
       uint32_t polynomial );
 
 int crc32_calculate_modulo2(
