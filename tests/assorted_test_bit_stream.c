@@ -56,7 +56,7 @@ int assorted_test_bit_stream_initialize(
 	int result                      = 0;
 
 #if defined( HAVE_ASSORTED_TEST_MEMORY )
-	int number_of_malloc_fail_tests = 2;
+	int number_of_malloc_fail_tests = 1;
 	int number_of_memset_fail_tests = 1;
 	int test_number                 = 0;
 #endif

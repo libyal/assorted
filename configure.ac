@@ -2,7 +2,7 @@ AC_PREREQ([2.69])
 
 AC_INIT(
  [assorted],
- [20210730],
+ [20210731],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(

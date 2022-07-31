@@ -2408,31 +2408,3 @@ on_error:
 	return( -1 );
 }
 
-#ifdef TODO
-	/* Align the compressed data
-	 */
-	alignment_size = (uint8_t) ( (intptr_t) compressed_data % sizeof( zdecompress_aligned_t ) );
-
-	if( alignment_size != 0 )
-	{
-		byte_size = alignment_size;
-
-		do
-		{
-			byte_size--;
-
-			bit_stream <<= 8;
-			bit_stream  |= compressed_data[ byte_size ];
-		}
-		while( byte_size != 0 );
-
-		aligned_compressed_data = (zdecompress_aligned_t *) compressed_data;
-	}
-	else
-	{
-		aligned_compressed_data = (zdecompress_aligned_t *) compressed_data;
-
-		bit_stream = *
-	}
-#endif
-

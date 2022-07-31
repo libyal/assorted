@@ -1521,6 +1521,690 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the deflate_read_block_header function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_deflate_read_block_header(
+     void )
+{
+	bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error = NULL;
+	uint8_t block_type       = 0;
+	uint8_t last_block_flag  = 0;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_deflate_compressed_byte_stream,
+	          2627,
+	          2,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = deflate_read_block_header(
+	          bit_stream,
+	          &block_type,
+	          &last_block_flag,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Clean up
+	 */
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Initialize test
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_deflate_compressed_byte_stream,
+	          2627,
+	          2,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = deflate_read_block_header(
+	          NULL,
+	          &block_type,
+	          &last_block_flag,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_read_block_header(
+	          bit_stream,
+	          NULL,
+	          &last_block_flag,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_read_block_header(
+	          bit_stream,
+	          &block_type,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the deflate_read_block function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_deflate_read_block(
+     void )
+{
+	uint8_t uncompressed_data[ 8192 ];
+
+	bit_stream_t *bit_stream             = NULL;
+	huffman_tree_t *fixed_distances_tree = NULL;
+	huffman_tree_t *fixed_literals_tree  = NULL;
+	libcerror_error_t *error             = NULL;
+	size_t uncompressed_data_offset      = 0;
+	size_t uncompressed_data_size        = 7640;
+	uint8_t block_type                   = 0;
+	uint8_t last_block_flag              = 0;
+	int result                           = 0;
+
+	/* Initialize test
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_deflate_compressed_byte_stream,
+	          2627,
+	          2,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_initialize(
+	          &fixed_literals_tree,
+	          288,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "fixed_literals_tree",
+	 fixed_literals_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_initialize(
+	          &fixed_distances_tree,
+	          30,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "fixed_distances_tree",
+	 fixed_distances_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = deflate_build_fixed_huffman_trees(
+	          fixed_literals_tree,
+	          fixed_distances_tree,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = deflate_read_block_header(
+	          bit_stream,
+	          &block_type,
+	          &last_block_flag,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = deflate_read_block(
+	          bit_stream,
+	          block_type,
+	          fixed_literals_tree,
+	          fixed_distances_tree,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "uncompressed_data_size",
+	 uncompressed_data_size,
+	 (size_t) 7640 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+/* TODO: test uncompressed data too small */
+
+	/* Clean up
+	 */
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Initialize test
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_deflate_compressed_byte_stream,
+	          2627,
+	          2,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = deflate_read_block(
+	          NULL,
+	          block_type,
+	          fixed_literals_tree,
+	          fixed_distances_tree,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_read_block(
+	          bit_stream,
+	          block_type,
+	          fixed_literals_tree,
+	          fixed_distances_tree,
+	          NULL,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_read_block(
+	          bit_stream,
+	          block_type,
+	          fixed_literals_tree,
+	          fixed_distances_tree,
+	          uncompressed_data,
+	          (size_t) SSIZE_MAX + 1,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_read_block(
+	          bit_stream,
+	          block_type,
+	          fixed_literals_tree,
+	          fixed_distances_tree,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_read_block(
+	          bit_stream,
+	          block_type,
+	          fixed_literals_tree,
+	          fixed_distances_tree,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = huffman_tree_free(
+	          &fixed_distances_tree,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "fixed_distances_tree",
+	 fixed_distances_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_free(
+	          &fixed_literals_tree,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "fixed_literals_tree",
+	 fixed_literals_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( fixed_distances_tree != NULL )
+	{
+		huffman_tree_free(
+		 &fixed_distances_tree,
+		 NULL );
+	}
+	if( fixed_literals_tree != NULL )
+	{
+		huffman_tree_free(
+		 &fixed_literals_tree,
+		 NULL );
+	}
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the deflate_decompress function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_deflate_decompress(
+     void )
+{
+	uint8_t uncompressed_data[ 8192 ];
+
+	libcerror_error_t *error      = NULL;
+	size_t uncompressed_data_size = 7640;
+	int result                    = 0;
+
+	/* Test regular cases
+	 */
+	result = deflate_decompress(
+	          &( assorted_test_deflate_compressed_byte_stream[ 2 ] ),
+	          2627 - 6,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "uncompressed_data_size",
+	 uncompressed_data_size,
+	 (size_t) 7640 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+/* TODO: test uncompressed data too small */
+
+	/* Test error cases
+	 */
+	result = deflate_decompress(
+	          NULL,
+	          2627 - 6,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_decompress(
+	          &( assorted_test_deflate_compressed_byte_stream[ 2 ] ),
+	          (size_t) SSIZE_MAX + 1,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_decompress(
+	          &( assorted_test_deflate_compressed_byte_stream[ 2 ] ),
+	          2627 - 6,
+	          NULL,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = deflate_decompress(
+	          &( assorted_test_deflate_compressed_byte_stream[ 2 ] ),
+	          2627 - 6,
+	          uncompressed_data,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 /* Tests the deflate_decompress_zlib function
  * Returns 1 if successful or 0 if not
  */
@@ -1639,6 +2323,11 @@ int assorted_test_deflate_decompress_zlib(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1686,9 +2375,18 @@ int main(
 	 assorted_test_deflate_calculate_adler32 );
 
 /* TODO add tests for deflate_read_data_header */
-/* TODO add tests for deflate_read_block_header */
-/* TODO add tests for deflate_read_block */
-/* TODO add tests for deflate_decompress */
+
+	ASSORTED_TEST_RUN(
+	 "deflate_read_block_header",
+	 assorted_test_deflate_read_block_header );
+
+	ASSORTED_TEST_RUN(
+	 "deflate_read_block",
+	 assorted_test_deflate_read_block );
+
+	ASSORTED_TEST_RUN(
+	 "deflate_decompress",
+	 assorted_test_deflate_decompress );
 
 	ASSORTED_TEST_RUN(
 	 "deflate_decompress_zlib",

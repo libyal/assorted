@@ -210,6 +210,211 @@ uint8_t assorted_test_huffman_tree_data[ 2627 ] = {
 
 #if defined( __GNUC__ )
 
+/* Tests the huffman_tree_initialize function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_huffman_tree_initialize(
+     void )
+{
+	libcerror_error_t *error        = NULL;
+	huffman_tree_t *huffman_tree    = NULL;
+	int result                      = 0;
+
+#if defined( HAVE_ASSORTED_TEST_MEMORY )
+	int number_of_malloc_fail_tests = 1;
+	int number_of_memset_fail_tests = 1;
+	int test_number                 = 0;
+#endif
+
+	/* Test regular cases
+	 */
+	result = huffman_tree_initialize(
+	          &huffman_tree,
+	          288,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "huffman_tree",
+	 huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = huffman_tree_free(
+	          &huffman_tree,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "huffman_tree",
+	 huffman_tree );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = huffman_tree_initialize(
+	          NULL,
+	          288,
+	          15,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	huffman_tree = (huffman_tree_t *) 0x12345678UL;
+
+	result = huffman_tree_initialize(
+	          &huffman_tree,
+	          288,
+	          15,
+	          &error );
+
+	huffman_tree = NULL;
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_ASSORTED_TEST_MEMORY )
+
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
+	{
+		/* Test huffman_tree_initialize with malloc failing
+		 */
+		assorted_test_malloc_attempts_before_fail = test_number;
+
+		result = huffman_tree_initialize(
+		          &huffman_tree,
+		          288,
+		          15,
+		          &error );
+
+		if( assorted_test_malloc_attempts_before_fail != -1 )
+		{
+			assorted_test_malloc_attempts_before_fail = -1;
+
+			if( huffman_tree != NULL )
+			{
+				huffman_tree_free(
+				 &huffman_tree,
+				 NULL );
+			}
+		}
+		else
+		{
+			ASSORTED_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			ASSORTED_TEST_ASSERT_IS_NULL(
+			 "huffman_tree",
+			 huffman_tree );
+
+			ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+	for( test_number = 0;
+	     test_number < number_of_memset_fail_tests;
+	     test_number++ )
+	{
+		/* Test huffman_tree_initialize with memset failing
+		 */
+		assorted_test_memset_attempts_before_fail = test_number;
+
+		result = huffman_tree_initialize(
+		          &huffman_tree,
+		          288,
+		          15,
+		          &error );
+
+		if( assorted_test_memset_attempts_before_fail != -1 )
+		{
+			assorted_test_memset_attempts_before_fail = -1;
+
+			if( huffman_tree != NULL )
+			{
+				huffman_tree_free(
+				 &huffman_tree,
+				 NULL );
+			}
+		}
+		else
+		{
+			ASSORTED_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			ASSORTED_TEST_ASSERT_IS_NULL(
+			 "huffman_tree",
+			 huffman_tree );
+
+			ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+#endif /* defined( HAVE_ASSORTED_TEST_MEMORY ) */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( huffman_tree != NULL )
+	{
+		huffman_tree_free(
+		 &huffman_tree,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the huffman_tree_free function
  * Returns 1 if successful or 0 if not
  */
@@ -759,7 +964,9 @@ int main(
 
 #if defined( __GNUC__ )
 
-	/* TODO add tests for huffman_tree_initialize */
+	ASSORTED_TEST_RUN(
+	 "huffman_tree_initialize",
+	 assorted_test_huffman_tree_initialize );
 
 	ASSORTED_TEST_RUN(
 	 "huffman_tree_free",
