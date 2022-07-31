@@ -20,7 +20,6 @@
  */
 
 #include <common.h>
-#include <byte_stream.h>
 #include <memory.h>
 #include <types.h>
 
@@ -1535,7 +1534,6 @@ int bzip_decompress(
 
 	bit_stream_t *bit_stream           = NULL;
 	static char *function              = "bzip_decompress";
-	size_t block_data_offset           = 0;
 	size_t block_data_size             = 0;
 	size_t compressed_data_offset      = 0;
 	size_t safe_uncompressed_data_size = 0;
@@ -1550,6 +1548,10 @@ int bzip_decompress(
 	uint8_t compression_level          = 0;
 	uint8_t number_of_trees            = 0;
 	uint8_t tree_index                 = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	size_t block_data_offset           = 0;
+#endif
 
 	if( compressed_data == NULL )
 	{
@@ -1799,7 +1801,9 @@ int bzip_decompress(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		block_data_offset = uncompressed_data_offset;
+#endif
 
 		if( memory_set(
 		     permutations,

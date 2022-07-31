@@ -35,6 +35,7 @@
 
 #include "../src/bit_stream.h"
 #include "../src/bzip.h"
+#include "../src/huffman_tree.h"
 
 /* Define to make assorted_test_bzip generate verbose output
 #define ASSORTED_TEST_BZIP_VERBOSE
@@ -1791,6 +1792,259 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the bzip_read_stream_footer function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_bzip_read_stream_footer(
+     void )
+{
+	bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error = NULL;
+	uint64_t signature       = 0;
+	uint32_t checksum        = 0;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bzip_compressed_byte_stream,
+	          125,
+	          107,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = bzip_read_signature(
+	          bit_stream,
+	          &signature,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT64(
+	 "signature",
+	 signature,
+	 (uint64_t) 0x177245385090UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = bzip_read_stream_footer(
+	          bit_stream,
+	          signature,
+	          &checksum,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "checksum",
+	 checksum,
+	 (uint32_t) 0x5a55c41eUL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = bzip_read_stream_footer(
+	          NULL,
+	          signature,
+	          &checksum,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "bit_stream",
+	 bit_stream );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( 0 );
+}
+
+/* Tests the bzip_decompress function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_bzip_decompress(
+     void )
+{
+	uint8_t uncompressed_data[ 256 ];
+
+	libcerror_error_t *error      = NULL;
+	size_t uncompressed_data_size = 125;
+	int result                    = 0;
+
+	/* Test regular cases
+	 */
+	result = bzip_decompress(
+	          assorted_test_bzip_compressed_byte_stream,
+	          125,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "uncompressed_data_size",
+	 uncompressed_data_size,
+	 (size_t) 108 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+/* TODO: test uncompressed data too small */
+
+	/* Test error cases
+	 */
+	result = bzip_decompress(
+	          NULL,
+	          125,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bzip_decompress(
+	          assorted_test_bzip_compressed_byte_stream,
+	          (size_t) SSIZE_MAX + 1,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bzip_decompress(
+	          assorted_test_bzip_compressed_byte_stream,
+	          125,
+	          NULL,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = bzip_decompress(
+	          assorted_test_bzip_compressed_byte_stream,
+	          125,
+	          uncompressed_data,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) */
 
 /* The main program
@@ -1862,9 +2116,13 @@ int main(
 	 "bzip_read_block_data",
 	 assorted_test_bzip_read_block_data );
 
-/* TODO add tests for bzip_read_stream_footer */
+	ASSORTED_TEST_RUN(
+	 "bzip_read_stream_footer",
+	 assorted_test_bzip_read_stream_footer );
 
-/* TODO add tests for bzip_decompress */
+	ASSORTED_TEST_RUN(
+	 "bzip_decompress",
+	 assorted_test_bzip_decompress );
 
 #endif /* defined( __GNUC__ ) */
 

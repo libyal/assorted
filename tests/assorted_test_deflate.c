@@ -2088,7 +2088,7 @@ int assorted_test_deflate_decompress(
 	uint8_t uncompressed_data[ 8192 ];
 
 	libcerror_error_t *error      = NULL;
-	size_t uncompressed_data_size = 7640;
+	size_t uncompressed_data_size = 8192;
 	int result                    = 0;
 
 	/* Test regular cases
