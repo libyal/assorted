@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_bzip"
-	ProjectGUID="{788018B7-9AAD-4B35-A95E-D51E56401C3C}"
+	ProjectGUID="{0463B70A-6DE6-402B-9F31-DB2A06DE995B}"
 	RootNamespace="assorted_test_bzip"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

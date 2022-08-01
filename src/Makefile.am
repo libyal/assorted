@@ -219,6 +219,7 @@ lzfsedecompress_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
+	assorted_system_string.h \
 	lzfse.c lzfse.h \
 	lzfsedecompress.c \
 	lzvn.c lzvn.h
@@ -256,6 +257,7 @@ lznt1decompress_SOURCES = \
 	assorted_libcnotify.h \
 	assorted_libfwnt.h \
 	assorted_output.c assorted_output.h \
+	assorted_system_string.h \
 	lznt1decompress.c
 
 lznt1decompress_LDADD = \

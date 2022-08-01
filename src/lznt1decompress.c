@@ -35,6 +35,7 @@
 #include "assorted_libcnotify.h"
 #include "assorted_libfwnt.h"
 #include "assorted_output.h"
+#include "assorted_system_string.h"
 
 #if defined( WINAPI )
 
@@ -197,11 +198,7 @@ int main( int argc, char * const argv[] )
 
 #endif
 			case (system_integer_t) 'd':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				uncompressed_data_size = _wtol( optarg );
-#else
-				uncompressed_data_size = atol( optarg );
-#endif
+				uncompressed_data_size = system_string_copy_to_long( optarg );
 				break;
 
 			case (system_integer_t) 'h':
@@ -211,19 +208,11 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case (system_integer_t) 'o':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_offset = _wtol( optarg );
-#else
-				source_offset = atol( optarg );
-#endif
+				source_offset = system_string_copy_to_long( optarg );
 				break;
 
 			case (system_integer_t) 's':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_size = _wtol( optarg );
-#else
-				source_size = atol( optarg );
-#endif
+				source_size = system_string_copy_to_long( optarg );
 				break;
 
 			case (system_integer_t) 't':

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_huffman_tree"
-	ProjectGUID="{210E1186-E9E1-4BBC-A2F2-817F9163D12D}"
+	ProjectGUID="{E2513926-F9C6-4830-A96E-4E6C2D1D08E0}"
 	RootNamespace="assorted_test_huffman_tree"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

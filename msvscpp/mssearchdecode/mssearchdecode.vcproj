@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="mssearchdecode"
-	ProjectGUID="{A17336F4-4E7B-465B-BFA2-D362C435423D}"
+	ProjectGUID="{94834279-BFDB-4CB5-A744-BC8E27C4F703}"
 	RootNamespace="mssearchdecode"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

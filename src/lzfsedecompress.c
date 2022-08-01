@@ -35,6 +35,7 @@
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
+#include "assorted_system_string.h"
 #include "lzfse.h"
 
 /* Prints the executable usage information
@@ -48,10 +49,12 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use lzfsedecompress to decompress data as LZFSE compressed data.\n\n" );
 
-	fprintf( stream, "Usage: lzfsedecompress [ -o offset ] [ -s size ] [ -hvV ] source\n\n" );
+	fprintf( stream, "Usage: lzfsedecompress [ -d size ] [ -o offset ] [ -s size ] [ -hvV ]\n"
+	                 "       source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
+	fprintf( stream, "\t-d:     size of the decompressed data (default is 16384).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
@@ -94,7 +97,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = assorted_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "ho:s:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "d:ho:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -110,6 +113,10 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_FAILURE );
 
+			case (system_integer_t) 'd':
+				uncompressed_data_size = system_string_copy_to_long( optarg );
+				break;
+
 			case 'h':
 				usage_fprint(
 				 stdout );
@@ -117,19 +124,11 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case 'o':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_offset = _wtol( optarg );
-#else
-				source_offset = atol( optarg );
-#endif
+				source_offset = system_string_copy_to_long( optarg );
 				break;
 
 			case 's':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_size = _wtol( optarg );
-#else
-				source_size = atol( optarg );
-#endif
+				source_size = system_string_copy_to_long( optarg );
 				break;
 
 			case 'v':
@@ -237,8 +236,10 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	uncompressed_data_size = source_size * 16;
-
+	if( uncompressed_data_size == 0 )
+	{
+		uncompressed_data_size = 16384;
+	}
 	uncompressed_data = (uint8_t *) memory_allocate(
 	                                 sizeof( uint8_t ) * uncompressed_data_size );
 

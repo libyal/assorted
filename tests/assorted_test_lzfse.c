@@ -1363,6 +1363,110 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the lzfse_bit_stream_read function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_lzfse_bit_stream_read(
+     void )
+{
+	libcerror_error_t *error       = NULL;
+	lzfse_bit_stream_t *bit_stream = NULL;
+	int result                     = 0;
+
+	/* Initialize test
+	 */
+	result = lzfse_bit_stream_initialize(
+	          &bit_stream,
+	          &( assorted_test_lzfse_compressed_data[ 163 ] ),
+	          35,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = lzfse_bit_stream_read(
+	          bit_stream,
+	          8,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "bit_stream->byte_stream_offset",
+	 bit_stream->byte_stream_offset,
+	 (size_t) 34 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "bit_stream->bit_buffer",
+	 bit_stream->bit_buffer,
+	 (uint32_t) 0x00000003UL );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
+	 "bit_stream->bit_buffer_size",
+	 bit_stream->bit_buffer_size,
+	 (uint8_t) 8 );
+
+	/* Test error cases
+	 */
+	result = lzfse_bit_stream_read(
+	          NULL,
+	          8,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = lzfse_bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( bit_stream != NULL )
+	{
+		lzfse_bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the lzfse_state_initialize function
  * Returns 1 if successful or 0 if not
  */
@@ -1784,6 +1888,343 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the lzfse_read_compressed_frequency_table function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_lzfse_read_compressed_frequency_table(
+     void )
+{
+	uint16_t frequency_table[ 360 ];
+
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = lzfse_read_compressed_frequency_table(
+	          &( assorted_test_lzfse_compressed_data[ 32 ] ),
+	          226 - 32,
+	          frequency_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = lzfse_read_compressed_frequency_table(
+	          NULL,
+	          226 - 32,
+	          frequency_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_compressed_frequency_table(
+	          &( assorted_test_lzfse_compressed_data[ 32 ] ),
+	          (size_t) SSIZE_MAX + 1,
+	          frequency_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_compressed_frequency_table(
+	          &( assorted_test_lzfse_compressed_data[ 32 ] ),
+	          226 - 32,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	return( 0 );
+}
+
+/* Tests the lzfse_read_block function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_lzfse_read_block(
+     void )
+{
+	uint8_t uncompressed_data[ 16384 ];
+
+	libcerror_error_t *error        = NULL;
+	lzfse_state_t *state            = NULL;
+	size_t compressed_data_offset   = 0;
+	size_t uncompressed_data_offset = 0;
+	int result                      = 0;
+
+	/* Initialize test
+	 */
+	result = lzfse_state_initialize(
+	          &state,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "state",
+	 state );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	compressed_data_offset   = 0;
+	uncompressed_data_offset = 0;
+
+	result = lzfse_read_block(
+	          state,
+	          assorted_test_lzfse_compressed_data,
+	          226,
+	          &compressed_data_offset,
+	          uncompressed_data,
+	          16384,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	compressed_data_offset   = 0;
+	uncompressed_data_offset = 0;
+
+	result = lzfse_read_block(
+	          NULL,
+	          assorted_test_lzfse_compressed_data,
+	          226,
+	          &compressed_data_offset,
+	          uncompressed_data,
+	          16384,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_block(
+	          state,
+	          NULL,
+	          226,
+	          &compressed_data_offset,
+	          uncompressed_data,
+	          16384,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_block(
+	          state,
+	          &( assorted_test_lzfse_compressed_data[ 8 ] ),
+	          (size_t) SSIZE_MAX + 1,
+	          &compressed_data_offset,
+	          uncompressed_data,
+	          16384,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_block(
+	          state,
+	          assorted_test_lzfse_compressed_data,
+	          226,
+	          NULL,
+	          uncompressed_data,
+	          16384,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_block(
+	          state,
+	          assorted_test_lzfse_compressed_data,
+	          226,
+	          &compressed_data_offset,
+	          NULL,
+	          16384,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_block(
+	          state,
+	          assorted_test_lzfse_compressed_data,
+	          226,
+	          &compressed_data_offset,
+	          uncompressed_data,
+	          (size_t) SSIZE_MAX + 1,
+	          &uncompressed_data_offset,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_read_block(
+	          state,
+	          assorted_test_lzfse_compressed_data,
+	          226,
+	          &compressed_data_offset,
+	          uncompressed_data,
+	          16384,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = lzfse_state_free(
+	          &state,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "state",
+	 state );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( state != NULL )
+	{
+		lzfse_state_free(
+		 &state,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the lzfse_decompress function
  * Returns 1 if successful or 0 if not
  */
@@ -1973,7 +2414,9 @@ int main(
 	 "lzfse_bit_stream_free",
 	 assorted_test_lzfse_bit_stream_free );
 
-	/* TODO add tests for lzfse_bit_stream_read */
+	ASSORTED_TEST_RUN(
+	 "lzfse_bit_stream_read",
+	 assorted_test_lzfse_bit_stream_read );
 
 	/* TODO add tests for lzfse_bit_stream_get_value */
 
@@ -1995,9 +2438,13 @@ int main(
 	 "lzfse_read_block_v2_header",
 	 assorted_test_lzfse_read_block_v2_header );
 
-	/* TODO add tests for lzfse_read_compressed_frequency_table */
+	ASSORTED_TEST_RUN(
+	 "lzfse_read_compressed_frequency_table",
+	 assorted_test_lzfse_read_compressed_frequency_table );
 
-	/* TODO add tests for lzfse_read_block */
+	ASSORTED_TEST_RUN(
+	 "lzfse_read_block",
+	 assorted_test_lzfse_read_block);
 
 	ASSORTED_TEST_RUN(
 	 "lzfse_decompress",

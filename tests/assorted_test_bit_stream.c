@@ -378,6 +378,112 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the bit_stream_read function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_bit_stream_read(
+     void )
+{
+	bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = bit_stream_initialize(
+	          &bit_stream,
+	          assorted_test_bit_stream_data,
+	          16,
+	          0,
+	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = bit_stream_read(
+	          bit_stream,
+	          8,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "bit_stream->byte_stream_offset",
+	 bit_stream->byte_stream_offset,
+	 (size_t) 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "bit_stream->bit_buffer",
+	 bit_stream->bit_buffer,
+	 (uint32_t) 0x00000078UL );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
+	 "bit_stream->bit_buffer_size",
+	 bit_stream->bit_buffer_size,
+	 (uint8_t) 8 );
+
+	/* Test error cases
+	 */
+	result = bit_stream_read(
+	          NULL,
+	          8,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( bit_stream != NULL )
+	{
+		bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the bit_stream_get_value function
  * Returns 1 if successful or 0 if not
  */
@@ -691,7 +797,9 @@ int main(
 	 "bit_stream_free",
 	 assorted_test_bit_stream_free );
 
-	/* TODO add tests for bit_stream_read */
+	ASSORTED_TEST_RUN(
+	 "bit_stream_read",
+	 assorted_test_bit_stream_read );
 
 	ASSORTED_TEST_RUN(
 	 "bit_stream_get_value",

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="winshellfolder"
-	ProjectGUID="{5159EAF3-3B7C-4BA6-A3BA-DDB7B2B943F9}"
+	ProjectGUID="{EB1AB11B-9128-4FDE-AE56-C1442CF21D0D}"
 	RootNamespace="winshellfolder"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="crc32sum"
-	ProjectGUID="{3CF0E7FC-EF44-459D-BE18-64AAE891DF59}"
+	ProjectGUID="{1C20A19D-D93E-4778-BD63-0757E4C1D407}"
 	RootNamespace="crc32sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

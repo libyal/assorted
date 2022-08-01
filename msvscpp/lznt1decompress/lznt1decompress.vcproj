@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="lznt1decompress"
-	ProjectGUID="{579E7041-A54A-40C0-B926-6A081566D9BD}"
+	ProjectGUID="{DF7B552A-EE10-481F-9842-925BB16C5CD2}"
 	RootNamespace="lznt1decompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -219,6 +219,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_system_string.h"
 				>
 			</File>
 		</Filter>

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fletcher32sum"
-	ProjectGUID="{298D7940-E58C-4327-873E-A3409E14647E}"
+	ProjectGUID="{B112AEEA-8443-4B07-9569-87D84302ACF8}"
 	RootNamespace="fletcher32sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
