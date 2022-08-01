@@ -39,8 +39,13 @@
 #define ASSORTED_TEST_LZVN_VERBOSE
  */
 
-uint8_t assorted_test_lzvn_compressed_data[ 16 ] = {
-	0x78, 0xda, 0xbd, 0x59, 0x6d, 0x8f, 0xdb, 0xb8, 0x11, 0xfe, 0x7c, 0xfa, 0x15, 0xc4, 0x7e, 0xb9 };
+uint8_t assorted_test_lzvn_compressed_data[ 29 ] = {
+	0xe0, 0x03, 0x4d, 0x79, 0x20, 0x63, 0x6f, 0x6d, 0x70, 0x72, 0x65, 0x73, 0x73, 0x65, 0x64, 0x20,
+	0x66, 0x69, 0x6c, 0x65, 0x0a, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+uint8_t assorted_test_lzvn_uncompressed_data[ 19 ] = {
+	0x4d, 0x79, 0x20, 0x63, 0x6f, 0x6d, 0x70, 0x72, 0x65, 0x73, 0x73, 0x65, 0x64, 0x20, 0x66, 0x69,
+	0x6c, 0x65, 0x0a };
 
 #if defined( __GNUC__ )
 
@@ -50,20 +55,17 @@ uint8_t assorted_test_lzvn_compressed_data[ 16 ] = {
 int assorted_test_lzvn_decompress(
      void )
 {
-	uint8_t uncompressed_data[ 16 ];
+	uint8_t uncompressed_data[ 64 ];
 
 	libcerror_error_t *error      = NULL;
-	size_t uncompressed_data_size = 0;
+	size_t uncompressed_data_size = 19;
 	int result                    = 0;
 
 	/* Test regular cases
 	 */
-/* TODO add representative test data
-	uncompressed_data_size = 16;
-
 	result = lzvn_decompress(
 	          assorted_test_lzvn_compressed_data,
-	          16,
+	          29,
 	          uncompressed_data,
 	          &uncompressed_data_size,
 	          &error );
@@ -76,20 +78,29 @@ int assorted_test_lzvn_decompress(
 	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
 	 "uncompressed_data_size",
 	 uncompressed_data_size,
-	 (size_t) 18 );
+	 (size_t) 19 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-*/
+
+	result = memory_compare(
+	          uncompressed_data,
+	          assorted_test_lzvn_uncompressed_data,
+	          19 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+/* TODO: test uncompressed data too small */
 
 	/* Test error cases
 	 */
-	uncompressed_data_size = 16;
-
 	result = lzvn_decompress(
 	          NULL,
-	          16,
+	          29,
 	          uncompressed_data,
 	          &uncompressed_data_size,
 	          &error );
@@ -127,7 +138,7 @@ int assorted_test_lzvn_decompress(
 
 	result = lzvn_decompress(
 	          assorted_test_lzvn_compressed_data,
-	          16,
+	          29,
 	          NULL,
 	          &uncompressed_data_size,
 	          &error );
@@ -146,30 +157,9 @@ int assorted_test_lzvn_decompress(
 
 	result = lzvn_decompress(
 	          assorted_test_lzvn_compressed_data,
-	          16,
+	          29,
 	          uncompressed_data,
 	          NULL,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	uncompressed_data_size = (size_t) SSIZE_MAX + 1;
-
-	result = lzvn_decompress(
-	          assorted_test_lzvn_compressed_data,
-	          16,
-	          uncompressed_data,
-	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -187,6 +177,11 @@ int assorted_test_lzvn_decompress(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 

@@ -976,9 +976,9 @@ int lzfse_read_block_v2_header(
 	uint64_t packed_fields2            = 0;
 	uint64_t packed_fields3            = 0;
 	uint32_t header_size               = 0;
-	uint16_t table_index               = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
+	uint16_t table_index               = 0;
 	uint8_t literal_state_index        = 0;
 #endif
 
