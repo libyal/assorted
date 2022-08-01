@@ -1467,6 +1467,282 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the lzfse_bit_stream_get_value function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_lzfse_bit_stream_get_value(
+     void )
+{
+	lzfse_bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error       = NULL;
+	uint32_t value_32bit           = 0;
+	int result                     = 0;
+
+	/* Initialize test
+	 */
+	result = lzfse_bit_stream_initialize(
+	          &bit_stream,
+	          &( assorted_test_lzfse_compressed_data[ 163 ] ),
+	          35,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = lzfse_bit_stream_get_value(
+	          bit_stream,
+	          0,
+	          &value_32bit,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x00000000UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "bit_stream->byte_stream_offset",
+	 bit_stream->byte_stream_offset,
+	 (size_t) 35 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "bit_stream->bit_buffer",
+	 bit_stream->bit_buffer,
+	 (uint32_t) 0x00000000UL );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
+	 "bit_stream->bit_buffer_size",
+	 bit_stream->bit_buffer_size,
+	 (uint8_t) 0 );
+
+	result = lzfse_bit_stream_get_value(
+	          bit_stream,
+	          4,
+	          &value_32bit,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x00000000UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "bit_stream->byte_stream_offset",
+	 bit_stream->byte_stream_offset,
+	 (size_t) 34 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "bit_stream->bit_buffer",
+	 bit_stream->bit_buffer,
+	 (uint32_t) 0x00000003UL );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
+	 "bit_stream->bit_buffer_size",
+	 bit_stream->bit_buffer_size,
+	 (uint8_t) 4 );
+
+	result = lzfse_bit_stream_get_value(
+	          bit_stream,
+	          12,
+	          &value_32bit,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x000003a7UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "bit_stream->byte_stream_offset",
+	 bit_stream->byte_stream_offset,
+	 (size_t) 33 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "bit_stream->bit_buffer",
+	 bit_stream->bit_buffer,
+	 (uint32_t) 0x00000000UL );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
+	 "bit_stream->bit_buffer_size",
+	 bit_stream->bit_buffer_size,
+	 (uint8_t) 0 );
+
+	result = lzfse_bit_stream_get_value(
+	          bit_stream,
+	          32,
+	          &value_32bit,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x9f45b083UL );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
+	 "bit_stream->byte_stream_offset",
+	 bit_stream->byte_stream_offset,
+	 (size_t) 29 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
+	 "bit_stream->bit_buffer",
+	 bit_stream->bit_buffer,
+	 (uint32_t) 0x00000000UL );
+
+	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
+	 "bit_stream->bit_buffer_size",
+	 bit_stream->bit_buffer_size,
+	 (uint8_t) 0 );
+
+	/* Test error cases
+	 */
+	result = lzfse_bit_stream_get_value(
+	          NULL,
+	          32,
+	          &value_32bit,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_bit_stream_get_value(
+	          bit_stream,
+	          64,
+	          &value_32bit,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_bit_stream_get_value(
+	          bit_stream,
+	          32,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	bit_stream->byte_stream_offset = 0;
+        bit_stream->bit_buffer_size    = 0;
+
+	result = lzfse_bit_stream_get_value(
+	          bit_stream,
+	          32,
+	          &value_32bit,
+	          &error );
+
+	bit_stream->byte_stream_offset = 0;
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = lzfse_bit_stream_free(
+	          &bit_stream,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( bit_stream != NULL )
+	{
+		lzfse_bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the lzfse_state_initialize function
  * Returns 1 if successful or 0 if not
  */
@@ -1697,6 +1973,248 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
+	return( 0 );
+}
+
+/* Tests the lzfse_build_decoder_table function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_lzfse_build_decoder_table(
+     void )
+{
+	uint16_t frequency_table[ 360 ];
+	lzfse_decoder_entry_t decoder_table[ LZFSE_NUMBER_OF_LITERAL_STATES ];
+
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = lzfse_read_compressed_frequency_table(
+	          &( assorted_test_lzfse_compressed_data[ 32 ] ),
+	          226 - 32,
+	          frequency_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = lzfse_build_decoder_table(
+	          LZFSE_NUMBER_OF_LITERAL_STATES,
+	          68,
+	          &( frequency_table[ 104 ] ),
+	          decoder_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = lzfse_build_decoder_table(
+	          LZFSE_NUMBER_OF_LITERAL_STATES,
+	          68,
+	          NULL,
+	          decoder_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_build_decoder_table(
+	          LZFSE_NUMBER_OF_LITERAL_STATES,
+	          68,
+	          &( frequency_table[ 104 ] ),
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	return( 0 );
+}
+
+/* Tests the lzfse_build_value_decoder_table function
+ * Returns 1 if successful or 0 if not
+ */
+int assorted_test_lzfse_build_value_decoder_table(
+     void )
+{
+	uint16_t frequency_table[ 360 ];
+	lzfse_value_decoder_entry_t value_decoder_table[ LZFSE_NUMBER_OF_LITERAL_STATES ];
+
+	const uint8_t lzfse_l_value_bits_table[ LZFSE_NUMBER_OF_L_VALUE_SYMBOLS ] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		2, 3, 5, 8 };
+
+	const int32_t lzfse_l_value_base_table[ LZFSE_NUMBER_OF_L_VALUE_SYMBOLS ] = {
+		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+		16, 20, 28, 60 };
+
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = lzfse_read_compressed_frequency_table(
+	          &( assorted_test_lzfse_compressed_data[ 32 ] ),
+	          226 - 32,
+	          frequency_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = lzfse_build_value_decoder_table(
+	          LZFSE_NUMBER_OF_L_VALUE_STATES,
+	          10,
+	          frequency_table,
+	          lzfse_l_value_bits_table,
+	          lzfse_l_value_base_table,
+	          value_decoder_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	ASSORTED_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = lzfse_build_value_decoder_table(
+	          LZFSE_NUMBER_OF_L_VALUE_STATES,
+	          10,
+	          NULL,
+	          lzfse_l_value_bits_table,
+	          lzfse_l_value_base_table,
+	          value_decoder_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_build_value_decoder_table(
+	          LZFSE_NUMBER_OF_L_VALUE_STATES,
+	          10,
+	          frequency_table,
+	          NULL,
+	          lzfse_l_value_base_table,
+	          value_decoder_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_build_value_decoder_table(
+	          LZFSE_NUMBER_OF_L_VALUE_STATES,
+	          10,
+	          frequency_table,
+	          lzfse_l_value_bits_table,
+	          NULL,
+	          value_decoder_table,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = lzfse_build_value_decoder_table(
+	          LZFSE_NUMBER_OF_L_VALUE_STATES,
+	          10,
+	          frequency_table,
+	          lzfse_l_value_bits_table,
+	          lzfse_l_value_base_table,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
 	return( 0 );
 }
 
@@ -2418,7 +2936,9 @@ int main(
 	 "lzfse_bit_stream_read",
 	 assorted_test_lzfse_bit_stream_read );
 
-	/* TODO add tests for lzfse_bit_stream_get_value */
+	ASSORTED_TEST_RUN(
+	 "lzfse_bit_stream_get_value",
+	 assorted_test_lzfse_bit_stream_get_value );
 
 	ASSORTED_TEST_RUN(
 	 "lzfse_state_initialize",
@@ -2428,9 +2948,13 @@ int main(
 	 "lzfse_state_free",
 	 assorted_test_lzfse_state_free );
 
-	/* TODO add tests for lzfse_build_decoder_table */
+	ASSORTED_TEST_RUN(
+	 "lzfse_build_decoder_table",
+	 assorted_test_lzfse_build_decoder_table );
 
-	/* TODO add tests for lzfse_build_value_decoder_table */
+	ASSORTED_TEST_RUN(
+	 "lzfse_build_value_decoder_table",
+	 assorted_test_lzfse_build_value_decoder_table );
 
 	/* TODO add tests for lzfse_read_block_v1_header */
 
