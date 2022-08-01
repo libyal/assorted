@@ -196,7 +196,7 @@ int lzfse_state_initialize(
      lzfse_state_t **state,
      libcerror_error_t **error );
 
-int lzfse_state_state(
+int lzfse_state_free(
      lzfse_state_t **state,
      libcerror_error_t **error );
 
@@ -216,7 +216,7 @@ int lzfse_build_value_decoder_table(
      lzfse_value_decoder_entry_t *value_decoder_table,
      libcerror_error_t **error );
 
-int lzfse_read_v1_block_header(
+int lzfse_read_block_v1_header(
      lzfse_state_t *state,
      const uint8_t *compressed_data,
      size_t compressed_data_size,
@@ -224,7 +224,7 @@ int lzfse_read_v1_block_header(
      uint16_t *frequency_table,
      libcerror_error_t **error );
 
-int lzfse_read_v2_block_header(
+int lzfse_read_block_v2_header(
      lzfse_state_t *state,
      const uint8_t *compressed_data,
      size_t compressed_data_size,

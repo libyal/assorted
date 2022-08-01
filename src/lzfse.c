@@ -528,9 +528,8 @@ int lzfse_build_decoder_table(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid sum of frequencies value out of bounds (%d > %d).",
-			 function,
-			 sum_of_frequencies, number_of_states );
+			 "%s: invalid sum of frequencies value out of bounds.",
+			 function );
 
 			return( -1 );
 		}
@@ -976,7 +975,6 @@ int lzfse_read_block_v2_header(
 	uint64_t packed_fields1            = 0;
 	uint64_t packed_fields2            = 0;
 	uint64_t packed_fields3            = 0;
-	uint32_t compressed_block_size     = 0;
 	uint32_t header_size               = 0;
 	uint16_t table_index               = 0;
 
@@ -1134,6 +1132,18 @@ int lzfse_read_block_v2_header(
 	}
 	if( header_size > 32 )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: compressed frequency table data:\n",
+			 function );
+			libcnotify_print_data(
+			 &( compressed_data[ safe_compressed_data_offset ] ),
+			 header_size - 32,
+			 0 );
+		}
+#endif
 		if( ( header_size > compressed_data_size )
 		 || ( safe_compressed_data_offset > ( compressed_data_size - header_size ) ) )
 		{
@@ -1166,11 +1176,6 @@ int lzfse_read_block_v2_header(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		libcnotify_printf(
-		 "%s: compressed block size\t\t\t: %" PRIu32 "\n",
-		 function,
-		 compressed_block_size );
-
 		libcnotify_printf(
 		 "%s: number of literals\t\t\t\t: %" PRIu32 "\n",
 		 function,
@@ -1601,17 +1606,6 @@ int lzfse_read_literal_values(
 		     literal_state_index < 4;
 		     literal_state_index++ )
 		{
-			if( bit_stream->byte_stream_offset == 0 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-				 "%s: compressed data size value too small.",
-				 function );
-
-				return( -1 );
-			}
 			literal_state = literal_states[ literal_state_index ];
 			decoder_entry = &( state->literal_decoder_table[ literal_state ] );
 
@@ -1795,17 +1789,6 @@ int lzfse_read_lmd_values(
 	     lmd_value_index < state->number_of_lmd_values;
 	     lmd_value_index++ )
 	{
-		if( bit_stream->byte_stream_offset == 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-			 "%s: compressed data size value too small.",
-			 function );
-
-			return( -1 );
-		}
 		value_decoder_entry = &( state->l_value_decoder_table[ l_value_state ] );
 
 		if( lzfse_bit_stream_get_value(
@@ -1826,17 +1809,6 @@ int lzfse_read_lmd_values(
 		l_value_state = (int32_t) value_decoder_entry->delta + (int32_t) ( value_32bit >> value_decoder_entry->value_bits );
 		l_value       = value_decoder_entry->value_base + (int32_t) ( value_32bit & value_decoder_entry->value_bitmask );
 
-		if( bit_stream->byte_stream_offset == 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-			 "%s: compressed data size value too small.",
-			 function );
-
-			return( -1 );
-		}
 		value_decoder_entry = &( state->m_value_decoder_table[ m_value_state ] );
 
 		if( lzfse_bit_stream_get_value(
@@ -1857,17 +1829,6 @@ int lzfse_read_lmd_values(
 		m_value_state = (int32_t) value_decoder_entry->delta + (int32_t) ( value_32bit >> value_decoder_entry->value_bits );
 		m_value       = value_decoder_entry->value_base + (int32_t) ( value_32bit & value_decoder_entry->value_bitmask );
 
-		if( bit_stream->byte_stream_offset == 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-			 "%s: compressed data size value too small.",
-			 function );
-
-			return( -1 );
-		}
 		value_decoder_entry = &( state->d_value_decoder_table[ d_value_state ] );
 
 		if( lzfse_bit_stream_get_value(
@@ -2182,6 +2143,8 @@ int lzfse_decompress(
 			 uncompressed_block_size );
 		}
 #endif
+/* TODO check if uncompressed data is sufficiently large and error if not */
+
 		switch( block_marker )
 		{
 			case LZFSE_COMPRESSED_BLOCK_V1_MARKER:

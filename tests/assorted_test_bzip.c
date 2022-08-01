@@ -41,7 +41,7 @@
 #define ASSORTED_TEST_BZIP_VERBOSE
  */
 
-uint8_t assorted_test_bzip_compressed_byte_stream[ 125 ] = {
+uint8_t assorted_test_bzip_compressed_data[ 125 ] = {
 	0x42, 0x5a, 0x68, 0x31, 0x31, 0x41, 0x59, 0x26, 0x53, 0x59, 0x5a, 0x55, 0xc4, 0x1e, 0x00,
        	0x00, 0x0c, 0x5f, 0x80, 0x20, 0x00, 0x40, 0x84, 0x00, 0x00, 0x80, 0x20, 0x40, 0x00, 0x2f,
        	0x6c, 0xdc, 0x80, 0x20, 0x00, 0x48, 0x4a, 0x9a, 0x4c, 0xd5, 0x53, 0xfc, 0x69, 0xa5, 0x53,
@@ -50,6 +50,16 @@ uint8_t assorted_test_bzip_compressed_byte_stream[ 125 ] = {
        	0x14, 0x56, 0x5a, 0xe2, 0x8b, 0x9d, 0x50, 0xb9, 0x00, 0x81, 0x1a, 0x91, 0xfa, 0x25, 0x4f,
        	0x08, 0x5f, 0x4b, 0x5f, 0x53, 0x92, 0x4b, 0x11, 0xc5, 0x22, 0x92, 0xd9, 0x50, 0x56, 0x6b,
        	0x6f, 0x9e, 0x17, 0x72, 0x45, 0x38, 0x50, 0x90, 0x5a, 0x55, 0xc4, 0x1e };
+
+uint8_t assorted_test_bzip_uncompressed_data[ 108 ] = {
+	0x49, 0x66, 0x20, 0x50, 0x65, 0x74, 0x65, 0x72, 0x20, 0x50, 0x69, 0x70, 0x65, 0x72, 0x20,
+	0x70, 0x69, 0x63, 0x6b, 0x65, 0x64, 0x20, 0x61, 0x20, 0x70, 0x65, 0x63, 0x6b, 0x20, 0x6f,
+	0x66, 0x20, 0x70, 0x69, 0x63, 0x6b, 0x6c, 0x65, 0x64, 0x20, 0x70, 0x65, 0x70, 0x70, 0x65,
+	0x72, 0x73, 0x2c, 0x20, 0x77, 0x68, 0x65, 0x72, 0x65, 0x27, 0x73, 0x20, 0x74, 0x68, 0x65,
+	0x20, 0x70, 0x65, 0x63, 0x6b, 0x20, 0x6f, 0x66, 0x20, 0x70, 0x69, 0x63, 0x6b, 0x6c, 0x65,
+	0x64, 0x20, 0x70, 0x65, 0x70, 0x70, 0x65, 0x72, 0x73, 0x20, 0x50, 0x65, 0x74, 0x65, 0x72,
+	0x20, 0x50, 0x69, 0x70, 0x65, 0x72, 0x20, 0x70, 0x69, 0x63, 0x6b, 0x65, 0x64, 0x3f, 0x3f,
+	0x3f, 0x3f, 0x3f };
 
 #if defined( __GNUC__ )
 
@@ -283,7 +293,7 @@ int assorted_test_bzip_read_stream_header(
 	/* Test regular cases
 	 */
 	result = bzip_read_stream_header(
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          &compression_level,
 	          &error );
@@ -343,7 +353,7 @@ int assorted_test_bzip_read_signature(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -449,7 +459,7 @@ int assorted_test_bzip_read_block_header(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -584,7 +594,7 @@ int assorted_test_bzip_read_symbol_stack(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -761,7 +771,7 @@ int assorted_test_bzip_read_selectors(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -982,7 +992,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -1250,7 +1260,7 @@ int assorted_test_bzip_read_huffman_trees(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -1518,7 +1528,7 @@ int assorted_test_bzip_read_block_data(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -1808,7 +1818,7 @@ int assorted_test_bzip_read_stream_footer(
 	 */
 	result = bit_stream_initialize(
 	          &bit_stream,
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          107,
 	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
@@ -1934,7 +1944,7 @@ int assorted_test_bzip_decompress(
 	/* Test regular cases
 	 */
 	result = bzip_decompress(
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          uncompressed_data,
 	          &uncompressed_data_size,
@@ -1953,6 +1963,16 @@ int assorted_test_bzip_decompress(
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+
+	result = memory_compare(
+	          uncompressed_data,
+	          assorted_test_bzip_uncompressed_data,
+	          108 );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
 
 /* TODO: test uncompressed data too small */
 
@@ -1978,7 +1998,7 @@ int assorted_test_bzip_decompress(
 	 &error );
 
 	result = bzip_decompress(
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
 	          &uncompressed_data_size,
@@ -1997,7 +2017,7 @@ int assorted_test_bzip_decompress(
 	 &error );
 
 	result = bzip_decompress(
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          NULL,
 	          &uncompressed_data_size,
@@ -2016,7 +2036,7 @@ int assorted_test_bzip_decompress(
 	 &error );
 
 	result = bzip_decompress(
-	          assorted_test_bzip_compressed_byte_stream,
+	          assorted_test_bzip_compressed_data,
 	          125,
 	          uncompressed_data,
 	          NULL,

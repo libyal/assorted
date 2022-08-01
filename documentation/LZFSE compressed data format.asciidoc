@@ -126,22 +126,26 @@ is variable of size and consits of:
 4+| Block header
 | 0 | 4 | "bvx1" | Block signature
 | 4 | 4 | | Uncompressed data size
-| 8 | 4 | | Encoded (compressed) data size
-| 12 | 4 | | Number of literal bytes output by block
-| 16 | 4 | | Number of matches in block (which is also the number of literals)
+| 8 | 4 | | Compressed data size
+| 12 | 4 | | Number of literals
+| 16 | 4 | | Number of L, M, D values
 | 20 | 4 | | Literals data size +
 Contains the number of bytes used to encode literals
 | 24 | 4 | | Number of bytes used to encode matches
 | 28 | 4 | | [yellow-background]*Unknown (Final accum_nbits for literals stream)*
-| 32 | 4 x 2 | | [yellow-background]*Unknown (4x final states)*
+| 32 | 2 | | First literal state
+| 34 | 2 | | Second literal state
+| 36 | 2 | | Third literal state
+| 38 | 2 | | Fourth literal state
 | 40 | 4 | | [yellow-background]*Unknown (accum_nbits for the l, m, d stream)*
-| 44 | 2 | | [yellow-background]*Unknown (Final L (literal length) state)*
-| 46 | 2 | | [yellow-background]*Unknown (Final M (literal length) state)*
-| 48 | 2 | | [yellow-background]*Unknown (Final D (literal length) state)*
+| 44 | 2 | | L value state
+| 46 | 2 | | M value state
+| 48 | 2 | | D value state
 | 50 | 720 | | Frequency table +
 See section: <<lzfse_frequency_table,LZFSE frequency table>>
 4+|
-| 770 | ... | | LZFSE encoded data
+| 770 | ... | | encoded literals
+| ... | ... | | encoded L, M, D values
 |===
 
 === LZFSE compressed block with compressed tables
@@ -156,29 +160,30 @@ is variable of size and consits of:
 | 0 | 4 | "bvx2" | Block signature
 | 4 | 4 | | Uncompressed data size
 4+| 3 x 64-bit packed fields
-| 8.0 | 20 bits | | Number of literal bytes output by block
+| 8.0 | 20 bits | | Number of literals
 | 10.4 | 20 bits | | Literals data size +
 Contains the number of bytes used to encode literals
-| 13.0 | 20 bits | | Number of matches in block (which is also the number of literals)
+| 13.0 | 20 bits | | Number of L, M, D values
 | 15.4 | 3 bits | | [yellow-background]*Unknown (Final accum_nbits for literals stream)*
 | 14.7 | 1 bit | | [yellow-background]*Unknown (unused)*
-| 16.0 | 10 bits | | [yellow-background]*Unknown (1st final states)*
-| 17.2 | 10 bits | | [yellow-background]*Unknown (2nd final states)*
-| 18.4 | 10 bits | | [yellow-background]*Unknown (3rd final states)*
-| 19.6 | 10 bits | | [yellow-background]*Unknown (4th final states)*
+| 16.0 | 10 bits | | First literal state
+| 17.2 | 10 bits | | Second literal state
+| 18.4 | 10 bits | | Third literal state
+| 19.6 | 10 bits | | Fourth literal state
 | 21.0 | 20 bits | | Number of bytes used to encode matches
 | 22.4 | 3 bits | | [yellow-background]*Unknown (accum_nbits for the l, m, d stream)*
 | 23.7 | 1 bit | | [yellow-background]*Unknown (unused)*
 | 24.0 | 32 bits | | Block header size
-| 28.0 | 10 bits | | [yellow-background]*Unknown (Final L (literal length) state)*
-| 29.2 | 10 bits | | [yellow-background]*Unknown (Final M (literal length) state)*
-| 30.4 | 10 bits | | [yellow-background]*Unknown (Final D (literal length) state)*
+| 28.0 | 10 bits | | L value state
+| 29.2 | 10 bits | | M value state
+| 30.4 | 10 bits | | D value state
 | 31.6 | 2 bits | | [yellow-background]*Unknown (unused)*
 4+|
 | 32 | ... | | Bit stream containing Huffman encoded frequency table +
 See section: <<lzfse_frequency_table,LZFSE frequency table>>
 4+|
-| ... | ... | | LZFSE encoded data
+| ... | ... | | encoded literals
+| ... | ... | | encoded L, M, D values
 |===
 
 [NOTE]
@@ -225,24 +230,6 @@ A LZFSE frequency table consist of 360 16-bit values:
   lzfse_freq_value_table[32] = {
       0, 2, 1, 4, 0, 3, 1, -1, 0, 2, 1, 5, 0, 3, 1, -1,
       0, 2, 1, 6, 0, 3, 1, -1, 0, 2, 1, 7, 0, 3, 1, -1};
-....
-
-=== Decoding LZFSE compressed data
-
-....
-literals are encoded separately with 4 interleaved FSE streams
-main symbol stream is encoded as sequences of {literal run length, match length, match distance}, called {L, M, D}
-
-initialize literals decoder table
-initialize L state values decoder table
-initialize M state values decoder table
-initialize D state values decoder table
-
-decode literals from bit stream
-
-Initialize L, M, D decode streams
-
-Decode LMD from bit stream
 ....
 
 :numbered!:
