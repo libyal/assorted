@@ -1629,7 +1629,7 @@ int bzip_decompress(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create bit-stream.",
+		 "%s: unable to create bit stream.",
 		 function );
 
 		goto on_error;
@@ -1895,7 +1895,7 @@ int bzip_decompress(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free bit-stream.",
+		 "%s: unable to free bit stream.",
 		 function );
 
 		goto on_error;

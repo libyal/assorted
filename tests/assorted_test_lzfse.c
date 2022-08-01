@@ -241,6 +241,22 @@ int main(
 
 #if defined( __GNUC__ )
 
+	/* TODO add tests for lzfse_state_initialize */
+
+	/* TODO add tests for lzfse_state_free */
+
+	/* TODO add tests for lzfse_build_decoder_table */
+
+	/* TODO add tests for lzfse_build_value_decoder_table */
+
+	/* TODO add tests for lzfse_read_v1_block_header */
+
+	/* TODO add tests for lzfse_read_v2_block_header */
+
+	/* TODO add tests for lzfse_read_compressed_frequency_table */
+
+	/* TODO add tests for lzfse_read_block */
+
 	ASSORTED_TEST_RUN(
 	 "lzfse_decompress",
 	 assorted_test_lzfse_decompress );

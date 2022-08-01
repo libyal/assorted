@@ -129,7 +129,8 @@ is variable of size and consits of:
 | 8 | 4 | | Encoded (compressed) data size
 | 12 | 4 | | Number of literal bytes output by block
 | 16 | 4 | | Number of matches in block (which is also the number of literals)
-| 20 | 4 | | Number of bytes used to encode literals
+| 20 | 4 | | Literals data size +
+Contains the number of bytes used to encode literals
 | 24 | 4 | | Number of bytes used to encode matches
 | 28 | 4 | | [yellow-background]*Unknown (Final accum_nbits for literals stream)*
 | 32 | 4 x 2 | | [yellow-background]*Unknown (4x final states)*
@@ -156,7 +157,8 @@ is variable of size and consits of:
 | 4 | 4 | | Uncompressed data size
 4+| 3 x 64-bit packed fields
 | 8.0 | 20 bits | | Number of literal bytes output by block
-| 10.4 | 20 bits | | Number of bytes used to encode literals
+| 10.4 | 20 bits | | Literals data size +
+Contains the number of bytes used to encode literals
 | 13.0 | 20 bits | | Number of matches in block (which is also the number of literals)
 | 15.4 | 3 bits | | [yellow-background]*Unknown (Final accum_nbits for literals stream)*
 | 14.7 | 1 bit | | [yellow-background]*Unknown (unused)*
@@ -199,15 +201,15 @@ A LZVN compressed block is variable of size and consits of:
 
 === [[lzfse_frequency_table]]LZFSE frequency table
 
-A LZFSE frequency table is 720 bytes of size and consists of:
+A LZFSE frequency table consist of 360 16-bit values:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 20 x 2 = 40 | | Literal run-lengths (L stream frequency values)
-| 40 | 20 x 2 = 40 | | Match sizes (M stream frequency values)
-| 80 | 64 x 2 = 128 | | Match distances (D stream frequency values)
-| 208 | 256 x 2 = 512 | | Literals (Literal frequency values)
+| 0 | 20 | | Literal run-lengths (L stream) frequency values
+| 20 | 20 | | Match sizes (M stream) frequency values
+| 40 | 64 | | Match distances (D stream) frequency values
+| 104 | 256 | | Literal frequency values
 |===
 
 ==== Decoding the Huffman encoded frequency table

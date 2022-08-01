@@ -2,39 +2,38 @@ TODO
 * create decompress handle for decompression tools
 * add tests for mssearchdecode.c
 * msvscpp build
-** fix missing VERSION
-** remove ASSORTED_DLL_IMPORT from msvscpp files
-** fix autogen.ps1
+  - fix missing VERSION
+  - remove ASSORTED_DLL_IMPORT from msvscpp files
+  - fix autogen.ps1
 * banalyze
-** add offset and size CLI options
+  - add offset and size CLI options
 
 * create xor tool that will byte-wise xor a file using a "key"
 * create equivalent of sigfind that is more powerful
   can handle more than 4 byte signatures
 * create lz1decompress (or equiv) for NSF compression
-* create lzxdecompress
 
 * decompression tools and code
   - clean up, make stand-alone libs
   - add compression equiv
   - move all the decompression into one tool?
 
-* lznt1decompress
-- allow to set size of decompressed data
-
+* bzip
+  - remove need for BLOCK_DATA_SIZE
 * zdecompress
   - zdecompress enlarge buffer when zlib uncompress fails (size uncompressed = 81 x size compressed)
   - add support for adler
 
-lzxpressdecompress
-- allow to set size of decompressed data
+* lznt1decompress
+  - allow to set size of decompressed data
+* lzxpressdecompress
+  - allow to set size of decompressed data
 
 * xor64
   - check/fix mode 2
 * fix winapi build on cygwin
 * use PRI definions for winapi build E.g. %jd
 * change 7-bit ascii into 7-bit
-* 2011 update
 * move data dump to verbose output
 * automatically detect file size
 

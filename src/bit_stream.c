@@ -98,8 +98,7 @@ int bit_stream_initialize(
 		return( -1 );
 	}
 	if( ( storage_type != BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
-	 && ( storage_type != BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
-	 && ( storage_type != BIT_STREAM_STORAGE_TYPE_16BIT_LITTLE_ENDIAN ) )
+	 && ( storage_type != BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -194,9 +193,8 @@ int bit_stream_read(
      uint8_t number_of_bits,
      libcerror_error_t **error )
 {
-	static char *function          = "bit_stream_read";
-	uint8_t minimum_number_of_bits = 0;
-	int result                     = 0;
+	static char *function = "bit_stream_read";
+	int result            = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -221,18 +219,9 @@ int bit_stream_read(
 
 		return( -1 );
 	}
-	if( bit_stream->storage_type == BIT_STREAM_STORAGE_TYPE_16BIT_LITTLE_ENDIAN )
-	{
-		minimum_number_of_bits = 16;
-	}
-	else
-	{
-		minimum_number_of_bits = 8;
-	}
 	while( bit_stream->bit_buffer_size < number_of_bits )
 	{
-		if( ( bit_stream->byte_stream_offset >= bit_stream->byte_stream_size )
-		 || ( ( minimum_number_of_bits >> 3 ) > ( bit_stream->byte_stream_size - bit_stream->byte_stream_offset ) ) )
+		if( bit_stream->byte_stream_offset >= bit_stream->byte_stream_size )
 		{
 			break;
 		}
@@ -250,16 +239,6 @@ int bit_stream_read(
 			bit_stream->bit_buffer_size += 8;
 
 			bit_stream->byte_stream_offset += 1;
-		}
-		else if( bit_stream->storage_type == BIT_STREAM_STORAGE_TYPE_16BIT_LITTLE_ENDIAN )
-		{
-			bit_stream->bit_buffer     <<= 8;
-			bit_stream->bit_buffer      |= bit_stream->byte_stream[ bit_stream->byte_stream_offset + 1 ];
-			bit_stream->bit_buffer     <<= 8;
-			bit_stream->bit_buffer      |= bit_stream->byte_stream[ bit_stream->byte_stream_offset ];
-			bit_stream->bit_buffer_size += 16;
-
-			bit_stream->byte_stream_offset += 2;
 		}
 		result = 1;
 	}
@@ -386,12 +365,10 @@ int bit_stream_get_value(
 			bit_stream->bit_buffer     >>= number_of_bits;
 			bit_stream->bit_buffer_size -= number_of_bits;
 		}
-		else if( ( bit_stream->storage_type == BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
-		      || ( bit_stream->storage_type == BIT_STREAM_STORAGE_TYPE_16BIT_LITTLE_ENDIAN ) )
+		else if( bit_stream->storage_type == BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
 		{
-			safe_value_32bit >>= bit_stream->bit_buffer_size - number_of_bits;
-
 			bit_stream->bit_buffer_size -= number_of_bits;
+			safe_value_32bit           >>= bit_stream->bit_buffer_size;
 			remaining_bit_buffer_size    = 32 - bit_stream->bit_buffer_size;
 			bit_stream->bit_buffer      &= 0xffffffffUL >> remaining_bit_buffer_size;
 		}

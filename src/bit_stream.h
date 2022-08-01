@@ -37,14 +37,8 @@ enum BIT_STREAM_STORAGE_TYPES
 {
 	BIT_STREAM_STORAGE_TYPE_UNKNOWN			= 0x00,
 	BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK	= 0x01,
-	BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT	= 0x02,
-	BIT_STREAM_STORAGE_TYPE_16BIT_LITTLE_ENDIAN	= 0x03
+	BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT	= 0x02
 };
-
-/* The largest primary (or scalar) available
- * supported by a single load and store instruction
- */
-typedef unsigned long int bit_stream_aligned_t;
 
 typedef struct bit_stream bit_stream_t;
 
@@ -53,10 +47,6 @@ struct bit_stream
 	/* The byte stream
 	 */
 	const uint8_t *byte_stream;
-
-	/* The aligned byte stream
-	 */
-	bit_stream_aligned_t *aligned_byte_stream;
 
 	/* The byte stream size
 	 */
