@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_deflate"
-	ProjectGUID="{412E837F-35C7-45AB-B7BD-348F568D80FB}"
+	ProjectGUID="{64E288AA-E563-4135-BEE4-99023BC0BAED}"
 	RootNamespace="assorted_test_deflate"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\bit_stream.c"
+				RelativePath="..\..\src\assorted_bit_stream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\deflate.c"
+				RelativePath="..\..\src\assorted_deflate.c"
 				>
 			</File>
 			<File
@@ -198,11 +198,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\bit_stream.h"
+				RelativePath="..\..\src\assorted_bit_stream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\deflate.h"
+				RelativePath="..\..\src\assorted_deflate.h"
 				>
 			</File>
 			<File

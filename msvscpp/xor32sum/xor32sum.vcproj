@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="xor32sum"
-	ProjectGUID="{1E8CB1C4-D58F-4ED0-8CE9-B686DB5F291E}"
+	ProjectGUID="{5A20B584-B045-423B-B5E9-7277F070DBF2}"
 	RootNamespace="xor32sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

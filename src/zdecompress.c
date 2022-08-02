@@ -34,13 +34,13 @@
 #include <zlib.h>
 #endif
 
+#include "assorted_deflate.h"
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
 #include "assorted_system_string.h"
-#include "deflate.h"
 
 /* Prints the executable usage information
  */
@@ -347,7 +347,7 @@ int main( int argc, char * const argv[] )
 	}
 	else if( decompression_method == 2 )
 	{
-		if( deflate_decompress_zlib(
+		if( assorted_deflate_decompress_zlib(
 		     buffer,
 		     source_size,
 		     uncompressed_data,

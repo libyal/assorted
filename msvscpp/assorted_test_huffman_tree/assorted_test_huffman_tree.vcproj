@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_huffman_tree"
-	ProjectGUID="{B0307C51-BC5E-4397-911C-073B998AECC5}"
+	ProjectGUID="{B671C463-DA31-48D6-86B0-F12D267CFF4E}"
 	RootNamespace="assorted_test_huffman_tree"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\bit_stream.c"
+				RelativePath="..\..\src\assorted_bit_stream.c"
 				>
 			</File>
 			<File
@@ -198,7 +198,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\bit_stream.h"
+				RelativePath="..\..\src\assorted_bit_stream.h"
 				>
 			</File>
 			<File

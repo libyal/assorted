@@ -25,8 +25,8 @@
 #include <common.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_libcerror.h"
-#include "bit_stream.h"
 #include "huffman_tree.h"
 
 #if defined( __cplusplus )
@@ -60,49 +60,49 @@ int assorted_bzip_read_stream_header(
      libcerror_error_t **error );
 
 int assorted_bzip_read_signature(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint64_t *signature,
      libcerror_error_t **error );
 
 int assorted_bzip_read_block_header(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *origin_pointer,
      libcerror_error_t **error );
 
 int assorted_bzip_read_symbol_stack(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint8_t *symbol_stack,
      uint16_t *number_of_symbols,
      libcerror_error_t **error );
 
 int assorted_bzip_read_selectors(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint8_t *selectors,
      uint8_t number_of_trees,
      uint16_t number_of_selectors,
      libcerror_error_t **error );
 
 int assorted_bzip_read_huffman_tree(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t *huffman_tree,
      uint16_t number_of_symbols,
      libcerror_error_t **error );
 
 int assorted_bzip_read_huffman_trees(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint16_t number_of_symbols,
      libcerror_error_t **error );
 
 int assorted_bzip_read_symbol(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint32_t *symbol,
      libcerror_error_t **error );
 
 int assorted_bzip_read_block_data(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint8_t *selectors,
@@ -114,7 +114,7 @@ int assorted_bzip_read_block_data(
      libcerror_error_t **error );
 
 int assorted_bzip_read_stream_footer(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *checksum,
      libcerror_error_t **error );

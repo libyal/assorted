@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_bit_stream"
-	ProjectGUID="{90A62175-FD33-4D44-9AA4-43FAC2B77092}"
+	ProjectGUID="{63A15B90-0B71-41DD-B706-3E4D60FE07A9}"
 	RootNamespace="assorted_test_bit_stream"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\bit_stream.c"
+				RelativePath="..\..\src\assorted_bit_stream.c"
 				>
 			</File>
 			<File
@@ -194,7 +194,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\bit_stream.h"
+				RelativePath="..\..\src\assorted_bit_stream.h"
 				>
 			</File>
 			<File

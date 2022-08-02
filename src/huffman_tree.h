@@ -25,8 +25,8 @@
 #include <common.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_libcerror.h"
-#include "bit_stream.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -67,7 +67,7 @@ int huffman_tree_build(
 
 int huffman_tree_get_symbol_from_bit_stream(
      huffman_tree_t *huffman_tree,
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint16_t *symbol,
      libcerror_error_t **error );
 

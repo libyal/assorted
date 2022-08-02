@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_bzip"
-	ProjectGUID="{5A8CA718-30B5-4DA1-AA4F-CB417D826255}"
+	ProjectGUID="{8AD2CDB0-C58F-43E5-A9D1-CB716C3E5161}"
 	RootNamespace="assorted_test_bzip"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_bzip.c"
+				RelativePath="..\..\src\assorted_bit_stream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\bit_stream.c"
+				RelativePath="..\..\src\assorted_bzip.c"
 				>
 			</File>
 			<File
@@ -198,11 +198,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\assorted_bzip.h"
+				RelativePath="..\..\src\assorted_bit_stream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\bit_stream.h"
+				RelativePath="..\..\src\assorted_bzip.h"
 				>
 			</File>
 			<File

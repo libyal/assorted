@@ -1,7 +1,7 @@
 /*
  * DEFLATE decompression testing program
  *
- * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -33,8 +33,8 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/bit_stream.h"
-#include "../src/deflate.h"
+#include "../src/assorted_bit_stream.h"
+#include "../src/assorted_deflate.h"
 #include "../src/huffman_tree.h"
 
 /* Define to make assorted_test_deflate generate verbose output
@@ -690,13 +690,13 @@ uint8_t assorted_test_deflate_uncompressed_data[ 7640 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the deflate_build_dynamic_huffman_trees function
+/* Tests the assorted_deflate_build_dynamic_huffman_trees function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_build_dynamic_huffman_trees(
      void )
 {
-	bit_stream_t *bit_stream               = NULL;
+	assorted_bit_stream_t *bit_stream      = NULL;
 	huffman_tree_t *distances_huffman_tree = NULL;
 	huffman_tree_t *literals_huffman_tree  = NULL;
 	libcerror_error_t *error               = NULL;
@@ -709,12 +709,12 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          2,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -773,7 +773,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 
 	/* Test error cases
 	 */
-	result = deflate_build_dynamic_huffman_trees(
+	result = assorted_deflate_build_dynamic_huffman_trees(
 	          NULL,
 	          literals_huffman_tree,
 	          distances_huffman_tree,
@@ -791,7 +791,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_build_dynamic_huffman_trees(
+	result = assorted_deflate_build_dynamic_huffman_trees(
 	          bit_stream,
 	          NULL,
 	          distances_huffman_tree,
@@ -809,7 +809,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_build_dynamic_huffman_trees(
+	result = assorted_deflate_build_dynamic_huffman_trees(
 	          bit_stream,
 	          literals_huffman_tree,
 	          NULL,
@@ -833,11 +833,11 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test deflate_build_dynamic_huffman_trees with memset failing
+		/* Test assorted_deflate_build_dynamic_huffman_trees with memset failing
 		 */
 		assorted_test_memset_attempts_before_fail = test_number;
 
-		result = deflate_build_dynamic_huffman_trees(
+		result = assorted_deflate_build_dynamic_huffman_trees(
 		          bit_stream,
 		          literals_huffman_tree,
 		          distances_huffman_tree,
@@ -900,7 +900,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	 "error",
 	 error );
 
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -934,14 +934,14 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the deflate_build_fixed_huffman_trees function
+/* Tests the assorted_deflate_build_fixed_huffman_trees function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_build_fixed_huffman_trees(
@@ -999,7 +999,7 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 
 	/* Test regular cases
 	 */
-	result = deflate_build_fixed_huffman_trees(
+	result = assorted_deflate_build_fixed_huffman_trees(
 	          literals_huffman_tree,
 	          distances_huffman_tree,
 	          &error );
@@ -1015,7 +1015,7 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 
 	/* Test error cases
 	 */
-	result = deflate_build_fixed_huffman_trees(
+	result = assorted_deflate_build_fixed_huffman_trees(
 	          NULL,
 	          distances_huffman_tree,
 	          &error );
@@ -1032,7 +1032,7 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_build_fixed_huffman_trees(
+	result = assorted_deflate_build_fixed_huffman_trees(
 	          literals_huffman_tree,
 	          NULL,
 	          &error );
@@ -1055,11 +1055,11 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test deflate_build_fixed_huffman_trees with memset failing
+		/* Test assorted_deflate_build_fixed_huffman_trees with memset failing
 		 */
 		assorted_test_memset_attempts_before_fail = test_number;
 
-		result = deflate_build_fixed_huffman_trees(
+		result = assorted_deflate_build_fixed_huffman_trees(
 		          literals_huffman_tree,
 		          distances_huffman_tree,
 		          &error );
@@ -1139,7 +1139,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the deflate_decode_huffman function
+/* Tests the assorted_deflate_decode_huffman function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_decode_huffman(
@@ -1147,7 +1147,7 @@ int assorted_test_deflate_decode_huffman(
 {
 	uint8_t uncompressed_data[ 8192 ];
 
-	bit_stream_t *bit_stream               = NULL;
+	assorted_bit_stream_t *bit_stream      = NULL;
 	huffman_tree_t *distances_huffman_tree = NULL;
 	huffman_tree_t *literals_huffman_tree  = NULL;
 	libcerror_error_t *error               = NULL;
@@ -1156,12 +1156,12 @@ int assorted_test_deflate_decode_huffman(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          2,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1220,7 +1220,7 @@ int assorted_test_deflate_decode_huffman(
 
 	/* Test error cases
 	 */
-	result = deflate_decode_huffman(
+	result = assorted_deflate_decode_huffman(
 	          NULL,
 	          literals_huffman_tree,
 	          distances_huffman_tree,
@@ -1241,7 +1241,7 @@ int assorted_test_deflate_decode_huffman(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decode_huffman(
+	result = assorted_deflate_decode_huffman(
 	          bit_stream,
 	          NULL,
 	          distances_huffman_tree,
@@ -1262,7 +1262,7 @@ int assorted_test_deflate_decode_huffman(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decode_huffman(
+	result = assorted_deflate_decode_huffman(
 	          bit_stream,
 	          literals_huffman_tree,
 	          NULL,
@@ -1283,7 +1283,7 @@ int assorted_test_deflate_decode_huffman(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decode_huffman(
+	result = assorted_deflate_decode_huffman(
 	          bit_stream,
 	          literals_huffman_tree,
 	          distances_huffman_tree,
@@ -1304,7 +1304,7 @@ int assorted_test_deflate_decode_huffman(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decode_huffman(
+	result = assorted_deflate_decode_huffman(
 	          bit_stream,
 	          literals_huffman_tree,
 	          distances_huffman_tree,
@@ -1325,7 +1325,7 @@ int assorted_test_deflate_decode_huffman(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decode_huffman(
+	result = assorted_deflate_decode_huffman(
 	          bit_stream,
 	          literals_huffman_tree,
 	          distances_huffman_tree,
@@ -1382,7 +1382,7 @@ int assorted_test_deflate_decode_huffman(
 	 "error",
 	 error );
 
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1416,14 +1416,14 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the deflate_calculate_adler32 function
+/* Tests the assorted_deflate_calculate_adler32 function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_calculate_adler32(
@@ -1435,7 +1435,7 @@ int assorted_test_deflate_calculate_adler32(
 
 	/* Test regular cases
 	 */
-	result = deflate_calculate_adler32(
+	result = assorted_deflate_calculate_adler32(
 	          &checksum,
 	          assorted_test_deflate_uncompressed_data,
 	          7640,
@@ -1458,7 +1458,7 @@ int assorted_test_deflate_calculate_adler32(
 
 	/* Test error cases
 	 */
-	result = deflate_calculate_adler32(
+	result = assorted_deflate_calculate_adler32(
 	          NULL,
 	          assorted_test_deflate_uncompressed_data,
 	          7640,
@@ -1477,7 +1477,7 @@ int assorted_test_deflate_calculate_adler32(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_calculate_adler32(
+	result = assorted_deflate_calculate_adler32(
 	          &checksum,
 	          NULL,
 	          7640,
@@ -1496,7 +1496,7 @@ int assorted_test_deflate_calculate_adler32(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_calculate_adler32(
+	result = assorted_deflate_calculate_adler32(
 	          &checksum,
 	          assorted_test_deflate_uncompressed_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -1521,26 +1521,26 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the deflate_read_block_header function
+/* Tests the assorted_deflate_read_block_header function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_read_block_header(
      void )
 {
-	bit_stream_t *bit_stream = NULL;
-	libcerror_error_t *error = NULL;
-	uint8_t block_type       = 0;
-	uint8_t last_block_flag  = 0;
-	int result               = 0;
+	assorted_bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error          = NULL;
+	uint8_t block_type                = 0;
+	uint8_t last_block_flag           = 0;
+	int result                        = 0;
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          2,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1558,7 +1558,7 @@ int assorted_test_deflate_read_block_header(
 
 	/* Test regular cases
 	 */
-	result = deflate_read_block_header(
+	result = assorted_deflate_read_block_header(
 	          bit_stream,
 	          &block_type,
 	          &last_block_flag,
@@ -1575,7 +1575,7 @@ int assorted_test_deflate_read_block_header(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1594,12 +1594,12 @@ int assorted_test_deflate_read_block_header(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          2,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1617,7 +1617,7 @@ int assorted_test_deflate_read_block_header(
 
 	/* Test error cases
 	 */
-	result = deflate_read_block_header(
+	result = assorted_deflate_read_block_header(
 	          NULL,
 	          &block_type,
 	          &last_block_flag,
@@ -1635,7 +1635,7 @@ int assorted_test_deflate_read_block_header(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_read_block_header(
+	result = assorted_deflate_read_block_header(
 	          bit_stream,
 	          NULL,
 	          &last_block_flag,
@@ -1653,7 +1653,7 @@ int assorted_test_deflate_read_block_header(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_read_block_header(
+	result = assorted_deflate_read_block_header(
 	          bit_stream,
 	          &block_type,
 	          NULL,
@@ -1673,7 +1673,7 @@ int assorted_test_deflate_read_block_header(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1695,7 +1695,7 @@ int assorted_test_deflate_read_block_header(
 on_error:
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -1707,7 +1707,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the deflate_read_block function
+/* Tests the assorted_deflate_read_block function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_read_block(
@@ -1715,7 +1715,7 @@ int assorted_test_deflate_read_block(
 {
 	uint8_t uncompressed_data[ 8192 ];
 
-	bit_stream_t *bit_stream             = NULL;
+	assorted_bit_stream_t *bit_stream    = NULL;
 	huffman_tree_t *fixed_distances_tree = NULL;
 	huffman_tree_t *fixed_literals_tree  = NULL;
 	libcerror_error_t *error             = NULL;
@@ -1727,12 +1727,12 @@ int assorted_test_deflate_read_block(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          2,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1786,7 +1786,7 @@ int assorted_test_deflate_read_block(
 	 "error",
 	 error );
 
-	result = deflate_build_fixed_huffman_trees(
+	result = assorted_deflate_build_fixed_huffman_trees(
 	          fixed_literals_tree,
 	          fixed_distances_tree,
 	          &error );
@@ -1800,7 +1800,7 @@ int assorted_test_deflate_read_block(
 	 "error",
 	 error );
 
-	result = deflate_read_block_header(
+	result = assorted_deflate_read_block_header(
 	          bit_stream,
 	          &block_type,
 	          &last_block_flag,
@@ -1817,7 +1817,7 @@ int assorted_test_deflate_read_block(
 
 	/* Test regular cases
 	 */
-	result = deflate_read_block(
+	result = assorted_deflate_read_block(
 	          bit_stream,
 	          block_type,
 	          fixed_literals_tree,
@@ -1845,7 +1845,7 @@ int assorted_test_deflate_read_block(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1864,12 +1864,12 @@ int assorted_test_deflate_read_block(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          2,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1887,7 +1887,7 @@ int assorted_test_deflate_read_block(
 
 	/* Test error cases
 	 */
-	result = deflate_read_block(
+	result = assorted_deflate_read_block(
 	          NULL,
 	          block_type,
 	          fixed_literals_tree,
@@ -1909,7 +1909,7 @@ int assorted_test_deflate_read_block(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_read_block(
+	result = assorted_deflate_read_block(
 	          bit_stream,
 	          block_type,
 	          fixed_literals_tree,
@@ -1931,7 +1931,7 @@ int assorted_test_deflate_read_block(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_read_block(
+	result = assorted_deflate_read_block(
 	          bit_stream,
 	          block_type,
 	          fixed_literals_tree,
@@ -1953,7 +1953,7 @@ int assorted_test_deflate_read_block(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_read_block(
+	result = assorted_deflate_read_block(
 	          bit_stream,
 	          block_type,
 	          fixed_literals_tree,
@@ -1975,7 +1975,7 @@ int assorted_test_deflate_read_block(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_read_block(
+	result = assorted_deflate_read_block(
 	          bit_stream,
 	          block_type,
 	          fixed_literals_tree,
@@ -2033,7 +2033,7 @@ int assorted_test_deflate_read_block(
 	 "error",
 	 error );
 
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -2067,7 +2067,7 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -2079,7 +2079,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the deflate_decompress function
+/* Tests the assorted_deflate_decompress function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_decompress(
@@ -2093,7 +2093,7 @@ int assorted_test_deflate_decompress(
 
 	/* Test regular cases
 	 */
-	result = deflate_decompress(
+	result = assorted_deflate_decompress(
 	          &( assorted_test_deflate_compressed_data[ 2 ] ),
 	          2627 - 6,
 	          uncompressed_data,
@@ -2128,7 +2128,7 @@ int assorted_test_deflate_decompress(
 
 	/* Test error cases
 	 */
-	result = deflate_decompress(
+	result = assorted_deflate_decompress(
 	          NULL,
 	          2627 - 6,
 	          uncompressed_data,
@@ -2147,7 +2147,7 @@ int assorted_test_deflate_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress(
+	result = assorted_deflate_decompress(
 	          &( assorted_test_deflate_compressed_data[ 2 ] ),
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
@@ -2166,7 +2166,7 @@ int assorted_test_deflate_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress(
+	result = assorted_deflate_decompress(
 	          &( assorted_test_deflate_compressed_data[ 2 ] ),
 	          2627 - 6,
 	          NULL,
@@ -2185,7 +2185,7 @@ int assorted_test_deflate_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress(
+	result = assorted_deflate_decompress(
 	          &( assorted_test_deflate_compressed_data[ 2 ] ),
 	          2627 - 6,
 	          uncompressed_data,
@@ -2215,7 +2215,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the deflate_decompress_zlib function
+/* Tests the assorted_deflate_decompress_zlib function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_deflate_decompress_zlib(
@@ -2229,7 +2229,7 @@ int assorted_test_deflate_decompress_zlib(
 
 	/* Test regular cases
 	 */
-	result = deflate_decompress_zlib(
+	result = assorted_deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          uncompressed_data,
@@ -2264,7 +2264,7 @@ int assorted_test_deflate_decompress_zlib(
 
 	/* Test error cases
 	 */
-	result = deflate_decompress_zlib(
+	result = assorted_deflate_decompress_zlib(
 	          NULL,
 	          2627,
 	          uncompressed_data,
@@ -2283,7 +2283,7 @@ int assorted_test_deflate_decompress_zlib(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress_zlib(
+	result = assorted_deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
@@ -2302,7 +2302,7 @@ int assorted_test_deflate_decompress_zlib(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress_zlib(
+	result = assorted_deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          NULL,
@@ -2321,7 +2321,7 @@ int assorted_test_deflate_decompress_zlib(
 	libcerror_error_free(
 	 &error );
 
-	result = deflate_decompress_zlib(
+	result = assorted_deflate_decompress_zlib(
 	          assorted_test_deflate_compressed_data,
 	          2627,
 	          uncompressed_data,
@@ -2379,37 +2379,37 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "deflate_build_dynamic_huffman_trees",
+	 "assorted_deflate_build_dynamic_huffman_trees",
 	 assorted_test_deflate_build_dynamic_huffman_trees );
 
 	ASSORTED_TEST_RUN(
-	 "deflate_build_fixed_huffman_trees",
+	 "assorted_deflate_build_fixed_huffman_trees",
 	 assorted_test_deflate_build_fixed_huffman_trees );
 
 	ASSORTED_TEST_RUN(
-	 "deflate_decode_huffman",
+	 "assorted_deflate_decode_huffman",
 	 assorted_test_deflate_decode_huffman );
 
 	ASSORTED_TEST_RUN(
-	 "deflate_calculate_adler32",
+	 "assorted_deflate_calculate_adler32",
 	 assorted_test_deflate_calculate_adler32 );
 
-/* TODO add tests for deflate_read_data_header */
+/* TODO add tests for assorted_deflate_read_data_header */
 
 	ASSORTED_TEST_RUN(
-	 "deflate_read_block_header",
+	 "assorted_deflate_read_block_header",
 	 assorted_test_deflate_read_block_header );
 
 	ASSORTED_TEST_RUN(
-	 "deflate_read_block",
+	 "assorted_deflate_read_block",
 	 assorted_test_deflate_read_block );
 
 	ASSORTED_TEST_RUN(
-	 "deflate_decompress",
+	 "assorted_deflate_decompress",
 	 assorted_test_deflate_decompress );
 
 	ASSORTED_TEST_RUN(
-	 "deflate_decompress_zlib",
+	 "assorted_deflate_decompress_zlib",
 	 assorted_test_deflate_decompress_zlib );
 
 #endif /* defined( __GNUC__ ) */

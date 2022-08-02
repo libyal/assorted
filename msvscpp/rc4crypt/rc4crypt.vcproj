@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="rc4crypt"
-	ProjectGUID="{2565FDBD-2C58-4383-92C0-038BFD11654F}"
+	ProjectGUID="{018D571E-3EA8-4718-B656-CEC95291290D}"
 	RootNamespace="rc4crypt"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

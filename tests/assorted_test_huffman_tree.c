@@ -34,7 +34,7 @@
 #include "assorted_test_memory.h"
 #include "assorted_test_unused.h"
 
-#include "../src/bit_stream.h"
+#include "../src/assorted_bit_stream.h"
 #include "../src/huffman_tree.h"
 
 /* Define to make assorted_test_huffman_tree generate verbose output
@@ -689,20 +689,20 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 {
 	uint8_t code_size_array[ 318 ];
 
-	bit_stream_t *bit_stream     = NULL;
-	huffman_tree_t *huffman_tree = NULL;
-	libcerror_error_t *error     = NULL;
-	uint16_t symbol              = 0;
-	int result                   = 0;
+	assorted_bit_stream_t *bit_stream = NULL;
+	huffman_tree_t *huffman_tree      = NULL;
+	libcerror_error_t *error          = NULL;
+	uint16_t symbol                   = 0;
+	int result                        = 0;
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_huffman_tree_data,
 	          2627,
 	          2,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -902,7 +902,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	 "error",
 	 error );
 
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -930,7 +930,7 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}

@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _BIT_STREAM_H )
-#define _BIT_STREAM_H
+#if !defined( _ASSORTED_BIT_STREAM_H )
+#define _ASSORTED_BIT_STREAM_H
 
 #include <common.h>
 #include <types.h>
@@ -33,16 +33,16 @@ extern "C" {
 
 /* The storage type
  */
-enum BIT_STREAM_STORAGE_TYPES
+enum ASSORTED_BIT_STREAM_STORAGE_TYPES
 {
-	BIT_STREAM_STORAGE_TYPE_UNKNOWN			= 0x00,
-	BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK	= 0x01,
-	BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT	= 0x02
+	ASSORTED_BIT_STREAM_STORAGE_TYPE_UNKNOWN		= 0x00,
+	ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK	= 0x01,
+	ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT	= 0x02
 };
 
-typedef struct bit_stream bit_stream_t;
+typedef struct assorted_bit_stream assorted_bit_stream_t;
 
-struct bit_stream
+struct assorted_bit_stream
 {
 	/* The byte stream
 	 */
@@ -69,30 +69,30 @@ struct bit_stream
 	uint8_t bit_buffer_size;
 };
 
-int bit_stream_initialize(
-     bit_stream_t **bit_stream,
+int assorted_bit_stream_initialize(
+     assorted_bit_stream_t **bit_stream,
      const uint8_t *byte_stream,
      size_t byte_stream_size,
      size_t byte_stream_offset,
      uint8_t storage_type,
      libcerror_error_t **error );
 
-int bit_stream_free(
-     bit_stream_t **bit_stream,
+int assorted_bit_stream_free(
+     assorted_bit_stream_t **bit_stream,
      libcerror_error_t **error );
 
-int bit_stream_read(
-     bit_stream_t *bit_stream,
+int assorted_bit_stream_read(
+     assorted_bit_stream_t *bit_stream,
      uint8_t number_of_bits,
      libcerror_error_t **error );
 
-int bit_stream_set_byte_stream_offset(
-     bit_stream_t *bit_stream,
+int assorted_bit_stream_set_byte_stream_offset(
+     assorted_bit_stream_t *bit_stream,
      size_t byte_stream_offset,
      libcerror_error_t **error );
 
-int bit_stream_get_value(
-     bit_stream_t *bit_stream,
+int assorted_bit_stream_get_value(
+     assorted_bit_stream_t *bit_stream,
      uint8_t number_of_bits,
      uint32_t *value_32bit,
      libcerror_error_t **error );
@@ -101,5 +101,5 @@ int bit_stream_get_value(
 }
 #endif
 
-#endif /* !defined( _BIT_STREAM_H ) */
+#endif /* !defined( _ASSORTED_BIT_STREAM_H ) */
 

@@ -23,9 +23,9 @@
 #include <memory.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "bit_stream.h"
 #include "huffman_tree.h"
 
 /* Creates a Huffman tree
@@ -453,7 +453,7 @@ on_error:
  */
 int huffman_tree_get_symbol_from_bit_stream(
      huffman_tree_t *huffman_tree,
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint16_t *symbol,
      libcerror_error_t **error )
 {
@@ -505,7 +505,7 @@ int huffman_tree_get_symbol_from_bit_stream(
 	 */
 	while( bit_stream->bit_buffer_size < huffman_tree->maximum_code_size )
 	{
-		result = bit_stream_read(
+		result = assorted_bit_stream_read(
 		          bit_stream,
 		          huffman_tree->maximum_code_size,
 		          error );
@@ -539,7 +539,7 @@ int huffman_tree_get_symbol_from_bit_stream(
 	     bit_index++ )
 	{
 /* TODO get maximum_code_size of bits into local bit buffer */
-		if( bit_stream_get_value(
+		if( assorted_bit_stream_get_value(
 		     bit_stream,
 		     1,
 		     &value_32bit,

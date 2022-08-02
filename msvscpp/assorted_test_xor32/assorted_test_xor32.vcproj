@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_xor32"
-	ProjectGUID="{0196D57D-4E1A-47F7-AED6-721E1B8D0577}"
+	ProjectGUID="{9A22C72A-823C-46FB-86D7-12087804625C}"
 	RootNamespace="assorted_test_xor32"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

@@ -128,6 +128,7 @@ banalyze_LDADD = \
 	@PTHREAD_LIBADD@
 
 bz2decompress_SOURCES = \
+	assorted_bit_stream.c assorted_bit_stream.h \
 	assorted_bzip.c assorted_bzip.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
@@ -136,7 +137,6 @@ bz2decompress_SOURCES = \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h \
-	bit_stream.c bit_stream.h \
 	bz2decompress.c \
 	huffman_tree.c huffman_tree.h
 
@@ -534,14 +534,14 @@ xor64sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 zcompress_SOURCES = \
+	assorted_bit_stream.c assorted_bit_stream.h \
+	assorted_deflate.c assorted_deflate.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	bit_stream.c bit_stream.h \
-	deflate.c deflate.h \
 	huffman_tree.c huffman_tree.h \
 	zcompress.c
 
@@ -554,6 +554,8 @@ zcompress_LDADD = \
 	@ZLIB_LIBADD@
 
 zdecompress_SOURCES = \
+	assorted_bit_stream.c assorted_bit_stream.h \
+	assorted_deflate.c assorted_deflate.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
@@ -561,8 +563,6 @@ zdecompress_SOURCES = \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h \
-	bit_stream.c bit_stream.h \
-	deflate.c deflate.h \
 	huffman_tree.c huffman_tree.h \
 	zdecompress.c
 

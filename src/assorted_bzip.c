@@ -23,10 +23,10 @@
 #include <memory.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_bzip.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "bit_stream.h"
 #include "huffman_tree.h"
 
 #define BLOCK_DATA_SIZE 8192
@@ -482,7 +482,7 @@ int assorted_bzip_read_stream_header(
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_signature(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint64_t *signature,
      libcerror_error_t **error )
 {
@@ -501,7 +501,7 @@ int assorted_bzip_read_signature(
 
 		return( -1 );
 	}
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     32,
 	     &value_32bit,
@@ -518,7 +518,7 @@ int assorted_bzip_read_signature(
 	}
 	safe_signature = value_32bit;
 
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     16,
 	     &value_32bit,
@@ -545,7 +545,7 @@ int assorted_bzip_read_signature(
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_block_header(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *origin_pointer,
      libcerror_error_t **error )
@@ -567,7 +567,7 @@ int assorted_bzip_read_block_header(
 
 		return( -1 );
 	}
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     32,
 	     &checksum,
@@ -582,7 +582,7 @@ int assorted_bzip_read_block_header(
 
 		return( -1 );
 	}
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     25,
 	     &value_32bit,
@@ -660,7 +660,7 @@ int assorted_bzip_read_block_header(
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_symbol_stack(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint8_t *symbol_stack,
      uint16_t *number_of_symbols,
      libcerror_error_t **error )
@@ -697,7 +697,7 @@ int assorted_bzip_read_symbol_stack(
 
 		return( -1 );
 	}
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     16,
 	     &level1_value,
@@ -729,7 +729,7 @@ int assorted_bzip_read_symbol_stack(
 	{
 		if( ( level1_value & level1_bitmask ) != 0 )
 		{
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     16,
 			     &level2_value,
@@ -808,7 +808,7 @@ int assorted_bzip_read_symbol_stack(
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_selectors(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint8_t *selectors,
      uint8_t number_of_trees,
      uint16_t number_of_selectors,
@@ -841,7 +841,7 @@ int assorted_bzip_read_selectors(
 
 		while( tree_index < number_of_trees )
 		{
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     1,
 			     &value_32bit,
@@ -911,7 +911,7 @@ int assorted_bzip_read_selectors(
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_huffman_tree(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t *huffman_tree,
      uint16_t number_of_symbols,
      libcerror_error_t **error )
@@ -925,7 +925,7 @@ int assorted_bzip_read_huffman_tree(
 	uint8_t code_size         = 0;
 	uint8_t largest_code_size = 0;
 
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     5,
 	     &value_32bit,
@@ -948,7 +948,7 @@ int assorted_bzip_read_huffman_tree(
 	{
 		while( code_size < 20 )
 		{
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     1,
 			     &value_32bit,
@@ -967,7 +967,7 @@ int assorted_bzip_read_huffman_tree(
 			{
 				break;
 			}
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     1,
 			     &value_32bit,
@@ -1080,7 +1080,7 @@ int assorted_bzip_read_huffman_tree(
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_huffman_trees(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint16_t number_of_symbols,
@@ -1165,7 +1165,7 @@ on_error:
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_block_data(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint8_t *selectors,
@@ -1448,7 +1448,7 @@ int assorted_bzip_read_block_data(
  * Returns 1 on success or -1 on error
  */
 int assorted_bzip_read_stream_footer(
-     bit_stream_t *bit_stream,
+     assorted_bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *checksum,
      libcerror_error_t **error )
@@ -1467,7 +1467,7 @@ int assorted_bzip_read_stream_footer(
 
 		return( -1 );
 	}
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     32,
 	     &safe_checksum,
@@ -1532,7 +1532,7 @@ int assorted_bzip_decompress(
 
 	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-	bit_stream_t *bit_stream           = NULL;
+	assorted_bit_stream_t *bit_stream  = NULL;
 	static char *function              = "assorted_bzip_decompress";
 	size_t block_data_size             = 0;
 	size_t compressed_data_offset      = 0;
@@ -1617,12 +1617,12 @@ int assorted_bzip_decompress(
 
 		return( -1 );
 	}
-	if( bit_stream_initialize(
+	if( assorted_bit_stream_initialize(
 	     &bit_stream,
 	     compressed_data,
 	     compressed_data_size,
 	     compressed_data_offset,
-	     BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	     ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1710,7 +1710,7 @@ int assorted_bzip_decompress(
 
 			goto on_error;
 		}
-		if( bit_stream_get_value(
+		if( assorted_bit_stream_get_value(
 		     bit_stream,
 		     18,
 		     &value_32bit,
@@ -1887,7 +1887,7 @@ int assorted_bzip_decompress(
 
 		goto on_error;
 	}
-	if( bit_stream_free(
+	if( assorted_bit_stream_free(
 	     &bit_stream,
 	     error ) != 1 )
 	{
@@ -1950,7 +1950,7 @@ int assorted_bzip_decompress(
 on_error:
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}

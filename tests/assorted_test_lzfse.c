@@ -1,7 +1,7 @@
 /*
  * LZFSE (un)compression testing program
  *
- * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -1222,7 +1222,7 @@ int assorted_test_lzfse_bit_stream_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test bit_stream_initialize with malloc failing
+		/* Test assorted_lzfse_bit_stream_initialize with malloc failing
 		 */
 		assorted_test_malloc_attempts_before_fail = test_number;
 

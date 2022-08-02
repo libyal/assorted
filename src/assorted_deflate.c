@@ -24,17 +24,17 @@
 #include <memory.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
+#include "assorted_deflate.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "bit_stream.h"
-#include "deflate.h"
 #include "huffman_tree.h"
 
 /* Reads and builds the dynamic Huffman trees
  * Returns 1 on success or -1 on error
  */
-int deflate_build_dynamic_huffman_trees(
-     bit_stream_t *bit_stream,
+int assorted_deflate_build_dynamic_huffman_trees(
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t *literals_huffman_tree,
      huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error )
@@ -46,7 +46,7 @@ int deflate_build_dynamic_huffman_trees(
 	        14, 1, 15 };
 
 	huffman_tree_t *pre_codes_huffman_tree = NULL;
-	static char *function                  = "deflate_build_dynamic_huffman_trees";
+	static char *function                  = "assorted_deflate_build_dynamic_huffman_trees";
 	uint32_t code_size                     = 0;
 	uint32_t code_size_index               = 0;
 	uint32_t code_size_sequence            = 0;
@@ -56,7 +56,7 @@ int deflate_build_dynamic_huffman_trees(
 	uint32_t times_to_repeat               = 0;
 	uint16_t symbol                        = 0;
 
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     14,
 	     &number_of_code_sizes,
@@ -131,7 +131,7 @@ int deflate_build_dynamic_huffman_trees(
 	     code_size_index < number_of_code_sizes;
 	     code_size_index++ )
 	{
-		if( bit_stream_get_value(
+		if( assorted_bit_stream_get_value(
 		     bit_stream,
 		     3,
 		     &code_size,
@@ -278,7 +278,7 @@ int deflate_build_dynamic_huffman_trees(
 			}
 			code_size = (uint32_t) code_size_array[ code_size_index - 1 ];
 
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     2,
 			     &times_to_repeat,
@@ -297,7 +297,7 @@ int deflate_build_dynamic_huffman_trees(
 		}
 		else if( symbol == 17 )
 		{
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     3,
 			     &times_to_repeat,
@@ -316,7 +316,7 @@ int deflate_build_dynamic_huffman_trees(
 		}
 		else if( symbol == 18 )
 		{
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     7,
 			     &times_to_repeat,
@@ -450,14 +450,14 @@ on_error:
 /* Initializes the fixed Huffman trees
  * Returns 1 on success or -1 on error
  */
-int deflate_build_fixed_huffman_trees(
+int assorted_deflate_build_fixed_huffman_trees(
      huffman_tree_t *literals_huffman_tree,
      huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error )
 {
 	uint8_t code_size_array[ 318 ];
 
-	static char *function = "deflate_build_fixed_huffman_trees";
+	static char *function = "assorted_deflate_build_fixed_huffman_trees";
 	uint16_t symbol       = 0;
 
 	for( symbol = 0;
@@ -521,8 +521,8 @@ int deflate_build_fixed_huffman_trees(
 /* Decodes a Huffman compressed block
  * Returns 1 on success or -1 on error
  */
-int deflate_decode_huffman(
-     bit_stream_t *bit_stream,
+int assorted_deflate_decode_huffman(
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t *literals_huffman_tree,
      huffman_tree_t *distances_huffman_tree,
      uint8_t *uncompressed_data,
@@ -547,7 +547,7 @@ int deflate_decode_huffman(
 		0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
 		7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
 
-	static char *function         = "deflate_decode_huffman";
+	static char *function         = "assorted_deflate_decode_huffman";
 	size_t data_offset            = 0;
 	uint32_t extra_bits           = 0;
 	uint16_t compression_offset   = 0;
@@ -638,7 +638,7 @@ int deflate_decode_huffman(
 
 			number_of_extra_bits = literal_codes_number_of_extra_bits[ symbol ];
 
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
@@ -695,7 +695,7 @@ int deflate_decode_huffman(
 #endif
 			number_of_extra_bits = distance_codes_number_of_extra_bits[ symbol ];
 
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
@@ -799,14 +799,14 @@ int deflate_decode_huffman(
  * It uses the initial value to calculate a new Adler-32
  * Returns 1 if successful or -1 on error
  */
-int deflate_calculate_adler32(
+int assorted_deflate_calculate_adler32(
      uint32_t *checksum_value,
      const uint8_t *data,
      size_t data_size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "deflate_calculate_adler32";
+	static char *function = "assorted_deflate_calculate_adler32";
 	size_t data_offset    = 0;
 	uint32_t lower_word   = 0;
 	uint32_t upper_word   = 0;
@@ -1046,7 +1046,7 @@ int deflate_calculate_adler32(
 /* Compresses data using zlib compression
  * Returns 1 on success or -1 on error
  */
-int deflate_compress(
+int assorted_deflate_compress(
      const uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      int compression_level,
@@ -1054,7 +1054,7 @@ int deflate_compress(
      size_t *compressed_data_size,
      libcerror_error_t **error )
 {
-	static char *function = "deflate_compress";
+	static char *function = "assorted_deflate_compress";
 
 	if( uncompressed_data == NULL )
 	{
@@ -1125,13 +1125,13 @@ int deflate_compress(
 /* Reads the compressed data header
  * Returns 1 on success or -1 on error
  */
-int deflate_read_data_header(
+int assorted_deflate_read_data_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
      libcerror_error_t **error )
 {
-	static char *function                 = "deflate_read_data_header";
+	static char *function                 = "assorted_deflate_read_data_header";
 	size_t safe_compressed_data_offset    = 0;
 	uint32_t compression_window_size      = 0;
 	uint32_t preset_dictionary_identifier = 0;
@@ -1346,13 +1346,13 @@ int deflate_read_data_header(
 /* Reads the header of a block of compressed data
  * Returns 1 on success or -1 on error
  */
-int deflate_read_block_header(
-     bit_stream_t *bit_stream,
+int assorted_deflate_read_block_header(
+     assorted_bit_stream_t *bit_stream,
      uint8_t *block_type,
      uint8_t *last_block_flag,
      libcerror_error_t **error )
 {
-	static char *function = "deflate_read_block_header";
+	static char *function = "assorted_deflate_read_block_header";
 	uint32_t value_32bit  = 0;
 
 	if( block_type == NULL )
@@ -1377,7 +1377,7 @@ int deflate_read_block_header(
 
 		return( -1 );
 	}
-	if( bit_stream_get_value(
+	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     3,
 	     &value_32bit,
@@ -1411,22 +1411,22 @@ int deflate_read_block_header(
 
 		switch( *block_type )
 		{
-			case DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
+			case ASSORTED_DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
 				libcnotify_printf(
 				 "Uncompressed" );
 				break;
 
-			case DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED:
+			case ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED:
 				libcnotify_printf(
 				 "Fixed Huffman" );
 				break;
 
-			case DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
+			case ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
 				libcnotify_printf(
 				 "Dynamic Huffman" );
 				break;
 
-			case DEFLATE_BLOCK_TYPE_RESERVED:
+			case ASSORTED_DEFLATE_BLOCK_TYPE_RESERVED:
 			default:
 				libcnotify_printf(
 				 "Reserved" );
@@ -1446,8 +1446,8 @@ int deflate_read_block_header(
 /* Reads a block of compressed data
  * Returns 1 on success or -1 on error
  */
-int deflate_read_block(
-     bit_stream_t *bit_stream,
+int assorted_deflate_read_block(
+     assorted_bit_stream_t *bit_stream,
      uint8_t block_type,
      huffman_tree_t *fixed_huffman_distances_tree,
      huffman_tree_t *fixed_huffman_literals_tree,
@@ -1458,7 +1458,7 @@ int deflate_read_block(
 {
 	huffman_tree_t *dynamic_huffman_distances_tree = NULL;
 	huffman_tree_t *dynamic_huffman_literals_tree  = NULL;
-	static char *function                          = "deflate_read_block";
+	static char *function                          = "assorted_deflate_read_block";
 	size_t safe_uncompressed_data_offset           = 0;
 	uint32_t block_size                            = 0;
 	uint32_t block_size_copy                       = 0;
@@ -1500,7 +1500,7 @@ int deflate_read_block(
 	}
 	switch( block_type )
 	{
-		case DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
+		case ASSORTED_DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
 			if( uncompressed_data_offset == NULL )
 			{
 				libcerror_error_set(
@@ -1529,7 +1529,7 @@ int deflate_read_block(
 #endif
 			if( skip_bits > 0 )
 			{
-				if( bit_stream_get_value(
+				if( assorted_bit_stream_get_value(
 				     bit_stream,
 				     skip_bits,
 				     &value_32bit,
@@ -1545,7 +1545,7 @@ int deflate_read_block(
 					goto on_error;
 				}
 			}
-			if( bit_stream_get_value(
+			if( assorted_bit_stream_get_value(
 			     bit_stream,
 			     32,
 			     &block_size,
@@ -1652,8 +1652,8 @@ int deflate_read_block(
 
 			break;
 
-		case DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED:
-			if( deflate_decode_huffman(
+		case ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED:
+			if( assorted_deflate_decode_huffman(
 			     bit_stream,
 			     fixed_huffman_literals_tree,
 			     fixed_huffman_distances_tree,
@@ -1673,7 +1673,7 @@ int deflate_read_block(
 			}
 			break;
 
-		case DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
+		case ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
 			if( huffman_tree_initialize(
 			     &dynamic_huffman_literals_tree,
 			     288,
@@ -1704,7 +1704,7 @@ int deflate_read_block(
 
 				goto on_error;
 			}
-			if( deflate_build_dynamic_huffman_trees(
+			if( assorted_deflate_build_dynamic_huffman_trees(
 			     bit_stream,
 			     dynamic_huffman_literals_tree,
 			     dynamic_huffman_distances_tree,
@@ -1719,7 +1719,7 @@ int deflate_read_block(
 
 				goto on_error;
 			}
-			if( deflate_decode_huffman(
+			if( assorted_deflate_decode_huffman(
 			     bit_stream,
 			     dynamic_huffman_literals_tree,
 			     dynamic_huffman_distances_tree,
@@ -1765,7 +1765,7 @@ int deflate_read_block(
 			}
 			break;
 
-		case DEFLATE_BLOCK_TYPE_RESERVED:
+		case ASSORTED_DEFLATE_BLOCK_TYPE_RESERVED:
 		default:
 			libcerror_error_set(
 			 error,
@@ -1804,17 +1804,17 @@ on_error:
 /* Decompresses data using DEFLATE compression
  * Returns 1 on success or -1 on error
  */
-int deflate_decompress(
+int assorted_deflate_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	bit_stream_t *bit_stream                     = NULL;
+	assorted_bit_stream_t *bit_stream            = NULL;
 	huffman_tree_t *fixed_huffman_distances_tree = NULL;
 	huffman_tree_t *fixed_huffman_literals_tree  = NULL;
-	static char *function                        = "deflate_decompress";
+	static char *function                        = "assorted_deflate_decompress";
 	size_t compressed_data_offset                = 0;
 	size_t safe_uncompressed_data_size           = 0;
 	size_t uncompressed_data_offset              = 0;
@@ -1889,12 +1889,12 @@ int deflate_decompress(
 
 		goto on_error;
 	}
-	if( bit_stream_initialize(
+	if( assorted_bit_stream_initialize(
 	     &bit_stream,
 	     compressed_data,
 	     compressed_data_size,
 	     compressed_data_offset,
-	     BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	     ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1909,7 +1909,7 @@ int deflate_decompress(
 /* TODO find optimized solution to read bit stream from bytes */
 	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
 	{
-		if( deflate_read_block_header(
+		if( assorted_deflate_read_block_header(
 		     bit_stream,
 		     &block_type,
 		     &last_block_flag,
@@ -1924,7 +1924,7 @@ int deflate_decompress(
 
 			goto on_error;
 		}
-		if( block_type == DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED )
+		if( block_type == ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED )
 		{
 			if( ( fixed_huffman_literals_tree == NULL )
 			 && ( fixed_huffman_distances_tree == NULL ) )
@@ -1959,7 +1959,7 @@ int deflate_decompress(
 
 					goto on_error;
 				}
-				if( deflate_build_fixed_huffman_trees(
+				if( assorted_deflate_build_fixed_huffman_trees(
 				     fixed_huffman_literals_tree,
 				     fixed_huffman_distances_tree,
 				     error ) != 1 )
@@ -1975,7 +1975,7 @@ int deflate_decompress(
 				}
 			}
 		}
-		if( deflate_read_block(
+		if( assorted_deflate_read_block(
 		     bit_stream,
 		     block_type,
 		     fixed_huffman_literals_tree,
@@ -2031,7 +2031,7 @@ int deflate_decompress(
 			goto on_error;
 		}
 	}
-	if( bit_stream_free(
+	if( assorted_bit_stream_free(
 	     &bit_stream,
 	     error ) != 1 )
 	{
@@ -2063,7 +2063,7 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -2073,17 +2073,17 @@ on_error:
 /* Decompresses data using DEFLATE compression stored in the zlib compressed data format
  * Returns 1 on success or -1 on error
  */
-int deflate_decompress_zlib(
+int assorted_deflate_decompress_zlib(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	bit_stream_t *bit_stream                     = NULL;
+	assorted_bit_stream_t *bit_stream            = NULL;
 	huffman_tree_t *fixed_huffman_distances_tree = NULL;
 	huffman_tree_t *fixed_huffman_literals_tree  = NULL;
-	static char *function                        = "deflate_decompress_zlib";
+	static char *function                        = "assorted_deflate_decompress_zlib";
 	size_t compressed_data_offset                = 0;
 	size_t safe_uncompressed_data_size           = 0;
 	size_t uncompressed_data_offset              = 0;
@@ -2149,7 +2149,7 @@ int deflate_decompress_zlib(
 
 		return( -1 );
 	}
-	if( deflate_read_data_header(
+	if( assorted_deflate_read_data_header(
 	     compressed_data,
 	     compressed_data_size,
 	     &compressed_data_offset,
@@ -2175,12 +2175,12 @@ int deflate_decompress_zlib(
 
 		goto on_error;
 	}
-	if( bit_stream_initialize(
+	if( assorted_bit_stream_initialize(
 	     &bit_stream,
 	     compressed_data,
 	     compressed_data_size,
 	     compressed_data_offset,
-	     BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	     ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -2195,7 +2195,7 @@ int deflate_decompress_zlib(
 /* TODO find optimized solution to read bit stream from bytes */
 	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
 	{
-		if( deflate_read_block_header(
+		if( assorted_deflate_read_block_header(
 		     bit_stream,
 		     &block_type,
 		     &last_block_flag,
@@ -2210,7 +2210,7 @@ int deflate_decompress_zlib(
 
 			goto on_error;
 		}
-		if( block_type == DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED )
+		if( block_type == ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED )
 		{
 			if( ( fixed_huffman_literals_tree == NULL )
 			 && ( fixed_huffman_distances_tree == NULL ) )
@@ -2245,7 +2245,7 @@ int deflate_decompress_zlib(
 
 					goto on_error;
 				}
-				if( deflate_build_fixed_huffman_trees(
+				if( assorted_deflate_build_fixed_huffman_trees(
 				     fixed_huffman_literals_tree,
 				     fixed_huffman_distances_tree,
 				     error ) != 1 )
@@ -2261,7 +2261,7 @@ int deflate_decompress_zlib(
 				}
 			}
 		}
-		if( deflate_read_block(
+		if( assorted_deflate_read_block(
 		     bit_stream,
 		     block_type,
 		     fixed_huffman_literals_tree,
@@ -2296,7 +2296,7 @@ int deflate_decompress_zlib(
 		 &( bit_stream->byte_stream[ bit_stream->byte_stream_offset ] ),
 		 stored_checksum );
 
-		if( deflate_calculate_adler32(
+		if( assorted_deflate_calculate_adler32(
 		     &calculated_checksum,
 		     uncompressed_data,
 		     uncompressed_data_offset,
@@ -2372,7 +2372,7 @@ int deflate_decompress_zlib(
 			goto on_error;
 		}
 	}
-	if( bit_stream_free(
+	if( assorted_bit_stream_free(
 	     &bit_stream,
 	     error ) != 1 )
 	{
@@ -2404,7 +2404,7 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}

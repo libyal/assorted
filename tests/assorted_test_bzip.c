@@ -1,7 +1,7 @@
 /*
  * BZip decompression testing program
  *
- * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -33,8 +33,8 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
+#include "../src/assorted_bit_stream.h"
 #include "../src/assorted_bzip.h"
-#include "../src/bit_stream.h"
 #include "../src/huffman_tree.h"
 
 /* Define to make assorted_test_bzip generate verbose output
@@ -344,19 +344,19 @@ on_error:
 int assorted_test_bzip_read_signature(
      void )
 {
-	bit_stream_t *bit_stream = NULL;
-	libcerror_error_t *error = NULL;
-	uint64_t signature       = 0;
-	int result               = 0;
+	assorted_bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error          = NULL;
+	uint64_t signature                = 0;
+	int result                        = 0;
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -414,7 +414,7 @@ int assorted_test_bzip_read_signature(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -436,7 +436,7 @@ int assorted_test_bzip_read_signature(
 on_error:
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -449,20 +449,20 @@ on_error:
 int assorted_test_bzip_read_block_header(
      void )
 {
-	bit_stream_t *bit_stream = NULL;
-	libcerror_error_t *error = NULL;
-	uint64_t signature       = 0;
-	uint32_t origin_pointer  = 0;
-	int result               = 0;
+	assorted_bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error          = NULL;
+	uint64_t signature                = 0;
+	uint32_t origin_pointer           = 0;
+	int result                        = 0;
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -541,7 +541,7 @@ int assorted_test_bzip_read_block_header(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -563,7 +563,7 @@ int assorted_test_bzip_read_block_header(
 on_error:
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -582,7 +582,7 @@ int assorted_test_bzip_read_symbol_stack(
 		1, 32, 39, 44, 63, 73, 80, 97, 99, 100, 101, 102, 104, 105, 107, 108,
 	       	111, 112, 114, 115, 116, 119 };
 
-	bit_stream_t *bit_stream             = NULL;
+	assorted_bit_stream_t *bit_stream    = NULL;
 	libcerror_error_t *error             = NULL;
 	void *memset_result                  = NULL;
 	uint64_t signature                   = 0;
@@ -592,12 +592,12 @@ int assorted_test_bzip_read_symbol_stack(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -715,7 +715,7 @@ int assorted_test_bzip_read_symbol_stack(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -737,7 +737,7 @@ int assorted_test_bzip_read_symbol_stack(
 on_error:
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -756,25 +756,25 @@ int assorted_test_bzip_read_selectors(
 	uint8_t expected_selectors[ 2 ] = {
 		0, 1 };
 
-	bit_stream_t *bit_stream        = NULL;
-	libcerror_error_t *error        = NULL;
-	void *memset_result             = NULL;
-	uint64_t signature              = 0;
-	uint32_t origin_pointer         = 0;
-	uint32_t value_32bit            = 0;
-	uint16_t number_of_selectors    = 0;
-	uint16_t number_of_symbols      = 0;
-	uint8_t number_of_trees         = 0;
-	int result                      = 0;
+	assorted_bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error          = NULL;
+	void *memset_result               = NULL;
+	uint64_t signature                = 0;
+	uint32_t origin_pointer           = 0;
+	uint32_t value_32bit              = 0;
+	uint16_t number_of_selectors      = 0;
+	uint16_t number_of_symbols        = 0;
+	uint8_t number_of_trees           = 0;
+	int result                        = 0;
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -858,7 +858,7 @@ int assorted_test_bzip_read_selectors(
 	 "error",
 	 error );
 
-	result = bit_stream_get_value(
+	result = assorted_bit_stream_get_value(
 	          bit_stream,
 	          18,
 	          &value_32bit,
@@ -938,7 +938,7 @@ int assorted_test_bzip_read_selectors(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -960,7 +960,7 @@ int assorted_test_bzip_read_selectors(
 on_error:
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -976,26 +976,26 @@ int assorted_test_bzip_read_huffman_tree(
 	uint8_t symbol_stack[ 256 ];
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
 
-	bit_stream_t *bit_stream     = NULL;
-	huffman_tree_t *huffman_tree = NULL;
-	libcerror_error_t *error     = NULL;
-	void *memset_result          = NULL;
-	uint64_t signature           = 0;
-	uint32_t origin_pointer      = 0;
-	uint32_t value_32bit         = 0;
-	uint16_t number_of_selectors = 0;
-	uint16_t number_of_symbols   = 0;
-	uint8_t number_of_trees      = 0;
-	int result                   = 0;
+	assorted_bit_stream_t *bit_stream = NULL;
+	huffman_tree_t *huffman_tree      = NULL;
+	libcerror_error_t *error          = NULL;
+	void *memset_result               = NULL;
+	uint64_t signature                = 0;
+	uint32_t origin_pointer           = 0;
+	uint32_t value_32bit              = 0;
+	uint16_t number_of_selectors      = 0;
+	uint16_t number_of_symbols        = 0;
+	uint8_t number_of_trees           = 0;
+	int result                        = 0;
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1079,7 +1079,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 "error",
 	 error );
 
-	result = bit_stream_get_value(
+	result = assorted_bit_stream_get_value(
 	          bit_stream,
 	          18,
 	          &value_32bit,
@@ -1199,7 +1199,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 "error",
 	 error );
 
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1227,7 +1227,7 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -1244,7 +1244,7 @@ int assorted_test_bzip_read_huffman_trees(
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
 
 	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-	bit_stream_t *bit_stream           = NULL;
+	assorted_bit_stream_t *bit_stream  = NULL;
 	libcerror_error_t *error           = NULL;
 	void *memset_result                = NULL;
 	uint64_t signature                 = 0;
@@ -1258,12 +1258,12 @@ int assorted_test_bzip_read_huffman_trees(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1347,7 +1347,7 @@ int assorted_test_bzip_read_huffman_trees(
 	 "error",
 	 error );
 
-	result = bit_stream_get_value(
+	result = assorted_bit_stream_get_value(
 	          bit_stream,
 	          18,
 	          &value_32bit,
@@ -1454,7 +1454,7 @@ int assorted_test_bzip_read_huffman_trees(
 		 "error",
 		 error );
 	}
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1484,7 +1484,7 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -1511,7 +1511,7 @@ int assorted_test_bzip_read_block_data(
 		0x65, 0x65, 0x65, 0x65, 0x65, 0x72, 0x27, 0x72, 0x65, 0x65, 0x20, 0x20 };
 
 	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-	bit_stream_t *bit_stream           = NULL;
+	assorted_bit_stream_t *bit_stream  = NULL;
 	libcerror_error_t *error           = NULL;
 	void *memset_result                = NULL;
 	size_t block_data_size             = 0;
@@ -1526,12 +1526,12 @@ int assorted_test_bzip_read_block_data(
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          4,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1615,7 +1615,7 @@ int assorted_test_bzip_read_block_data(
 	 "error",
 	 error );
 
-	result = bit_stream_get_value(
+	result = assorted_bit_stream_get_value(
 	          bit_stream,
 	          18,
 	          &value_32bit,
@@ -1765,7 +1765,7 @@ int assorted_test_bzip_read_block_data(
 		 "error",
 		 error );
 	}
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1795,7 +1795,7 @@ on_error:
 	}
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}
@@ -1808,20 +1808,20 @@ on_error:
 int assorted_test_bzip_read_stream_footer(
      void )
 {
-	bit_stream_t *bit_stream = NULL;
-	libcerror_error_t *error = NULL;
-	uint64_t signature       = 0;
-	uint32_t checksum        = 0;
-	int result               = 0;
+	assorted_bit_stream_t *bit_stream = NULL;
+	libcerror_error_t *error          = NULL;
+	uint64_t signature                = 0;
+	uint32_t checksum                 = 0;
+	int result                        = 0;
 
 	/* Initialize test
 	 */
-	result = bit_stream_initialize(
+	result = assorted_bit_stream_initialize(
 	          &bit_stream,
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          107,
-	          BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -1900,7 +1900,7 @@ int assorted_test_bzip_read_stream_footer(
 
 	/* Clean up
 	 */
-	result = bit_stream_free(
+	result = assorted_bit_stream_free(
 	          &bit_stream,
 	          &error );
 
@@ -1922,7 +1922,7 @@ int assorted_test_bzip_read_stream_footer(
 on_error:
 	if( bit_stream != NULL )
 	{
-		bit_stream_free(
+		assorted_bit_stream_free(
 		 &bit_stream,
 		 NULL );
 	}

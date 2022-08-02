@@ -19,14 +19,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _DEFLATE_COMPRESSION_H )
-#define _DEFLATE_COMPRESSION_H
+#if !defined( _ASSORTED_DEFLATE_COMPRESSION_H )
+#define _ASSORTED_DEFLATE_COMPRESSION_H
 
 #include <common.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_libcerror.h"
-#include "bit_stream.h"
 #include "huffman_tree.h"
 
 #if defined( __cplusplus )
@@ -35,27 +35,27 @@ extern "C" {
 
 /* The block types
  */
-enum DEFLATE_BLOCK_TYPES
+enum ASSORTED_DEFLATE_BLOCK_TYPES
 {
-	DEFLATE_BLOCK_TYPE_UNCOMPRESSED		= 0x00,
-	DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED	= 0x01,
-	DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC	= 0x02,
-	DEFLATE_BLOCK_TYPE_RESERVED		= 0x03
+	ASSORTED_DEFLATE_BLOCK_TYPE_UNCOMPRESSED	= 0x00,
+	ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED	= 0x01,
+	ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC	= 0x02,
+	ASSORTED_DEFLATE_BLOCK_TYPE_RESERVED		= 0x03
 };
 
-int deflate_build_dynamic_huffman_trees(
-     bit_stream_t *bit_stream,
+int assorted_deflate_build_dynamic_huffman_trees(
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t *literals_huffman_tree,
      huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error );
 
-int deflate_build_fixed_huffman_trees(
+int assorted_deflate_build_fixed_huffman_trees(
      huffman_tree_t *literals_huffman_tree,
      huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error );
 
-int deflate_decode_huffman(
-     bit_stream_t *bit_stream,
+int assorted_deflate_decode_huffman(
+     assorted_bit_stream_t *bit_stream,
      huffman_tree_t *literals_huffman_tree,
      huffman_tree_t *distances_huffman_tree,
      uint8_t *uncompressed_data,
@@ -63,14 +63,14 @@ int deflate_decode_huffman(
      size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
-int deflate_calculate_adler32(
+int assorted_deflate_calculate_adler32(
      uint32_t *checksum_value,
      const uint8_t *data,
      size_t data_size,
      uint32_t initial_value,
      libcerror_error_t **error );
 
-int deflate_compress(
+int assorted_deflate_compress(
      const uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      int compression_level,
@@ -78,20 +78,20 @@ int deflate_compress(
      size_t *compressed_data_size,
      libcerror_error_t **error );
 
-int deflate_read_data_header(
+int assorted_deflate_read_data_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
      libcerror_error_t **error );
 
-int deflate_read_block_header(
-     bit_stream_t *bit_stream,
+int assorted_deflate_read_block_header(
+     assorted_bit_stream_t *bit_stream,
      uint8_t *block_type,
      uint8_t *last_block_flag,
      libcerror_error_t **error );
 
-int deflate_read_block(
-     bit_stream_t *bit_stream,
+int assorted_deflate_read_block(
+     assorted_bit_stream_t *bit_stream,
      uint8_t block_type,
      huffman_tree_t *literals_huffman_tree,
      huffman_tree_t *distances_huffman_tree,
@@ -100,14 +100,14 @@ int deflate_read_block(
      size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
-int deflate_decompress(
+int assorted_deflate_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
      size_t *uncompressed_data_size,
      libcerror_error_t **error );
 
-int deflate_decompress_zlib(
+int assorted_deflate_decompress_zlib(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
@@ -118,5 +118,5 @@ int deflate_decompress_zlib(
 }
 #endif
 
-#endif /* !defined( _DEFLATE_COMPRESSION_H ) */
+#endif /* !defined( _ASSORTED_DEFLATE_COMPRESSION_H ) */
 
