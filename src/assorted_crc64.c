@@ -23,14 +23,14 @@
 #include <memory.h>
 #include <types.h>
 
+#include "assorted_crc64.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "crc64.h"
 
 /* Table of the CRC-64 of all 8-bit messages.
  * Polynomial: 0x92c64265d32139a4
  */
-uint64_t crc64_table1[ 256 ] = {
+uint64_t assorted_crc64_table1[ 256 ] = {
 	0x0000000000000000ULL, 0x0809e8a2969451e9ULL, 0x1013d1452d28a3d2ULL, 0x181a39e7bbbcf23bULL,
 	0x2027a28a5a5147a4ULL, 0x282e4a28ccc5164dULL, 0x303473cf7779e476ULL, 0x383d9b6de1edb59fULL,
 	0x404f4514b4a28f48ULL, 0x4846adb62236dea1ULL, 0x505c9451998a2c9aULL, 0x58557cf30f1e7d73ULL,
@@ -100,7 +100,7 @@ uint64_t crc64_table1[ 256 ] = {
 /* Table of the CRC-64 of all 8-bit messages.
  * Polynomial: 0xf6fae5c07d3274cd ?
  */
-uint64_t crc64_table2[ 256 ] = {
+uint64_t assorted_crc64_table2[ 256 ] = {
 	0x0000000000000000ULL, 0x42f0e1eba9ea3693ULL, 0x85e1c3d753d46d26ULL, 0xc711223cfa3e5bb5ULL,
 	0x493366450e42ecdfULL, 0x0bc387aea7a8da4cULL, 0xccd2a5925d9681f9ULL, 0x8e224479f47cb76aULL,
 	0x9266cc8a1c85d9beULL, 0xd0962d61b56fef2dULL, 0x17870f5d4f51b498ULL, 0x5577eeb6e6bb820bULL,
@@ -169,12 +169,12 @@ uint64_t crc64_table2[ 256 ] = {
 
 /* Value to indicate the CRC-64 table been computed
  */
-int crc64_table_computed = 0;
+int assorted_crc64_table_computed = 0;
 
 /* Initializes the internal CRC-64 table
  * The table speeds up the CRC-64 calculation
  */
-void initialize_crc64_table(
+void assorted_initialize_crc64_table(
       uint64_t polynomial )
 {
 	uint64_t crc64             = 0;
@@ -182,7 +182,7 @@ void initialize_crc64_table(
 	uint8_t bit_iterator       = 0;
 
 	memory_set(
-	 crc64_table1,
+	 assorted_crc64_table1,
 	 0,
 	 sizeof( uint64_t ) * 256 );
 
@@ -210,9 +210,9 @@ void initialize_crc64_table(
 				crc64 >>= 1;
 			}
 		}
-		crc64_table1[ crc64_table_index ] = crc64;
+		assorted_crc64_table1[ crc64_table_index ] = crc64;
 	}
-	crc64_table_computed = 1;
+	assorted_crc64_table_computed = 1;
 
 #ifndef DEBUG_PRINT_TABLE
 	if( libcnotify_verbose != 0 )
@@ -223,7 +223,7 @@ void initialize_crc64_table(
 		{
 			libcnotify_printf(
 			 "0x%08" PRIx64 ",",
-			 crc64_table1[ crc64_table_index ] );
+			 assorted_crc64_table1[ crc64_table_index ] );
 
 			if( ( crc64_table_index % 4 ) == 3 )
 			{
@@ -244,16 +244,17 @@ void initialize_crc64_table(
  * Use a previous key of 0 to calculate a new CRC-64
  * Returns 1 if successful or -1 on error
  */
-int crc64_calculate_1(
+int assorted_crc64_calculate_1(
      uint64_t *crc64,
      uint8_t *buffer,
      size_t size,
      uint64_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function      = "crc64_calculate";
+	static char *function      = "assorted_crc64_calculate";
 	size_t buffer_offset       = 0;
 	uint64_t crc64_table_index = 0;
+	uint64_t safe_crc64        = 0;
 
 	if( crc64 == NULL )
 	{
@@ -289,25 +290,26 @@ int crc64_calculate_1(
 		return( -1 );
 	}
 #ifdef WITH_XOR
-	*crc64 = initial_value ^ (uint64_t) 0xffffffffffffffffULL;
+	safe_crc64 = initial_value ^ (uint64_t) 0xffffffffffffffffULL;
 #else
-	*crc64 = initial_value;
+	safe_crc64 = initial_value;
 #endif
-
         for( buffer_offset = 0;
 	     buffer_offset < size;
 	     buffer_offset++ )
 	{
 /* TODO
-		crc64_table_index = ( ( *crc64 >> 56 ) ^ buffer[ buffer_offset ] ) & (uint64_t) 0x00000000000000ffULL;
+		crc64_table_index = ( ( safe_crc64 >> 56 ) ^ buffer[ buffer_offset ] ) & (uint64_t) 0x00000000000000ffULL;
 */
-		crc64_table_index = ( *crc64 ^ buffer[ buffer_offset ] ) & (uint64_t) 0x00000000000000ffULL;
+		crc64_table_index = ( safe_crc64 ^ buffer[ buffer_offset ] ) & (uint64_t) 0x00000000000000ffULL;
 
-		*crc64 = crc64_table1[ crc64_table_index ] ^ ( *crc64 << 8 );
+		safe_crc64 = assorted_crc64_table1[ crc64_table_index ] ^ ( safe_crc64 << 8 );
         }
 #ifdef WITH_XOR
-        *crc64 ^= (uint64_t) 0xffffffffffffffffULL;
+        safe_crc64 ^= (uint64_t) 0xffffffffffffffffULL;
 #endif
+	*crc64 = safe_crc64;
+
 	return( 1 );
 }
 
@@ -315,17 +317,18 @@ int crc64_calculate_1(
  * Use a previous key of 0 to calculate a new CRC-64
  * Returns 1 if successful or -1 on error
  */
-int crc64_calculate_2(
+int assorted_crc64_calculate_2(
      uint64_t *crc64,
      uint8_t *buffer,
      size_t size,
      uint64_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function      = "crc64_calculate";
+	static char *function      = "assorted_crc64_calculate";
 	size_t buffer_offset       = 0;
 	uint64_t crc64_table_index = 0;
 	uint64_t polynomial        = 0;
+	uint64_t safe_crc64        = 0;
 
 	if( crc64 == NULL )
 	{
@@ -360,7 +363,7 @@ int crc64_calculate_2(
 
 		return( -1 );
 	}
-        if( crc64_table_computed == 0 )
+        if( assorted_crc64_table_computed == 0 )
 	{
 		/* CRC-64-ECMA-182 */
 		polynomial = 0x42f0e1eba9ea3693ULL;
@@ -384,25 +387,27 @@ int crc64_calculate_2(
 
 		polynomial = 0x9a6c9329ac4bc9b5ULL;
 
-		initialize_crc64_table(
+		assorted_initialize_crc64_table(
 		 polynomial );
 	}
 #ifdef WITH_XOR
-	*crc64 = initial_value ^ (uint64_t) 0xffffffffffffffffULL;
+	safe_crc64 = initial_value ^ (uint64_t) 0xffffffffffffffffULL;
 #else
-	*crc64 = initial_value;
+	safe_crc64 = initial_value;
 #endif
         for( buffer_offset = 0;
 	     buffer_offset < size;
 	     buffer_offset++ )
 	{
-		crc64_table_index = ( *crc64 ^ buffer[ buffer_offset ] ) & (uint64_t) 0x00000000000000ffULL;
+		crc64_table_index = ( safe_crc64 ^ buffer[ buffer_offset ] ) & (uint64_t) 0x00000000000000ffULL;
 
-		*crc64 = crc64_table1[ crc64_table_index ] ^ ( *crc64 >> 8 );
+		safe_crc64 = assorted_crc64_table1[ crc64_table_index ] ^ ( safe_crc64 >> 8 );
         }
 #ifdef WITH_XOR
-	*crc64 ^= 0xffffffffffffffffULL;
+	safe_crc64 ^= 0xffffffffffffffffULL;
 #endif
+	*crc64 = safe_crc64;
+
 	return( 1 );
 }
 

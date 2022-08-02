@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="plistinfo"
-	ProjectGUID="{89CDBEF7-72A0-470C-BFEF-5942FEAD6C69}"
+	ProjectGUID="{855DDAF4-1EE0-41FA-8BD4-BD47A16143BB}"
 	RootNamespace="plistinfo"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

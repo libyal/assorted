@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_crc32"
-	ProjectGUID="{C3C5031A-57EB-4BDA-8E46-8563CF19D8E3}"
+	ProjectGUID="{5FE59E58-4469-47C7-AE49-C643A6454C45}"
 	RootNamespace="assorted_test_crc32"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\crc32.c"
+				RelativePath="..\..\src\assorted_crc32.c"
 				>
 			</File>
 			<File
@@ -190,7 +190,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\crc32.h"
+				RelativePath="..\..\src\assorted_crc32.h"
 				>
 			</File>
 			<File

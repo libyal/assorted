@@ -22,8 +22,8 @@
 #include <common.h>
 #include <types.h>
 
+#include "assorted_crc32.h"
 #include "assorted_libcerror.h"
-#include "crc32.h"
 
 /* Polynomials
  *
@@ -45,17 +45,17 @@
 
 /* Table of the CRC-32 of all 8-bit messages.
  */
-uint32_t crc32_table[ 256 ];
+uint32_t assorted_crc32_table[ 256 ];
 
 /* Value to indicate the CRC-32 table been computed
  */
-int crc32_table_computed = 0;
+int assorted_crc32_table_computed = 0;
 
 /* Initializes the internal CRC-32 table
  * The table speeds up the CRC-32 calculation
  * Use the reversed polynomial
  */
-void crc32_initialize_table(
+void assorted_crc32_initialize_table(
       uint32_t polynomial )
 {
 	uint32_t crc32             = 0;
@@ -81,9 +81,9 @@ void crc32_initialize_table(
 				crc32 = crc32 >> 1;
 			}
 		}
-		crc32_table[ crc32_table_index ] = crc32;
+		assorted_crc32_table[ crc32_table_index ] = crc32;
 	}
-	crc32_table_computed = 1;
+	assorted_crc32_table_computed = 1;
 }
 
 /* Calculates the CRC-32 of a buffer
@@ -94,7 +94,7 @@ void crc32_initialize_table(
  *
  * Returns 1 if successful or -1 on error
  */
-int crc32_calculate_modulo2(
+int assorted_crc32_calculate_modulo2(
      uint32_t *crc32,
      const uint8_t *buffer,
      size_t size,
@@ -102,7 +102,7 @@ int crc32_calculate_modulo2(
      uint8_t weak_crc,
      libcerror_error_t **error )
 {
-	static char *function = "crc32_calculate_modulo2";
+	static char *function = "assorted_crc32_calculate_modulo2";
 	size_t buffer_offset  = 0;
 	uint32_t mirror_value = 0;
 	uint32_t safe_crc32   = 0;
@@ -215,7 +215,7 @@ int crc32_calculate_modulo2(
  * Use a previous key of 0 to calculate a new CRC-32
  * Returns 1 if successful or -1 on error
  */
-int crc32_calculate(
+int assorted_crc32_calculate(
      uint32_t *crc32,
      const uint8_t *buffer,
      size_t size,
@@ -223,7 +223,7 @@ int crc32_calculate(
      uint8_t weak_crc,
      libcerror_error_t **error )
 {
-	static char *function      = "crc32_calculate";
+	static char *function      = "assorted_crc32_calculate";
 	size_t buffer_offset       = 0;
 	uint32_t crc32_table_index = 0;
 	uint32_t safe_crc32        = 0;
@@ -261,9 +261,9 @@ int crc32_calculate(
 
 		return( -1 );
 	}
-        if( crc32_table_computed == 0 )
+        if( assorted_crc32_table_computed == 0 )
 	{
-		crc32_initialize_table(
+		assorted_crc32_initialize_table(
 		 0xedb88320UL );
 	}
 	safe_crc32 = initial_value;
@@ -278,7 +278,7 @@ int crc32_calculate(
 	{
 		crc32_table_index = ( safe_crc32 ^ buffer[ buffer_offset ] ) & 0x000000ffUL;
 
-		safe_crc32 = crc32_table[ crc32_table_index ] ^ ( safe_crc32 >> 8 );
+		safe_crc32 = assorted_crc32_table[ crc32_table_index ] ^ ( safe_crc32 >> 8 );
         }
 	if( weak_crc == 0 )
 	{
@@ -292,13 +292,13 @@ int crc32_calculate(
 /* Check the CRC-32 checksum for single-bit errors
  * Returns 1 if successful, 0 if no error was found or -1 on error
  */
-int crc32_validate(
+int assorted_crc32_validate(
      uint32_t crc32,
      uint32_t calculated_crc32,
      uint8_t *bit_index,
      libcerror_error_t **error )
 {
-	static char *function      = "crc32_validate";
+	static char *function      = "assorted_crc32_validate";
 	uint32_t crc32_xor_pattern = 0;
 	uint8_t safe_bit_index     = 0;
 	
@@ -335,7 +335,7 @@ int crc32_validate(
 /* Tries to locate the error offset using a CRC-32
  * Returns 1 if successful, 0 if no error was found or -1 on error
  */
-int crc32_locate_error_offset(
+int assorted_crc32_locate_error_offset(
      uint32_t crc32,
      uint32_t calculated_crc32,
      const uint8_t *buffer,
@@ -343,7 +343,7 @@ int crc32_locate_error_offset(
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function      = "crc32_locate_error_offset";
+	static char *function      = "assorted_crc32_locate_error_offset";
 	size_t buffer_offset       = 0;
 	uint32_t crc32_xor_pattern = 0;
 	uint32_t mirror_value      = 0;

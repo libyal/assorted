@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="adler32sum"
-	ProjectGUID="{8BA5FCB2-725A-49E2-A628-C621F76E9B74}"
+	ProjectGUID="{BB9BD9F2-014C-4658-9D8E-24B657396EA6}"
 	RootNamespace="adler32sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\adler32.c"
+				RelativePath="..\..\src\adler32sum.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\adler32sum.c"
+				RelativePath="..\..\src\assorted_adler32.c"
 				>
 			</File>
 			<File
@@ -198,7 +198,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\adler32.h"
+				RelativePath="..\..\src\assorted_adler32.h"
 				>
 			</File>
 			<File

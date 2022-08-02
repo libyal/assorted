@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/crc32.h"
+#include "../src/assorted_crc32.h"
 
 /* Define to make assorted_test_crc32 generate verbose output
 #define ASSORTED_TEST_CRC32_VERBOSE
@@ -44,7 +44,7 @@ uint8_t assorted_test_crc32_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the crc32_initialize_table function
+/* Tests the assorted_crc32_initialize_table function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_crc32_initialize_table(
@@ -52,13 +52,13 @@ int assorted_test_crc32_initialize_table(
 {
 	/* Test invocation of function only
 	 */
-	crc32_initialize_table(
+	assorted_crc32_initialize_table(
 	 0xedb88320UL );
 
 	return( 1 );
 }
 
-/* Tests the crc32_calculate_modulo2 function
+/* Tests the assorted_crc32_calculate_modulo2 function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_crc32_calculate_modulo2(
@@ -70,7 +70,7 @@ int assorted_test_crc32_calculate_modulo2(
 
 	/* Test regular cases
 	 */
-	result = crc32_calculate_modulo2(
+	result = assorted_crc32_calculate_modulo2(
 	          &checksum_value,
 	          assorted_test_crc32_data,
 	          16,
@@ -94,7 +94,7 @@ int assorted_test_crc32_calculate_modulo2(
 
 	/* Test error cases
 	 */
-	result = crc32_calculate_modulo2(
+	result = assorted_crc32_calculate_modulo2(
 	          NULL,
 	          assorted_test_crc32_data,
 	          16,
@@ -114,7 +114,7 @@ int assorted_test_crc32_calculate_modulo2(
 	libcerror_error_free(
 	 &error );
 
-	result = crc32_calculate_modulo2(
+	result = assorted_crc32_calculate_modulo2(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -134,7 +134,7 @@ int assorted_test_crc32_calculate_modulo2(
 	libcerror_error_free(
 	 &error );
 
-	result = crc32_calculate_modulo2(
+	result = assorted_crc32_calculate_modulo2(
 	          &checksum_value,
 	          assorted_test_crc32_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -160,7 +160,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the crc32_calculate function
+/* Tests the assorted_crc32_calculate function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_crc32_calculate(
@@ -172,7 +172,7 @@ int assorted_test_crc32_calculate(
 
 	/* Test regular cases
 	 */
-	result = crc32_calculate(
+	result = assorted_crc32_calculate(
 	          &checksum_value,
 	          assorted_test_crc32_data,
 	          16,
@@ -196,7 +196,7 @@ int assorted_test_crc32_calculate(
 
 	/* Test error cases
 	 */
-	result = crc32_calculate(
+	result = assorted_crc32_calculate(
 	          NULL,
 	          assorted_test_crc32_data,
 	          16,
@@ -216,7 +216,7 @@ int assorted_test_crc32_calculate(
 	libcerror_error_free(
 	 &error );
 
-	result = crc32_calculate(
+	result = assorted_crc32_calculate(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -236,7 +236,7 @@ int assorted_test_crc32_calculate(
 	libcerror_error_free(
 	 &error );
 
-	result = crc32_calculate(
+	result = assorted_crc32_calculate(
 	          &checksum_value,
 	          assorted_test_crc32_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -290,20 +290,20 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "crc32_initialize_table",
+	 "assorted_crc32_initialize_table",
 	 assorted_test_crc32_initialize_table );
 
 	ASSORTED_TEST_RUN(
-	 "crc32_calculate_modulo2",
+	 "assorted_crc32_calculate_modulo2",
 	 assorted_test_crc32_calculate_modulo2 );
 
 	ASSORTED_TEST_RUN(
-	 "crc32_calculate",
+	 "assorted_crc32_calculate",
 	 assorted_test_crc32_calculate );
 
-	/* TODO add tests for crc32_validate */
+	/* TODO add tests for assorted_crc32_validate */
 
-	/* TODO add tests for crc32_locate_error_offset */
+	/* TODO add tests for assorted_crc32_locate_error_offset */
 
 #endif /* defined( __GNUC__ ) */
 

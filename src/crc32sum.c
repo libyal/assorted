@@ -29,12 +29,12 @@
 #include <stdlib.h>
 #endif
 
+#include "assorted_crc32.h"
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
-#include "crc32.h"
 
 /* Prints the executable usage information
  */
@@ -339,7 +339,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( calculation_method == 1 )
 	{
-		result = crc32_calculate_modulo2(
+		result = assorted_crc32_calculate_modulo2(
 			  &calculated_crc32,
 			  buffer,
 			  source_size,
@@ -349,10 +349,10 @@ int main( int argc, char * const argv[] )
 	}
 	else if( calculation_method == 2 )
 	{
-                crc32_initialize_table(
+                assorted_crc32_initialize_table(
                  polynomial );
 
-		result = crc32_calculate(
+		result = assorted_crc32_calculate(
 			  &calculated_crc32,
 			  buffer,
 			  source_size,
@@ -393,7 +393,7 @@ int main( int argc, char * const argv[] )
 			 calculated_crc32,
 			 calculated_crc32 );
 
-			result = crc32_validate(
+			result = assorted_crc32_validate(
 			          crc32,
 			          calculated_crc32,
 			          &bit_index,
@@ -414,7 +414,7 @@ int main( int argc, char * const argv[] )
 				 "Single bit-error in bit: %" PRIu8 " of CRC-32\n",
 				 bit_index );
 			}
-			result = crc32_locate_error_offset(
+			result = assorted_crc32_locate_error_offset(
 			          crc32,
 			          calculated_crc32,
 			          buffer,

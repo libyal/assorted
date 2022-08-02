@@ -73,8 +73,8 @@ adcdecompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 adler32sum_SOURCES = \
-	adler32.c adler32.h \
 	adler32sum.c \
+	assorted_adler32.c assorted_adler32.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
@@ -149,13 +149,13 @@ bz2decompress_LDADD = \
 	@BZIP2_LIBADD@
 
 crc32sum_SOURCES = \
+	assorted_crc32.c assorted_crc32.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	crc32.c crc32.h \
 	crc32sum.c
 
 crc32sum_LDADD = \
@@ -166,13 +166,13 @@ crc32sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 crc64sum_SOURCES = \
+	assorted_crc64.c assorted_crc64.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	crc64.c crc64.h \
 	crc64sum.c
 
 crc64sum_LDADD = \
@@ -236,13 +236,13 @@ lzfsedecompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 lzfudecompress_SOURCES = \
+	assorted_crc32.c assorted_crc32.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	crc32.c crc32.h \
 	lzfu.c lzfu.h \
 	lzfudecompress.c
 

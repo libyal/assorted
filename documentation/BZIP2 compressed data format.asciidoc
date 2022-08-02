@@ -70,9 +70,14 @@ significant bits in a byte.
 
 A stream (BZipStream) consist of:
 
-* stream heade
+* stream header
 * zero or more blocks
 * stream footer
+
+The stream is stored in 8-bit integers, where bit values are stored
+front-to-back. So that 3 most-significant bits (MSB) would resprent a 3-bit
+value at the start of the stream. Note that the MSB of the 3-bit value is
+the MSB of the byte value.
 
 ==== Stream header
 

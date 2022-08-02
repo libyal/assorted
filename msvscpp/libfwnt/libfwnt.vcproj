@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libfwnt"
-	ProjectGUID="{3AFD573F-D358-4C35-B096-265CAA017FBD}"
+	ProjectGUID="{825510F1-E4A2-4166-8A83-9899970C1522}"
 	RootNamespace="libfwnt"
 	TargetFrameworkVersion="131072"
 	>

@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/adler32.h"
+#include "../src/assorted_adler32.h"
 
 /* Define to make assorted_test_adler32 generate verbose output
 #define ASSORTED_TEST_ADLER32_VERBOSE
@@ -56,7 +56,7 @@ int assorted_test_adler32_calculate_checksum_basic1(
 
 	/* Test regular cases
 	 */
-	result = adler32_calculate_checksum_basic1(
+	result = assorted_adler32_calculate_checksum_basic1(
 	          &checksum_value,
 	          assorted_test_adler32_data,
 	          16,
@@ -79,7 +79,7 @@ int assorted_test_adler32_calculate_checksum_basic1(
 
 	/* Test error cases
 	 */
-	result = adler32_calculate_checksum_basic1(
+	result = assorted_adler32_calculate_checksum_basic1(
 	          NULL,
 	          assorted_test_adler32_data,
 	          16,
@@ -98,7 +98,7 @@ int assorted_test_adler32_calculate_checksum_basic1(
 	libcerror_error_free(
 	 &error );
 
-	result = adler32_calculate_checksum_basic1(
+	result = assorted_adler32_calculate_checksum_basic1(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -117,7 +117,7 @@ int assorted_test_adler32_calculate_checksum_basic1(
 	libcerror_error_free(
 	 &error );
 
-	result = adler32_calculate_checksum_basic1(
+	result = assorted_adler32_calculate_checksum_basic1(
 	          &checksum_value,
 	          assorted_test_adler32_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -170,32 +170,36 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "adler32_calculate_checksum_basic1",
+	 "assorted_adler32_calculate_checksum_basic1",
 	 assorted_test_adler32_calculate_checksum_basic1 );
 
-	/* TODO add tests for adler32_calculate_checksum_basic2 */
+	/* TODO add tests for assorted_adler32_calculate_checksum_basic2 */
 
-	/* TODO add tests for adler32_calculate_checksum_unfolded4_1 */
+	/* TODO add tests for assorted_adler32_calculate_checksum_unfolded4_1 */
 
-	/* TODO add tests for adler32_calculate_checksum_unfolded4_2 */
+	/* TODO add tests for assorted_adler32_calculate_checksum_unfolded4_2 */
 
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_1 */
+	/* TODO add tests for assorted_adler32_calculate_checksum_unfolded16_1 */
 
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_2 */
+	/* TODO add tests for assorted_adler32_calculate_checksum_unfolded16_2 */
 
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_3 */
+	/* TODO add tests for assorted_adler32_calculate_checksum_unfolded16_3 */
 
-	/* TODO add tests for adler32_calculate_checksum_unfolded16_4 */
+	/* TODO add tests for assorted_adler32_calculate_checksum_unfolded16_4 */
 
-	/* TODO add tests for adler32_calculate_checksum_cpu_aligned */
+	/* TODO add tests for assorted_adler32_calculate_checksum_cpu_aligned */
 
-	/* TODO add tests for adler32_calculate_checksum_simd */
+	/* TODO add tests for assorted_adler32_calculate_checksum_simd */
 
 #endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

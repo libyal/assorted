@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="crc64sum"
-	ProjectGUID="{E2C23E33-2170-4F73-A0FC-2EF537EDA21A}"
+	ProjectGUID="{4B87A296-0DE8-452D-8119-878730E9486E}"
 	RootNamespace="crc64sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,15 +176,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\assorted_crc64.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_getopt.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\crc64.c"
 				>
 			</File>
 			<File
@@ -197,6 +197,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\src\assorted_crc64.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\src\assorted_getopt.h"
 				>
@@ -219,10 +223,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\crc64.h"
 				>
 			</File>
 		</Filter>

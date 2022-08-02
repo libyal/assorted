@@ -24,9 +24,9 @@
 #include <memory.h>
 #include <types.h>
 
+#include "assorted_crc32.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "crc32.h"
 #include "lzfu.h"
 
 #define LZFU_SIGNATURE_COMPRESSED        0x75465a4c
@@ -523,7 +523,7 @@ int lzfu_decompress(
 
 		return( -1 );
 	}
-	if( crc32_calculate(
+	if( assorted_crc32_calculate(
 	     &calculated_crc,
 	     lzfu_data,
 	     (size_t) lzfu_header.compressed_data_size,

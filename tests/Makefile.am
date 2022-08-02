@@ -57,7 +57,7 @@ assorted_test_adc_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_adler32_SOURCES = \
-	../src/adler32.c ../src/adler32.h \
+	../src/assorted_adler32.c ../src/assorted_adler32.h \
 	assorted_test_adler32.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -108,7 +108,7 @@ assorted_test_bzip_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_crc32_SOURCES = \
-	../src/crc32.c ../src/crc32.h \
+	../src/assorted_crc32.c ../src/assorted_crc32.h \
 	assorted_test_crc32.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -120,7 +120,7 @@ assorted_test_crc32_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_crc64_SOURCES = \
-	../src/crc64.c ../src/crc64.h \
+	../src/assorted_crc64.c ../src/assorted_crc64.h \
 	assorted_test_crc64.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -197,7 +197,7 @@ assorted_test_lzfse_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_lzfu_SOURCES = \
-	../src/crc32.c ../src/crc32.h \
+	../src/assorted_crc32.c ../src/assorted_crc32.h \
 	../src/lzfu.c ../src/lzfu.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \

@@ -34,7 +34,7 @@
 #include <zlib.h>
 #endif
 
-#include "adler32.h"
+#include "assorted_adler32.h"
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
@@ -329,7 +329,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( calculation_method == 1 )
 	{
-		result = adler32_calculate_checksum_basic2(
+		result = assorted_adler32_calculate_checksum_basic2(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -341,12 +341,12 @@ int main( int argc, char * const argv[] )
 		/* The unfolded4_2 variant is slower than the unfolded4_1 variant
 		 */
 		/* Fastest to slowest variant
-		 * - adler32_calculate_checksum_unfolded16_4
-		 * - adler32_calculate_checksum_unfolded16_2
-		 * - adler32_calculate_checksum_unfolded16_1
-		 * - adler32_calculate_checksum_unfolded16_3
+		 * - assorted_adler32_calculate_checksum_unfolded16_4
+		 * - assorted_adler32_calculate_checksum_unfolded16_2
+		 * - assorted_adler32_calculate_checksum_unfolded16_1
+		 * - assorted_adler32_calculate_checksum_unfolded16_3
 		 */
-		result = adler32_calculate_checksum_unfolded16_4(
+		result = assorted_adler32_calculate_checksum_unfolded16_4(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -357,7 +357,7 @@ int main( int argc, char * const argv[] )
 	{
 		/* The unfolded variants seems to be faster then the CPU aligned
 		 */
-		result = adler32_calculate_checksum_cpu_aligned(
+		result = assorted_adler32_calculate_checksum_cpu_aligned(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -367,7 +367,7 @@ int main( int argc, char * const argv[] )
 	else if( calculation_method == 4 )
 	{
 /* TODO experimental */
-		result = adler32_calculate_checksum_simd(
+		result = assorted_adler32_calculate_checksum_simd(
 		          &checksum_value,
 		          buffer,
 		          source_size,

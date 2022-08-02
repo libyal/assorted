@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_adler32"
-	ProjectGUID="{7970951F-C3B2-438A-8CAA-65D487684EFF}"
+	ProjectGUID="{632FCA77-D65E-4576-809F-62BE410E67CE}"
 	RootNamespace="assorted_test_adler32"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\adler32.c"
+				RelativePath="..\..\src\assorted_adler32.c"
 				>
 			</File>
 			<File
@@ -190,7 +190,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\adler32.h"
+				RelativePath="..\..\src\assorted_adler32.h"
 				>
 			</File>
 			<File

@@ -1,5 +1,5 @@
 /*
- * CRC-64 functions
+ c ASSORTED_CRC-32 functions
  *
  * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _CRC64_H )
-#define _CRC64_H
+#if !defined( _ASSORTED_CRC32_H )
+#define _ASSORTED_CRC32_H
 
 #include <common.h>
 #include <types.h>
@@ -31,26 +31,42 @@
 extern "C" {
 #endif
 
-void initialize_crc64_table(
-      uint64_t polynomial );
+void assorted_crc32_initialize_table(
+      uint32_t polynomial );
 
-int crc64_calculate_1(
-     uint64_t *crc64,
-     uint8_t *buffer,
+int assorted_crc32_calculate_modulo2(
+     uint32_t *crc32,
+     const uint8_t *buffer,
      size_t size,
-     uint64_t initial_value,
+     uint32_t initial_value,
+     uint8_t weak_crc,
      libcerror_error_t **error );
 
-int crc64_calculate_2(
-     uint64_t *crc64,
-     uint8_t *buffer,
+int assorted_crc32_calculate(
+     uint32_t *crc32,
+     const uint8_t *buffer,
      size_t size,
-     uint64_t initial_value,
+     uint32_t initial_value,
+     uint8_t weak_crc,
+     libcerror_error_t **error );
+
+int assorted_crc32_validate(
+     uint32_t crc32,
+     uint32_t calculated_crc32,
+     uint8_t *bit_index,
+     libcerror_error_t **error );
+
+int assorted_crc32_locate_error_offset(
+     uint32_t crc32,
+     uint32_t calculated_crc32,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _CRC64_H ) */
+#endif /* !defined( _ASSORTED_CRC32_H ) */
 

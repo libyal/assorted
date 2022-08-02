@@ -29,12 +29,12 @@
 #include <stdlib.h>
 #endif
 
+#include "assorted_crc64.h"
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
-#include "crc64.h"
 
 /* Prints the executable usage information
  */
@@ -307,7 +307,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( calculation_method == 1 )
 	{
-		result = crc64_calculate_1(
+		result = assorted_crc64_calculate_1(
 			  &calculated_crc64,
 			  buffer,
 			  source_size,
@@ -316,7 +316,7 @@ int main( int argc, char * const argv[] )
 	}
 	else if( calculation_method == 2 )
 	{
-		result = crc64_calculate_2(
+		result = assorted_crc64_calculate_2(
 			  &calculated_crc64,
 			  buffer,
 			  source_size,

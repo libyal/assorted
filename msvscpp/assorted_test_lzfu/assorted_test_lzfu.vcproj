@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_lzfu"
-	ProjectGUID="{413E28A4-35C8-4288-805B-B12AE0EA90E6}"
+	ProjectGUID="{75EB2366-698C-41FF-B704-891EDAD9938E}"
 	RootNamespace="assorted_test_lzfu"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\crc32.c"
+				RelativePath="..\..\src\assorted_crc32.c"
 				>
 			</File>
 			<File
@@ -194,7 +194,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\crc32.h"
+				RelativePath="..\..\src\assorted_crc32.h"
 				>
 			</File>
 			<File

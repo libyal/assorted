@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/crc64.h"
+#include "../src/assorted_crc64.h"
 
 /* Define to make assorted_test_crc64 generate verbose output
 #define ASSORTED_TEST_CRC64_VERBOSE
@@ -44,7 +44,7 @@ uint8_t assorted_test_crc64_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the crc64_calculate_1 function
+/* Tests the assorted_crc64_calculate_1 function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_crc64_calculate_1(
@@ -56,7 +56,7 @@ int assorted_test_crc64_calculate_1(
 
 	/* Test regular cases
 	 */
-	result = crc64_calculate_1(
+	result = assorted_crc64_calculate_1(
 	          &checksum_value,
 	          assorted_test_crc64_data,
 	          16,
@@ -79,7 +79,7 @@ int assorted_test_crc64_calculate_1(
 
 	/* Test error cases
 	 */
-	result = crc64_calculate_1(
+	result = assorted_crc64_calculate_1(
 	          NULL,
 	          assorted_test_crc64_data,
 	          16,
@@ -98,7 +98,7 @@ int assorted_test_crc64_calculate_1(
 	libcerror_error_free(
 	 &error );
 
-	result = crc64_calculate_1(
+	result = assorted_crc64_calculate_1(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -117,7 +117,7 @@ int assorted_test_crc64_calculate_1(
 	libcerror_error_free(
 	 &error );
 
-	result = crc64_calculate_1(
+	result = assorted_crc64_calculate_1(
 	          &checksum_value,
 	          assorted_test_crc64_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -142,7 +142,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the crc64_calculate_2 function
+/* Tests the assorted_crc64_calculate_2 function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_crc64_calculate_2(
@@ -154,7 +154,7 @@ int assorted_test_crc64_calculate_2(
 
 	/* Test regular cases
 	 */
-	result = crc64_calculate_2(
+	result = assorted_crc64_calculate_2(
 	          &checksum_value,
 	          assorted_test_crc64_data,
 	          16,
@@ -177,7 +177,7 @@ int assorted_test_crc64_calculate_2(
 
 	/* Test error cases
 	 */
-	result = crc64_calculate_2(
+	result = assorted_crc64_calculate_2(
 	          NULL,
 	          assorted_test_crc64_data,
 	          16,
@@ -196,7 +196,7 @@ int assorted_test_crc64_calculate_2(
 	libcerror_error_free(
 	 &error );
 
-	result = crc64_calculate_2(
+	result = assorted_crc64_calculate_2(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -215,7 +215,7 @@ int assorted_test_crc64_calculate_2(
 	libcerror_error_free(
 	 &error );
 
-	result = crc64_calculate_2(
+	result = assorted_crc64_calculate_2(
 	          &checksum_value,
 	          assorted_test_crc64_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -270,18 +270,22 @@ int main(
 	/* TODO add tests for initialize_crc64_table */
 
 	ASSORTED_TEST_RUN(
-	 "crc64_calculate_1",
+	 "assorted_crc64_calculate_1",
 	 assorted_test_crc64_calculate_1 );
 
 	ASSORTED_TEST_RUN(
-	 "crc64_calculate_2",
+	 "assorted_crc64_calculate_2",
 	 assorted_test_crc64_calculate_2 );
 
 #endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 
