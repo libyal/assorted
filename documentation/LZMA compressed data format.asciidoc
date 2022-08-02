@@ -1,5 +1,5 @@
-= BZIP2 compressed data format specification
-Analysis of BZIP2 compressed data
+= LZMA compressed data format specification
+Analysis of LZMA compressed data
 
 :toc:
 :toclevels: 4
@@ -8,7 +8,7 @@ Analysis of BZIP2 compressed data
 [abstract]
 == Summary
 
-BZIP2 compression is used in various data formats used on Linux and Mac OS.
+LZMA compression is used in various data formats used on Linux and Mac OS.
 
 This specification is based on earlier work on the format, and was enhanced
 by analyzing test data.
@@ -19,9 +19,9 @@ by analyzing test data.
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the BZIP2 compressed data format
+| Abstract: | This document contains information about the LZMA compressed data format
 | Classification: | Public
-| Keywords: | BZIP2
+| Keywords: | LZMA
 |===
 
 [preface]
@@ -42,18 +42,17 @@ in the section entitled "GNU Free Documentation License".
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
-| 0.0.1 | J.B. Metz | July 2022 | Initial version based on earlier notes.
-| 0.0.2 | J.B. Metz | August 2022 | Additional information.
+| 0.0.1 | J.B. Metz | August 2022 | Initial version.
 |===
 
 :numbered:
 == Overview
 
-BZIP2 compression is used in various data formats used on Linux and Mac OS.
+LZMA compression is used in various data formats used on Linux and Mac OS.
 
 === Layout
 
-BZIP2 compressed data consist of:
+LZMA compressed data consist of:
 
 * one or more streams
 
@@ -63,155 +62,86 @@ BZIP2 compressed data consist of:
 | Byte order | big-endian
 |===
 
-BZip uses a bit ordering where the leading bits in the stream are the most
-significant bits in a byte.
-
 === Stream
 
-A stream (BZipStream) consist of:
+A stream consist of:
 
-* stream heade
-* zero or more blocks
-* stream footer
+* Stream header
+* One or more blocks
+* Index
+* Stream footer
 
 ==== Stream header
 
-A stream header (StreamHeader) is 4 bytes of size and consist of:
+A stream header is 12 bytes of size and consist of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | "BZ" | Signature
-| 2 | 1 | 0x68 | Format version
-| 3 | 1 | | Compression level +
-See section: <<compression_level,Compression level>>
+| 0 | 6 | "\xfd7zXZ\x00" | Signature
+| 6 | 2 | | Stream flags
+| 8 | 4 | | Checksum
 |===
 
-[NOTE]
-Format version 0 was used for bzip1
-
-===== [[compression_level]]Compression level
+===== Stream flags
 
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
-| "1" | | Burrows-Wheeler transform (BWT) encoding buffer size 100000
-| "2" | | Burrows-Wheeler transform (BWT) encoding buffer size 200000
-| "3" | | Burrows-Wheeler transform (BWT) encoding buffer size 300000
-| "4" | | Burrows-Wheeler transform (BWT) encoding buffer size 400000
-| "5" | | Burrows-Wheeler transform (BWT) encoding buffer size 500000
-| "6" | | Burrows-Wheeler transform (BWT) encoding buffer size 600000
-| "7" | | Burrows-Wheeler transform (BWT) encoding buffer size 700000
-| "8" | | Burrows-Wheeler transform (BWT) encoding buffer size 800000
-| "9" | | Burrows-Wheeler transform (BWT) encoding buffer size 900000
 |===
 
 ==== Stream footer
 
-A stream footer (StreamFooter) consist of:
+A stream footer is 12 bytes of size and consist of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0.0 | 48 bits | 0x177245385090 | Signature
-| 6.0 | 32 bits | | Checksum +
-See section: <<checksum,Checksum>>
-| 10.0 | ... | | Byte alignment padding
+| 0 | 4 | | Checksum
+| 4 | 4 | | [yellow-background]*Unknown (backward size)*
+| 8 | 2 | | Copy of stream flags
+| 10 | 2 | "YZ" | Signature
 |===
 
 === Block
 
-A BZIP2 compressed data block (StreamBlock) consist of:
+A block consist of:
 
 * Block header
-* Symbol stack
-* Number of trees (3 bits)
-* Number of selectors (15 bits)
-* Selectors (maximum of 6 bits)
-* Huffman trees
-* Block data (BlockData)
+* Compressed data
+* Block padding
+* [yellow-background]*Unknown (check)*
 
 ==== Block header
 
-A block header (BlockHeader) consist of:
+A block header is 10 bytes of size and consist of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0.0 | 48 bits | 0x314159265359 | Signature
-| 6.0 | 32 bits | | Checksum +
-See section: <<checksum,Checksum>>
-| 10.0 | 1 bit | 0 | Is randomized flag
-| 10.1 | 24 bits | | Origin pointer
+| 0 | 1 | | Header size +
+Contains the number of 4 byte increments - 1
+| 1 | 1 | | Block flags
+4+| _If has compressed size flag is set_
+| 2 | 1 | | Compressed data size
+4+| _If has uncompressed size flag is set_
+| 3 | 1 | | Uncompressed data size
+| 4 | 1 | | [yellow-background]*Unknown (filter flags)*
+4+| _Common_
+| 5 | 1 | | [yellow-background]*Unknown (header padding)*
+| 6 | 4 | | Checksum
 |===
 
-[NOTE]
-The is randomized flag was used in previous versions of bzip2
+==== Block flags
 
-==== Symbol stack
-
-A symbol stack (SymMap) consist of:
-
-* Level 1 value (MapL1) (16 bits)
-* One or more (upto 16) level 2 values (MapL2) (16 bits)
-
-Every bit in the level 1 value indicates if a level 2 value is present or not.
-
-Every bit in the level 2 value indicates is a symbol value is present in the
-stack or not. A symbol value is calculated as:
-
-....
-symbol value = ( level 1 bit index x 16 ) + level 2 bit index
-....
-
-The symbol table is constructed from the symbol stack values in the following
-manner:
-
-[cols="1,1,5",options="header"]
+[cols="1,1,1,5",options="header"]
 |===
-| Value | Identifier | Description
-| 0 | RUNA | Run-length value A, represents a 0 bit
-| 1 | RUNB | Run-length value B, represents a 1 bit
-| ... | | Symbol stack values + 1
-| Number of symbols - 1 | EOB | end-of_block
+| Offset | Size | Value | Description
+| 0.0 | 2 bits | | Number of filter flags, where 0 represents 1 filter flag
+| 0.2 | 4 bits | 0 | [yellow-background]*Unknown (reserved)*
+| 0.6 | 1 bit | | Has compressed size
+| 0.7 | 1 bit | | Has uncompressed size
 |===
-
-The run-length values are used to encode one or more 0-byte values.
-
-....
-number of 0-byte values = ( ( 1 << number of run-length values ) | bit representation of run-length values ) - 1
-....
-
-The first run-length value is the least-significant bit (LSB) of the bit
-representation and the last the most-significant bit (MSB).
-
-==== Selectors
-
-BZip2 uses a Huffman tree selector for every group of 50 symbols.
-
-The selectors are stored Huffman and move-to-front (MTF) encoded.
-
-==== Huffman trees
-
-BZip2 can use upto 6 Huffman trees.
-
-The selectors are stored Huffman encoded.
-
-==== Block data
-
-Block data is stored using multiple encodings:
-
-* Huffman encoded using selectors to determine which Huffmann tree to use
-* Run-length symbol encoding (RLE2)
-* Move-to-front (MTF) encoding
-* Burrows-Wheeler transform (BWT) encoding
-* Run-length string encoding (RLE1)
-
-=== [[checksum]]Checksum
-
-Contains a CRC-32 with a polynomial of 79764919 (0x04c11db7)
-
-The checksum algorithm must account for the BZip bit ordering.
 
 :numbered!:
 [appendix]
@@ -219,10 +149,11 @@ The checksum algorithm must account for the BZip bit ordering.
 
 [cols="1,5",options="header"]
 |===
-| Title: | BZIP2: Format Specification
-| Author: | Joe Tsai ⟨joetsai@digital-static.net⟩
-| Date: | 2016-03-17
-| URL: | https://github.com/dsnet/compress/blob/master/doc/bzip2-format.pdf
+| Title: | The .xz File Format
+| Author(s): | Lasse Collin and Igor Pavlov
+| Version: | Version 1.0.4
+| Date: | August 27, 2009
+| URL: | https://tukaani.org/xz/xz-file-format.txt
 |===
 
 [appendix]

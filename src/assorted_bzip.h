@@ -56,6 +56,7 @@ int assorted_bzip_reverse_burrows_wheeler_transform(
 int assorted_bzip_read_stream_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
+     size_t *compressed_data_offset,
      uint8_t *compression_level,
      libcerror_error_t **error );
 

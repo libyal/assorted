@@ -31,6 +31,24 @@
 extern "C" {
 #endif
 
+int assorted_lzma_read_stream_header(
+     const uint8_t *compressed_data,
+     size_t compressed_data_size,
+     size_t *compressed_data_offset,
+     libcerror_error_t **error );
+
+int assorted_lzma_read_block_header(
+     const uint8_t *compressed_data,
+     size_t compressed_data_size,
+     size_t *compressed_data_offset,
+     libcerror_error_t **error );
+
+int assorted_lzma_read_stream_footer(
+     const uint8_t *compressed_data,
+     size_t compressed_data_size,
+     size_t *compressed_data_offset,
+     libcerror_error_t **error );
+
 int assorted_lzma_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,

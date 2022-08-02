@@ -358,11 +358,13 @@ int assorted_bzip_reverse_burrows_wheeler_transform(
 int assorted_bzip_read_stream_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
+     size_t *compressed_data_offset,
      uint8_t *compression_level,
      libcerror_error_t **error )
 {
-	static char *function          = "assorted_bzip_read_stream_header";
-	uint8_t safe_compression_level = 0;
+	static char *function              = "assorted_bzip_read_stream_header";
+	size_t safe_compressed_data_offset = 0;
+	uint8_t safe_compression_level     = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -387,6 +389,30 @@ int assorted_bzip_read_stream_header(
 
 		return( -1 );
 	}
+	if( compressed_data_offset == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid compressed data offset.",
+		 function );
+
+		return( -1 );
+	}
+	safe_compressed_data_offset = *compressed_data_offset;
+
+	if( safe_compressed_data_offset > ( compressed_data_size - 4 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: invalid compressed data value too small.",
+		 function );
+
+		return( -1 );
+	}
 	if( compression_level == NULL )
 	{
 		libcerror_error_set(
@@ -405,13 +431,13 @@ int assorted_bzip_read_stream_header(
 		 "%s: stream header data:\n",
 		 function );
 		libcnotify_print_data(
-		 compressed_data,
+		 &( compressed_data[ safe_compressed_data_offset ] ),
 		 4,
 		 0 );
 	}
 #endif
-	if( ( compressed_data[ 0 ] != 'B' )
-	 || ( compressed_data[ 1 ] != 'Z' ) )
+	if( ( compressed_data[ safe_compressed_data_offset + 0 ] != 'B' )
+	 || ( compressed_data[ safe_compressed_data_offset + 1 ] != 'Z' ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -422,7 +448,7 @@ int assorted_bzip_read_stream_header(
 
 		return( -1 );
 	}
-	safe_compression_level = compressed_data[ 3 ];
+	safe_compression_level = compressed_data[ safe_compressed_data_offset + 3 ];
 
 	if( ( safe_compression_level < '1' )
 	 || ( safe_compression_level > '9' ) )
@@ -444,13 +470,13 @@ int assorted_bzip_read_stream_header(
 		libcnotify_printf(
 		 "%s: signature\t\t\t\t: %c%c\n",
 		 function,
-		 compressed_data[ 0 ],
-		 compressed_data[ 1 ] );
+		 compressed_data[ safe_compressed_data_offset + 0 ],
+		 compressed_data[ safe_compressed_data_offset + 1 ] );
 
 		libcnotify_printf(
 		 "%s: format version\t\t\t\t: 0x%02" PRIx8 "\n",
 		 function,
-		 compressed_data[ 2 ] );
+		 compressed_data[ safe_compressed_data_offset + 2 ] );
 
 		libcnotify_printf(
 		 "%s: compression level\t\t\t: %" PRIu8 "\n",
@@ -462,7 +488,7 @@ int assorted_bzip_read_stream_header(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-	if( compressed_data[ 2 ] != 0x68 )
+	if( compressed_data[ safe_compressed_data_offset + 2 ] != 0x68 )
 	{
 		libcerror_error_set(
 		 error,
@@ -473,7 +499,8 @@ int assorted_bzip_read_stream_header(
 
 		return( -1 );
 	}
-	*compression_level = safe_compression_level;
+	*compressed_data_offset = safe_compressed_data_offset + 4;
+	*compression_level      = safe_compression_level;
 
 	return( 1 );
 }
@@ -1592,6 +1619,7 @@ int assorted_bzip_decompress(
 	if( assorted_bzip_read_stream_header(
 	     compressed_data,
 	     compressed_data_size,
+	     &compressed_data_offset,
 	     &compression_level,
 	     error ) != 1 )
 	{
@@ -1604,8 +1632,6 @@ int assorted_bzip_decompress(
 
 		goto on_error;
 	}
-	compressed_data_offset += 4;
-
 	if( compressed_data_offset > ( compressed_data_size - 10 ) )
 	{
 		libcerror_error_set(

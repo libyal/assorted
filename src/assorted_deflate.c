@@ -1152,13 +1152,14 @@ int assorted_deflate_read_data_header(
 
 		return( -1 );
 	}
-	if( compressed_data_size > (size_t) SSIZE_MAX )
+	if( ( compressed_data_size < 2 )
+	 || ( compressed_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid compressed data size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid compressed data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -1176,8 +1177,7 @@ int assorted_deflate_read_data_header(
 	}
 	safe_compressed_data_offset = *compressed_data_offset;
 
-	if( ( compressed_data_size < 2 )
-	 || ( safe_compressed_data_offset > ( compressed_data_size - 2 ) ) )
+	if( safe_compressed_data_offset > ( compressed_data_size - 2 ) )
 	{
 		libcerror_error_set(
 		 error,

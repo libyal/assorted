@@ -286,15 +286,19 @@ on_error:
 int assorted_test_bzip_read_stream_header(
      void )
 {
-	libcerror_error_t *error  = NULL;
-	uint8_t compression_level = 0;
-	int result                = 0;
+	libcerror_error_t *error      = NULL;
+	size_t compressed_data_offset = 0;
+	uint8_t compression_level     = 0;
+	int result                    = 0;
 
 	/* Test regular cases
 	 */
+	compressed_data_offset = 0;
+
 	result = assorted_bzip_read_stream_header(
 	          assorted_test_bzip_compressed_data,
 	          125,
+	          &compressed_data_offset,
 	          &compression_level,
 	          &error );
 
@@ -314,10 +318,70 @@ int assorted_test_bzip_read_stream_header(
 
 	/* Test error cases
 	 */
+	compressed_data_offset = 0;
+
 	result = assorted_bzip_read_stream_header(
 	          NULL,
 	          125,
+	          &compressed_data_offset,
 	          &compression_level,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = assorted_bzip_read_stream_header(
+	          assorted_test_bzip_compressed_data,
+	          (size_t) SSIZE_MAX + 1,
+	          &compressed_data_offset,
+	          &compression_level,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = assorted_bzip_read_stream_header(
+	          assorted_test_bzip_compressed_data,
+	          125,
+	          NULL,
+	          &compression_level,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = assorted_bzip_read_stream_header(
+	          assorted_test_bzip_compressed_data,
+	          125,
+	          &compressed_data_offset,
+	          NULL,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
