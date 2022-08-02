@@ -26,8 +26,8 @@
 #include <types.h>
 
 #include "assorted_bit_stream.h"
+#include "assorted_huffman_tree.h"
 #include "assorted_libcerror.h"
-#include "huffman_tree.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -45,19 +45,19 @@ enum ASSORTED_DEFLATE_BLOCK_TYPES
 
 int assorted_deflate_build_dynamic_huffman_trees(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t *literals_huffman_tree,
-     huffman_tree_t *distances_huffman_tree,
+     assorted_huffman_tree_t *literals_huffman_tree,
+     assorted_huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error );
 
 int assorted_deflate_build_fixed_huffman_trees(
-     huffman_tree_t *literals_huffman_tree,
-     huffman_tree_t *distances_huffman_tree,
+     assorted_huffman_tree_t *literals_huffman_tree,
+     assorted_huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error );
 
 int assorted_deflate_decode_huffman(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t *literals_huffman_tree,
-     huffman_tree_t *distances_huffman_tree,
+     assorted_huffman_tree_t *literals_huffman_tree,
+     assorted_huffman_tree_t *distances_huffman_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
@@ -93,8 +93,8 @@ int assorted_deflate_read_block_header(
 int assorted_deflate_read_block(
      assorted_bit_stream_t *bit_stream,
      uint8_t block_type,
-     huffman_tree_t *literals_huffman_tree,
-     huffman_tree_t *distances_huffman_tree,
+     assorted_huffman_tree_t *literals_huffman_tree,
+     assorted_huffman_tree_t *distances_huffman_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,

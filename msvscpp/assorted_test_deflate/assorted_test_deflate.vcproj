@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_deflate"
-	ProjectGUID="{5A1D3F05-E765-46EB-95DA-A667C17CB86C}"
+	ProjectGUID="{81B301E9-C817-4666-81A9-B37ADF6E9295}"
 	RootNamespace="assorted_test_deflate"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -184,7 +184,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.c"
+				RelativePath="..\..\src\assorted_huffman_tree.c"
 				>
 			</File>
 			<File
@@ -206,7 +206,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.h"
+				RelativePath="..\..\src\assorted_huffman_tree.h"
 				>
 			</File>
 			<File

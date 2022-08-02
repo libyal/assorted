@@ -24,21 +24,21 @@
 #include <types.h>
 
 #include "assorted_bit_stream.h"
+#include "assorted_huffman_tree.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "huffman_tree.h"
 
 /* Creates a Huffman tree
- * Make sure the value huffman_tree is referencing, is set to NULL
+ * Make sure the value assorted_huffman_tree is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
-int huffman_tree_initialize(
-     huffman_tree_t **huffman_tree,
+int assorted_huffman_tree_initialize(
+     assorted_huffman_tree_t **huffman_tree,
      int number_of_symbols,
      uint8_t maximum_code_size,
      libcerror_error_t **error )
 {
-	static char *function = "huffman_tree_initialize";
+	static char *function = "assorted_huffman_tree_initialize";
 	size_t array_size     = 0;
 
 	if( huffman_tree == NULL )
@@ -87,7 +87,7 @@ int huffman_tree_initialize(
 		return( -1 );
 	}
 	*huffman_tree = memory_allocate_structure(
-	                 huffman_tree_t );
+	                 assorted_huffman_tree_t );
 
 	if( *huffman_tree == NULL )
 	{
@@ -103,7 +103,7 @@ int huffman_tree_initialize(
 	if( memory_set(
 	     *huffman_tree,
 	     0,
-	     sizeof( huffman_tree_t ) ) == NULL )
+	     sizeof( assorted_huffman_tree_t ) ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -207,11 +207,11 @@ on_error:
 /* Frees a Huffman tree
  * Returns 1 if successful or -1 on error
  */
-int huffman_tree_free(
-     huffman_tree_t **huffman_tree,
+int assorted_huffman_tree_free(
+     assorted_huffman_tree_t **huffman_tree,
      libcerror_error_t **error )
 {
-	static char *function = "huffman_tree_free";
+	static char *function = "assorted_huffman_tree_free";
 
 	if( huffman_tree == NULL )
 	{
@@ -247,14 +247,14 @@ int huffman_tree_free(
 /* Builds the Huffman tree
  * Returns 1 on success, 0 if the tree is empty or -1 on error
  */
-int huffman_tree_build(
-     huffman_tree_t *huffman_tree,
+int assorted_huffman_tree_build(
+     assorted_huffman_tree_t *huffman_tree,
      const uint8_t *code_sizes_array,
      int number_of_code_sizes,
      libcerror_error_t **error )
 {
 	int *symbol_offsets   = NULL;
-	static char *function = "huffman_tree_build";
+	static char *function = "assorted_huffman_tree_build";
 	size_t array_size     = 0;
 	uint16_t symbol       = 0;
 	uint8_t bit_index     = 0;
@@ -451,13 +451,13 @@ on_error:
 /* Retrieves a symbol based on the Huffman code read from the bit-stream
  * Returns 1 on success or -1 on error
  */
-int huffman_tree_get_symbol_from_bit_stream(
-     huffman_tree_t *huffman_tree,
+int assorted_huffman_tree_get_symbol_from_bit_stream(
+     assorted_huffman_tree_t *huffman_tree,
      assorted_bit_stream_t *bit_stream,
      uint16_t *symbol,
      libcerror_error_t **error )
 {
-	static char *function  = "huffman_tree_get_symbol_from_bit_stream";
+	static char *function  = "assorted_huffman_tree_get_symbol_from_bit_stream";
 	uint32_t value_32bit   = 0;
 	uint16_t safe_symbol   = 0;
 	uint8_t bit_index      = 0;

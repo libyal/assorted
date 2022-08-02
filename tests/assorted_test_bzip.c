@@ -35,7 +35,7 @@
 
 #include "../src/assorted_bit_stream.h"
 #include "../src/assorted_bzip.h"
-#include "../src/huffman_tree.h"
+#include "../src/assorted_huffman_tree.h"
 
 /* Define to make assorted_test_bzip generate verbose output
 #define ASSORTED_TEST_BZIP_VERBOSE
@@ -1040,17 +1040,17 @@ int assorted_test_bzip_read_huffman_tree(
 	uint8_t symbol_stack[ 256 ];
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
 
-	assorted_bit_stream_t *bit_stream = NULL;
-	huffman_tree_t *huffman_tree      = NULL;
-	libcerror_error_t *error          = NULL;
-	void *memset_result               = NULL;
-	uint64_t signature                = 0;
-	uint32_t origin_pointer           = 0;
-	uint32_t value_32bit              = 0;
-	uint16_t number_of_selectors      = 0;
-	uint16_t number_of_symbols        = 0;
-	uint8_t number_of_trees           = 0;
-	int result                        = 0;
+	assorted_bit_stream_t *bit_stream     = NULL;
+	assorted_huffman_tree_t *huffman_tree = NULL;
+	libcerror_error_t *error              = NULL;
+	void *memset_result                   = NULL;
+	uint64_t signature                    = 0;
+	uint32_t origin_pointer               = 0;
+	uint32_t value_32bit                  = 0;
+	uint16_t number_of_selectors          = 0;
+	uint16_t number_of_symbols            = 0;
+	uint8_t number_of_trees               = 0;
+	int result                            = 0;
 
 	/* Initialize test
 	 */
@@ -1188,7 +1188,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &huffman_tree,
 	          number_of_symbols,
 	          20,
@@ -1246,7 +1246,7 @@ int assorted_test_bzip_read_huffman_tree(
 
 	/* Clean up
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &huffman_tree,
 	          &error );
 
@@ -1285,7 +1285,7 @@ int assorted_test_bzip_read_huffman_tree(
 on_error:
 	if( huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &huffman_tree,
 		 NULL );
 	}
@@ -1307,18 +1307,18 @@ int assorted_test_bzip_read_huffman_trees(
 	uint8_t symbol_stack[ 256 ];
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
 
-	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-	assorted_bit_stream_t *bit_stream  = NULL;
-	libcerror_error_t *error           = NULL;
-	void *memset_result                = NULL;
-	uint64_t signature                 = 0;
-	uint32_t origin_pointer            = 0;
-	uint32_t value_32bit               = 0;
-	uint16_t number_of_selectors       = 0;
-	uint16_t number_of_symbols         = 0;
-	uint8_t number_of_trees            = 0;
-	uint8_t tree_index                 = 0;
-	int result                         = 0;
+	assorted_huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+	assorted_bit_stream_t *bit_stream           = NULL;
+	libcerror_error_t *error                    = NULL;
+	void *memset_result                         = NULL;
+	uint64_t signature                          = 0;
+	uint32_t origin_pointer                     = 0;
+	uint32_t value_32bit                        = 0;
+	uint16_t number_of_selectors                = 0;
+	uint16_t number_of_symbols                  = 0;
+	uint8_t number_of_trees                     = 0;
+	uint8_t tree_index                          = 0;
+	int result                                  = 0;
 
 	/* Initialize test
 	 */
@@ -1501,7 +1501,7 @@ int assorted_test_bzip_read_huffman_trees(
 	     tree_index < number_of_trees;
 	     tree_index++ )
 	{
-		result = huffman_tree_free(
+		result = assorted_huffman_tree_free(
 		          &( huffman_trees[ tree_index ] ),
 		          &error );
 
@@ -1542,7 +1542,7 @@ on_error:
 	     tree_index < number_of_trees;
 	     tree_index++ )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &( huffman_trees[ tree_index ] ),
 		 NULL );
 	}
@@ -1574,19 +1574,19 @@ int assorted_test_bzip_read_block_data(
 		0x20, 0x20, 0x20, 0x20, 0x69, 0x69, 0x70, 0x70, 0x20, 0x20, 0x20, 0x20, 0x65, 0x65, 0x65, 0x65,
 		0x65, 0x65, 0x65, 0x65, 0x65, 0x72, 0x27, 0x72, 0x65, 0x65, 0x20, 0x20 };
 
-	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-	assorted_bit_stream_t *bit_stream  = NULL;
-	libcerror_error_t *error           = NULL;
-	void *memset_result                = NULL;
-	size_t block_data_size             = 0;
-	uint64_t signature                 = 0;
-	uint32_t origin_pointer            = 0;
-	uint32_t value_32bit               = 0;
-	uint16_t number_of_selectors       = 0;
-	uint16_t number_of_symbols         = 0;
-	uint8_t number_of_trees            = 0;
-	uint8_t tree_index                 = 0;
-	int result                         = 0;
+	assorted_huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+	assorted_bit_stream_t *bit_stream           = NULL;
+	libcerror_error_t *error                    = NULL;
+	void *memset_result                         = NULL;
+	size_t block_data_size                      = 0;
+	uint64_t signature                          = 0;
+	uint32_t origin_pointer                     = 0;
+	uint32_t value_32bit                        = 0;
+	uint16_t number_of_selectors                = 0;
+	uint16_t number_of_symbols                  = 0;
+	uint8_t number_of_trees                     = 0;
+	uint8_t tree_index                          = 0;
+	int result                                  = 0;
 
 	/* Initialize test
 	 */
@@ -1812,7 +1812,7 @@ int assorted_test_bzip_read_block_data(
 	     tree_index < number_of_trees;
 	     tree_index++ )
 	{
-		result = huffman_tree_free(
+		result = assorted_huffman_tree_free(
 		          &( huffman_trees[ tree_index ] ),
 		          &error );
 
@@ -1853,7 +1853,7 @@ on_error:
 	     tree_index < number_of_trees;
 	     tree_index++ )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &( huffman_trees[ tree_index ] ),
 		 NULL );
 	}

@@ -131,14 +131,14 @@ bz2decompress_SOURCES = \
 	assorted_bit_stream.c assorted_bit_stream.h \
 	assorted_bzip.c assorted_bzip.h \
 	assorted_getopt.c assorted_getopt.h \
+	assorted_huffman_tree.c assorted_huffman_tree.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h \
-	bz2decompress.c \
-	huffman_tree.c huffman_tree.h
+	bz2decompress.c
 
 bz2decompress_LDADD = \
 	@LIBCFILE_LIBADD@ \
@@ -242,8 +242,9 @@ lzfudecompress_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
+	assorted_lzfu.c assorted_lzfu.h \
 	assorted_output.c assorted_output.h \
-	lzfu.c lzfu.h \
+	assorted_system_string.h \
 	lzfudecompress.c
 
 lzfudecompress_LDADD = \
@@ -537,12 +538,12 @@ zcompress_SOURCES = \
 	assorted_bit_stream.c assorted_bit_stream.h \
 	assorted_deflate.c assorted_deflate.h \
 	assorted_getopt.c assorted_getopt.h \
+	assorted_huffman_tree.c assorted_huffman_tree.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	huffman_tree.c huffman_tree.h \
 	zcompress.c
 
 zcompress_LDADD = \
@@ -557,13 +558,13 @@ zdecompress_SOURCES = \
 	assorted_bit_stream.c assorted_bit_stream.h \
 	assorted_deflate.c assorted_deflate.h \
 	assorted_getopt.c assorted_getopt.h \
+	assorted_huffman_tree.c assorted_huffman_tree.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h \
-	huffman_tree.c huffman_tree.h \
 	zdecompress.c
 
 zdecompress_LDADD = \

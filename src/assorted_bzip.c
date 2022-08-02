@@ -25,9 +25,9 @@
 
 #include "assorted_bit_stream.h"
 #include "assorted_bzip.h"
+#include "assorted_huffman_tree.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "huffman_tree.h"
 
 #define BLOCK_DATA_SIZE 8192
 
@@ -939,7 +939,7 @@ int assorted_bzip_read_selectors(
  */
 int assorted_bzip_read_huffman_tree(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t *huffman_tree,
+     assorted_huffman_tree_t *huffman_tree,
      uint16_t number_of_symbols,
      libcerror_error_t **error )
 {
@@ -1085,7 +1085,7 @@ int assorted_bzip_read_huffman_tree(
 		return( -1 );
 	}
 /* TODO build tree inside fill array loop ? */
-	if( huffman_tree_build(
+	if( assorted_huffman_tree_build(
 	     huffman_tree,
 	     code_size_array,
 	     number_of_symbols,
@@ -1108,14 +1108,14 @@ int assorted_bzip_read_huffman_tree(
  */
 int assorted_bzip_read_huffman_trees(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t **huffman_trees,
+     assorted_huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint16_t number_of_symbols,
      libcerror_error_t **error )
 {
-	huffman_tree_t *huffman_tree = NULL;
-	static char *function        = "assorted_bzip_read_huffman_trees";
-	uint8_t tree_index           = 0;
+	assorted_huffman_tree_t *huffman_tree = NULL;
+	static char *function                 = "assorted_bzip_read_huffman_trees";
+	uint8_t tree_index                    = 0;
 
 	if( huffman_trees == NULL )
 	{
@@ -1141,7 +1141,7 @@ int assorted_bzip_read_huffman_trees(
 			 tree_index );
 		}
 #endif
-		if( huffman_tree_initialize(
+		if( assorted_huffman_tree_initialize(
 		     &huffman_tree,
 		     number_of_symbols,
 		     20,
@@ -1181,7 +1181,7 @@ int assorted_bzip_read_huffman_trees(
 on_error:
 	if( huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &huffman_tree,
 		 NULL );
 	}
@@ -1193,7 +1193,7 @@ on_error:
  */
 int assorted_bzip_read_block_data(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t **huffman_trees,
+     assorted_huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint8_t *selectors,
      uint16_t number_of_selectors,
@@ -1303,7 +1303,7 @@ int assorted_bzip_read_block_data(
 
 	do
 	{
-		if( huffman_tree_get_symbol_from_bit_stream(
+		if( assorted_huffman_tree_get_symbol_from_bit_stream(
 		     huffman_trees[ tree_index ],
 		     bit_stream,
 		     &symbol,
@@ -1557,27 +1557,27 @@ int assorted_bzip_decompress(
 	uint8_t selectors[ ( 1 << 15 ) + 1 ];
 	size_t permutations[ BLOCK_DATA_SIZE ];
 
-	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+	assorted_huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-	assorted_bit_stream_t *bit_stream  = NULL;
-	static char *function              = "assorted_bzip_decompress";
-	size_t block_data_size             = 0;
-	size_t compressed_data_offset      = 0;
-	size_t safe_uncompressed_data_size = 0;
-	size_t uncompressed_data_offset    = 0;
-	uint64_t signature                 = 0;
-	uint32_t calculated_checksum       = 0;
-	uint32_t origin_pointer            = 0;
-	uint32_t stored_checksum           = 0;
-	uint32_t value_32bit               = 0;
-	uint16_t number_of_selectors       = 0;
-	uint16_t number_of_symbols         = 0;
-	uint8_t compression_level          = 0;
-	uint8_t number_of_trees            = 0;
-	uint8_t tree_index                 = 0;
+	assorted_bit_stream_t *bit_stream           = NULL;
+	static char *function                       = "assorted_bzip_decompress";
+	size_t block_data_size                      = 0;
+	size_t compressed_data_offset               = 0;
+	size_t safe_uncompressed_data_size          = 0;
+	size_t uncompressed_data_offset             = 0;
+	uint64_t signature                          = 0;
+	uint32_t calculated_checksum                = 0;
+	uint32_t origin_pointer                     = 0;
+	uint32_t stored_checksum                    = 0;
+	uint32_t value_32bit                        = 0;
+	uint16_t number_of_selectors                = 0;
+	uint16_t number_of_symbols                  = 0;
+	uint8_t compression_level                   = 0;
+	uint8_t number_of_trees                     = 0;
+	uint8_t tree_index                          = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	size_t block_data_offset           = 0;
+	size_t block_data_offset                    = 0;
 #endif
 
 	if( compressed_data == NULL )
@@ -1882,7 +1882,7 @@ int assorted_bzip_decompress(
 		     tree_index < number_of_trees;
 		     tree_index++ )
 		{
-			if( huffman_tree_free(
+			if( assorted_huffman_tree_free(
 			     &( huffman_trees[ tree_index ] ),
 			     error ) != 1 )
 			{

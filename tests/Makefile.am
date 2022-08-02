@@ -96,7 +96,7 @@ assorted_test_bit_stream_LDADD = \
 assorted_test_bzip_SOURCES = \
 	../src/assorted_bit_stream.c ../src/assorted_bit_stream.h \
 	../src/assorted_bzip.c ../src/assorted_bzip.h \
-	../src/huffman_tree.c ../src/huffman_tree.h \
+	../src/assorted_huffman_tree.c ../src/assorted_huffman_tree.h \
 	assorted_test_bzip.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -134,7 +134,7 @@ assorted_test_crc64_LDADD = \
 assorted_test_deflate_SOURCES = \
 	../src/assorted_bit_stream.c ../src/assorted_bit_stream.h \
 	../src/assorted_deflate.c ../src/assorted_deflate.h \
-	../src/huffman_tree.c ../src/huffman_tree.h \
+	../src/assorted_huffman_tree.c ../src/assorted_huffman_tree.h \
 	assorted_test_deflate.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -171,7 +171,7 @@ assorted_test_fletcher64_LDADD = \
 
 assorted_test_huffman_tree_SOURCES = \
 	../src/assorted_bit_stream.c ../src/assorted_bit_stream.h \
-	../src/huffman_tree.c ../src/huffman_tree.h \
+	../src/assorted_huffman_tree.c ../src/assorted_huffman_tree.h \
 	assorted_test_huffman_tree.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -198,7 +198,7 @@ assorted_test_lzfse_LDADD = \
 
 assorted_test_lzfu_SOURCES = \
 	../src/assorted_crc32.c ../src/assorted_crc32.h \
-	../src/lzfu.c ../src/lzfu.h \
+	../src/assorted_lzfu.c ../src/assorted_lzfu.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
 	assorted_test_lzfu.c \

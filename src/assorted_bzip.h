@@ -19,15 +19,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _ASSORTED_ASSORTED_BZIP_COMPRESSION_H )
+#if !defined( _ASSORTED_BZIP_COMPRESSION_H )
 #define _ASSORTED_BZIP_COMPRESSION_H
 
 #include <common.h>
 #include <types.h>
 
 #include "assorted_bit_stream.h"
+#include "assorted_huffman_tree.h"
 #include "assorted_libcerror.h"
-#include "huffman_tree.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -86,13 +86,13 @@ int assorted_bzip_read_selectors(
 
 int assorted_bzip_read_huffman_tree(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t *huffman_tree,
+     assorted_huffman_tree_t *huffman_tree,
      uint16_t number_of_symbols,
      libcerror_error_t **error );
 
 int assorted_bzip_read_huffman_trees(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t **huffman_trees,
+     assorted_huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint16_t number_of_symbols,
      libcerror_error_t **error );
@@ -104,7 +104,7 @@ int assorted_bzip_read_symbol(
 
 int assorted_bzip_read_block_data(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t **huffman_trees,
+     assorted_huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint8_t *selectors,
      uint16_t number_of_selectors,

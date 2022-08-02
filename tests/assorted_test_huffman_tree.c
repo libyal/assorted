@@ -35,7 +35,7 @@
 #include "assorted_test_unused.h"
 
 #include "../src/assorted_bit_stream.h"
-#include "../src/huffman_tree.h"
+#include "../src/assorted_huffman_tree.h"
 
 /* Define to make assorted_test_huffman_tree generate verbose output
 #define ASSORTED_TEST_HUFFMAN_TREE_VERBOSE
@@ -210,25 +210,25 @@ uint8_t assorted_test_huffman_tree_data[ 2627 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the huffman_tree_initialize function
+/* Tests the assorted_huffman_tree_initialize function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_huffman_tree_initialize(
      void )
 {
-	libcerror_error_t *error        = NULL;
-	huffman_tree_t *huffman_tree    = NULL;
-	int result                      = 0;
+	libcerror_error_t *error              = NULL;
+	assorted_huffman_tree_t *huffman_tree = NULL;
+	int result                            = 0;
 
 #if defined( HAVE_ASSORTED_TEST_MEMORY )
-	int number_of_malloc_fail_tests = 1;
-	int number_of_memset_fail_tests = 1;
-	int test_number                 = 0;
+	int number_of_malloc_fail_tests       = 1;
+	int number_of_memset_fail_tests       = 1;
+	int test_number                       = 0;
 #endif
 
 	/* Test regular cases
 	 */
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &huffman_tree,
 	          288,
 	          15,
@@ -247,7 +247,7 @@ int assorted_test_huffman_tree_initialize(
 	 "error",
 	 error );
 
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &huffman_tree,
 	          &error );
 
@@ -266,7 +266,7 @@ int assorted_test_huffman_tree_initialize(
 
 	/* Test error cases
 	 */
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          NULL,
 	          288,
 	          15,
@@ -284,9 +284,9 @@ int assorted_test_huffman_tree_initialize(
 	libcerror_error_free(
 	 &error );
 
-	huffman_tree = (huffman_tree_t *) 0x12345678UL;
+	huffman_tree = (assorted_huffman_tree_t *) 0x12345678UL;
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &huffman_tree,
 	          288,
 	          15,
@@ -312,11 +312,11 @@ int assorted_test_huffman_tree_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test huffman_tree_initialize with malloc failing
+		/* Test assorted_huffman_tree_initialize with malloc failing
 		 */
 		assorted_test_malloc_attempts_before_fail = test_number;
 
-		result = huffman_tree_initialize(
+		result = assorted_huffman_tree_initialize(
 		          &huffman_tree,
 		          288,
 		          15,
@@ -328,7 +328,7 @@ int assorted_test_huffman_tree_initialize(
 
 			if( huffman_tree != NULL )
 			{
-				huffman_tree_free(
+				assorted_huffman_tree_free(
 				 &huffman_tree,
 				 NULL );
 			}
@@ -356,11 +356,11 @@ int assorted_test_huffman_tree_initialize(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test huffman_tree_initialize with memset failing
+		/* Test assorted_huffman_tree_initialize with memset failing
 		 */
 		assorted_test_memset_attempts_before_fail = test_number;
 
-		result = huffman_tree_initialize(
+		result = assorted_huffman_tree_initialize(
 		          &huffman_tree,
 		          288,
 		          15,
@@ -372,7 +372,7 @@ int assorted_test_huffman_tree_initialize(
 
 			if( huffman_tree != NULL )
 			{
-				huffman_tree_free(
+				assorted_huffman_tree_free(
 				 &huffman_tree,
 				 NULL );
 			}
@@ -408,14 +408,14 @@ on_error:
 	}
 	if( huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &huffman_tree,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the huffman_tree_free function
+/* Tests the assorted_huffman_tree_free function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_huffman_tree_free(
@@ -426,7 +426,7 @@ int assorted_test_huffman_tree_free(
 
 	/* Test error cases
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          NULL,
 	          &error );
 
@@ -453,7 +453,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the huffman_tree_build function
+/* Tests the assorted_huffman_tree_build function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_huffman_tree_build(
@@ -461,10 +461,10 @@ int assorted_test_huffman_tree_build(
 {
 	uint8_t code_size_array[ 318 ];
 
-	huffman_tree_t *huffman_tree = NULL;
-	libcerror_error_t *error     = NULL;
-	uint16_t symbol              = 0;
-	int result                   = 0;
+	assorted_huffman_tree_t *huffman_tree = NULL;
+	libcerror_error_t *error              = NULL;
+	uint16_t symbol                       = 0;
+	int result                            = 0;
 
 	/* Initialize test
 	 */
@@ -493,7 +493,7 @@ int assorted_test_huffman_tree_build(
 			code_size_array[ symbol ] = 5;
 		}
 	}
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &huffman_tree,
 	          288,
 	          15,
@@ -514,7 +514,7 @@ int assorted_test_huffman_tree_build(
 
 	/* Test regular cases
 	 */
-	result = huffman_tree_build(
+	result = assorted_huffman_tree_build(
 	          huffman_tree,
 	          code_size_array,
 	          288,
@@ -531,7 +531,7 @@ int assorted_test_huffman_tree_build(
 
 	/* Test error cases
 	 */
-	result = huffman_tree_build(
+	result = assorted_huffman_tree_build(
 	          NULL,
 	          code_size_array,
 	          288,
@@ -549,7 +549,7 @@ int assorted_test_huffman_tree_build(
 	libcerror_error_free(
 	 &error );
 
-	result = huffman_tree_build(
+	result = assorted_huffman_tree_build(
 	          huffman_tree,
 	          NULL,
 	          288,
@@ -567,7 +567,7 @@ int assorted_test_huffman_tree_build(
 	libcerror_error_free(
 	 &error );
 
-	result = huffman_tree_build(
+	result = assorted_huffman_tree_build(
 	          huffman_tree,
 	          code_size_array,
 	          -1,
@@ -587,11 +587,11 @@ int assorted_test_huffman_tree_build(
 
 #if defined( HAVE_ASSORTED_TEST_MEMORY )
 
-	/* Test huffman_tree_build with malloc failing
+	/* Test assorted_huffman_tree_build with malloc failing
 	 */
 	assorted_test_malloc_attempts_before_fail = 0;
 
-	result = huffman_tree_build(
+	result = assorted_huffman_tree_build(
 	          huffman_tree,
 	          code_size_array,
 	          288,
@@ -617,11 +617,11 @@ int assorted_test_huffman_tree_build(
 	}
 #if defined( OPTIMIZATION_DISABLED )
 
-	/* Test huffman_tree_build with memset failing
+	/* Test assorted_huffman_tree_build with memset failing
 	 */
 	assorted_test_memset_attempts_before_fail = 0;
 
-	result = huffman_tree_build(
+	result = assorted_huffman_tree_build(
 	          huffman_tree,
 	          code_size_array,
 	          288,
@@ -652,7 +652,7 @@ int assorted_test_huffman_tree_build(
 
 	/* Clean up
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &huffman_tree,
 	          &error );
 
@@ -674,14 +674,14 @@ int assorted_test_huffman_tree_build(
 on_error:
 	if( huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &huffman_tree,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the huffman_tree_get_symbol_from_bit_stream function
+/* Tests the assorted_huffman_tree_get_symbol_from_bit_stream function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_huffman_tree_get_symbol_from_bit_stream(
@@ -689,11 +689,11 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 {
 	uint8_t code_size_array[ 318 ];
 
-	assorted_bit_stream_t *bit_stream = NULL;
-	huffman_tree_t *huffman_tree      = NULL;
-	libcerror_error_t *error          = NULL;
-	uint16_t symbol                   = 0;
-	int result                        = 0;
+	assorted_bit_stream_t *bit_stream     = NULL;
+	assorted_huffman_tree_t *huffman_tree = NULL;
+	libcerror_error_t *error              = NULL;
+	uint16_t symbol                       = 0;
+	int result                            = 0;
 
 	/* Initialize test
 	 */
@@ -743,7 +743,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 			code_size_array[ symbol ] = 5;
 		}
 	}
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &huffman_tree,
 	          288,
 	          15,
@@ -762,7 +762,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	 "error",
 	 error );
 
-	result = huffman_tree_build(
+	result = assorted_huffman_tree_build(
 	          huffman_tree,
 	          code_size_array,
 	          288,
@@ -781,7 +781,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	 */
 	symbol = 0;
 
-	result = huffman_tree_get_symbol_from_bit_stream(
+	result = assorted_huffman_tree_get_symbol_from_bit_stream(
 	          huffman_tree,
 	          bit_stream,
 	          &symbol,
@@ -805,7 +805,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	 */
 	symbol = 0;
 
-	result = huffman_tree_get_symbol_from_bit_stream(
+	result = assorted_huffman_tree_get_symbol_from_bit_stream(
 	          NULL,
 	          bit_stream,
 	          &symbol,
@@ -823,7 +823,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	libcerror_error_free(
 	 &error );
 
-	result = huffman_tree_get_symbol_from_bit_stream(
+	result = assorted_huffman_tree_get_symbol_from_bit_stream(
 	          huffman_tree,
 	          NULL,
 	          &symbol,
@@ -841,7 +841,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 	libcerror_error_free(
 	 &error );
 
-	result = huffman_tree_get_symbol_from_bit_stream(
+	result = assorted_huffman_tree_get_symbol_from_bit_stream(
 	          huffman_tree,
 	          bit_stream,
 	          NULL,
@@ -863,7 +863,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
         bit_stream->byte_stream_offset = 2627;
         bit_stream->bit_buffer_size    = 0;
 
-	result = huffman_tree_get_symbol_from_bit_stream(
+	result = assorted_huffman_tree_get_symbol_from_bit_stream(
 	          huffman_tree,
 	          bit_stream,
 	          &symbol,
@@ -885,7 +885,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 
 	/* Clean up
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &huffman_tree,
 	          &error );
 
@@ -924,7 +924,7 @@ int assorted_test_huffman_tree_get_symbol_from_bit_stream(
 on_error:
 	if( huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &huffman_tree,
 		 NULL );
 	}
@@ -965,19 +965,19 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "huffman_tree_initialize",
+	 "assorted_huffman_tree_initialize",
 	 assorted_test_huffman_tree_initialize );
 
 	ASSORTED_TEST_RUN(
-	 "huffman_tree_free",
+	 "assorted_huffman_tree_free",
 	 assorted_test_huffman_tree_free );
 
 	ASSORTED_TEST_RUN(
-	 "huffman_tree_build",
+	 "assorted_huffman_tree_build",
 	 assorted_test_huffman_tree_build );
 
 	ASSORTED_TEST_RUN(
-	 "huffman_tree_get_symbol_from_bit_stream",
+	 "assorted_huffman_tree_get_symbol_from_bit_stream",
 	 assorted_test_huffman_tree_get_symbol_from_bit_stream );
 
 #endif /* defined( __GNUC__ ) */

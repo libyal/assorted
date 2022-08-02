@@ -35,7 +35,7 @@
 
 #include "../src/assorted_bit_stream.h"
 #include "../src/assorted_deflate.h"
-#include "../src/huffman_tree.h"
+#include "../src/assorted_huffman_tree.h"
 
 /* Define to make assorted_test_deflate generate verbose output
 #define ASSORTED_TEST_DEFLATE_VERBOSE
@@ -696,15 +696,15 @@ uint8_t assorted_test_deflate_uncompressed_data[ 7640 ] = {
 int assorted_test_deflate_build_dynamic_huffman_trees(
      void )
 {
-	assorted_bit_stream_t *bit_stream      = NULL;
-	huffman_tree_t *distances_huffman_tree = NULL;
-	huffman_tree_t *literals_huffman_tree  = NULL;
-	libcerror_error_t *error               = NULL;
-	int result                             = 0;
+	assorted_bit_stream_t *bit_stream               = NULL;
+	assorted_huffman_tree_t *distances_huffman_tree = NULL;
+	assorted_huffman_tree_t *literals_huffman_tree  = NULL;
+	libcerror_error_t *error                        = NULL;
+	int result                                      = 0;
 
 #if defined( HAVE_ASSORTED_TEST_MEMORY )
-	int number_of_memset_fail_tests        = 6;
-	int test_number                        = 0;
+	int number_of_memset_fail_tests                 = 6;
+	int test_number                                 = 0;
 #endif
 
 	/* Initialize test
@@ -730,7 +730,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &literals_huffman_tree,
 	          288,
 	          15,
@@ -749,7 +749,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &distances_huffman_tree,
 	          30,
 	          15,
@@ -866,7 +866,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 
 	/* Clean up
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &distances_huffman_tree,
 	          &error );
 
@@ -883,7 +883,7 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 	 "error",
 	 error );
 
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &literals_huffman_tree,
 	          &error );
 
@@ -922,13 +922,13 @@ int assorted_test_deflate_build_dynamic_huffman_trees(
 on_error:
 	if( distances_huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &distances_huffman_tree,
 		 NULL );
 	}
 	if( literals_huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &literals_huffman_tree,
 		 NULL );
 	}
@@ -947,19 +947,19 @@ on_error:
 int assorted_test_deflate_build_fixed_huffman_trees(
      void )
 {
-	huffman_tree_t *distances_huffman_tree = NULL;
-	huffman_tree_t *literals_huffman_tree  = NULL;
-	libcerror_error_t *error               = NULL;
-	int result                             = 0;
+	assorted_huffman_tree_t *distances_huffman_tree = NULL;
+	assorted_huffman_tree_t *literals_huffman_tree  = NULL;
+	libcerror_error_t *error                        = NULL;
+	int result                                      = 0;
 
 #if defined( HAVE_ASSORTED_TEST_MEMORY )
-	int number_of_memset_fail_tests        = 4;
-	int test_number                        = 0;
+	int number_of_memset_fail_tests                 = 4;
+	int test_number                                 = 0;
 #endif
 
 	/* Initialize test
 	 */
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &literals_huffman_tree,
 	          288,
 	          15,
@@ -978,7 +978,7 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &distances_huffman_tree,
 	          30,
 	          15,
@@ -1087,7 +1087,7 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 
 	/* Clean up
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &distances_huffman_tree,
 	          &error );
 
@@ -1104,7 +1104,7 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 	 "error",
 	 error );
 
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &literals_huffman_tree,
 	          &error );
 
@@ -1126,13 +1126,13 @@ int assorted_test_deflate_build_fixed_huffman_trees(
 on_error:
 	if( distances_huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &distances_huffman_tree,
 		 NULL );
 	}
 	if( literals_huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &literals_huffman_tree,
 		 NULL );
 	}
@@ -1147,12 +1147,12 @@ int assorted_test_deflate_decode_huffman(
 {
 	uint8_t uncompressed_data[ 8192 ];
 
-	assorted_bit_stream_t *bit_stream      = NULL;
-	huffman_tree_t *distances_huffman_tree = NULL;
-	huffman_tree_t *literals_huffman_tree  = NULL;
-	libcerror_error_t *error               = NULL;
-	size_t uncompressed_data_offset        = 0;
-	int result                             = 0;
+	assorted_bit_stream_t *bit_stream               = NULL;
+	assorted_huffman_tree_t *distances_huffman_tree = NULL;
+	assorted_huffman_tree_t *literals_huffman_tree  = NULL;
+	libcerror_error_t *error                        = NULL;
+	size_t uncompressed_data_offset                 = 0;
+	int result                                      = 0;
 
 	/* Initialize test
 	 */
@@ -1177,7 +1177,7 @@ int assorted_test_deflate_decode_huffman(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &literals_huffman_tree,
 	          288,
 	          15,
@@ -1196,7 +1196,7 @@ int assorted_test_deflate_decode_huffman(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &distances_huffman_tree,
 	          30,
 	          15,
@@ -1348,7 +1348,7 @@ int assorted_test_deflate_decode_huffman(
 
 	/* Clean up
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &distances_huffman_tree,
 	          &error );
 
@@ -1365,7 +1365,7 @@ int assorted_test_deflate_decode_huffman(
 	 "error",
 	 error );
 
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &literals_huffman_tree,
 	          &error );
 
@@ -1404,13 +1404,13 @@ int assorted_test_deflate_decode_huffman(
 on_error:
 	if( distances_huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &distances_huffman_tree,
 		 NULL );
 	}
 	if( literals_huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &literals_huffman_tree,
 		 NULL );
 	}
@@ -1715,15 +1715,15 @@ int assorted_test_deflate_read_block(
 {
 	uint8_t uncompressed_data[ 8192 ];
 
-	assorted_bit_stream_t *bit_stream    = NULL;
-	huffman_tree_t *fixed_distances_tree = NULL;
-	huffman_tree_t *fixed_literals_tree  = NULL;
-	libcerror_error_t *error             = NULL;
-	size_t uncompressed_data_offset      = 0;
-	size_t uncompressed_data_size        = 7640;
-	uint8_t block_type                   = 0;
-	uint8_t last_block_flag              = 0;
-	int result                           = 0;
+	assorted_bit_stream_t *bit_stream             = NULL;
+	assorted_huffman_tree_t *fixed_distances_tree = NULL;
+	assorted_huffman_tree_t *fixed_literals_tree  = NULL;
+	libcerror_error_t *error                      = NULL;
+	size_t uncompressed_data_offset               = 0;
+	size_t uncompressed_data_size                 = 7640;
+	uint8_t block_type                            = 0;
+	uint8_t last_block_flag                       = 0;
+	int result                                    = 0;
 
 	/* Initialize test
 	 */
@@ -1748,7 +1748,7 @@ int assorted_test_deflate_read_block(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &fixed_literals_tree,
 	          288,
 	          15,
@@ -1767,7 +1767,7 @@ int assorted_test_deflate_read_block(
 	 "error",
 	 error );
 
-	result = huffman_tree_initialize(
+	result = assorted_huffman_tree_initialize(
 	          &fixed_distances_tree,
 	          30,
 	          15,
@@ -1999,7 +1999,7 @@ int assorted_test_deflate_read_block(
 
 	/* Clean up
 	 */
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &fixed_distances_tree,
 	          &error );
 
@@ -2016,7 +2016,7 @@ int assorted_test_deflate_read_block(
 	 "error",
 	 error );
 
-	result = huffman_tree_free(
+	result = assorted_huffman_tree_free(
 	          &fixed_literals_tree,
 	          &error );
 
@@ -2055,13 +2055,13 @@ int assorted_test_deflate_read_block(
 on_error:
 	if( fixed_distances_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &fixed_distances_tree,
 		 NULL );
 	}
 	if( fixed_literals_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &fixed_literals_tree,
 		 NULL );
 	}

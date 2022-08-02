@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_lzfu"
-	ProjectGUID="{75EB2366-698C-41FF-B704-891EDAD9938E}"
+	ProjectGUID="{BA601AE0-CDED-40CF-A97F-AF2DFC7F536E}"
 	RootNamespace="assorted_test_lzfu"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -180,7 +180,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\lzfu.c"
+				RelativePath="..\..\src\assorted_lzfu.c"
 				>
 			</File>
 			<File
@@ -198,7 +198,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\lzfu.h"
+				RelativePath="..\..\src\assorted_lzfu.h"
 				>
 			</File>
 			<File

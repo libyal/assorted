@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_adler32"
-	ProjectGUID="{632FCA77-D65E-4576-809F-62BE410E67CE}"
+	ProjectGUID="{D9811392-E8A1-47AC-894A-0C869A3B6575}"
 	RootNamespace="assorted_test_adler32"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

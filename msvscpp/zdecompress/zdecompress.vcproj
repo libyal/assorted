@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="zdecompress"
-	ProjectGUID="{62A01807-69CC-49E1-9A55-2E0754B30989}"
+	ProjectGUID="{504861A9-01E1-4A7E-8F57-1C530B5A13B0}"
 	RootNamespace="zdecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -188,11 +188,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.c"
+				RelativePath="..\..\src\assorted_huffman_tree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.c"
+				RelativePath="..\..\src\assorted_output.c"
 				>
 			</File>
 			<File
@@ -218,6 +218,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\assorted_huffman_tree.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_i18n.h"
 				>
 			</File>
@@ -239,10 +243,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_system_string.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\huffman_tree.h"
 				>
 			</File>
 		</Filter>

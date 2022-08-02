@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="bz2decompress"
-	ProjectGUID="{9B1B15CE-635A-43E0-B3FD-11CCE808D56E}"
+	ProjectGUID="{E27B1EBB-9BDE-4184-9397-2FEA19DCB8FB}"
 	RootNamespace="bz2decompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -188,15 +188,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\assorted_huffman_tree.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_output.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\bz2decompress.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\huffman_tree.c"
 				>
 			</File>
 		</Filter>
@@ -215,6 +215,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_getopt.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_huffman_tree.h"
 				>
 			</File>
 			<File
@@ -239,10 +243,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_system_string.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\huffman_tree.h"
 				>
 			</File>
 		</Filter>

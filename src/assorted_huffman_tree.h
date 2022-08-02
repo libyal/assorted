@@ -1,5 +1,5 @@
 /*
- * LZFu (un)compression functions
+ * Huffman tree functions
  *
  * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,64 +19,61 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LZFU_H )
-#define _LZFU_H
+#if !defined( _ASSORTED_HUFFMAN_TREE_H )
+#define _ASSORTED_HUFFMAN_TREE_H
 
 #include <common.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-/* The LZFu compression header (compressed RTF header)
- */
-typedef struct lzfu_header lzfu_header_t;
+typedef struct assorted_huffman_tree assorted_huffman_tree_t;
 
-struct lzfu_header
+struct assorted_huffman_tree
 {
-	/* The size of the compressed data after the header
+	/* The maximum number of bits allowed for a Huffman code
 	 */
-	uint32_t compressed_data_size;
+	uint8_t maximum_code_size;
 
-	/* The size of the uncompressed data after the header
+	/* The symbols array
 	 */
-	uint32_t uncompressed_data_size;
+	uint16_t *symbols;
 
-	/* The (un)compressed data signature
+	/* The code size counts array
 	 */
-	uint32_t signature;
-
-	/* A CRC32 of the compressed data
-	 */
-	uint32_t crc;
+	int *code_size_counts;
 };
 
-int lzfu_get_uncompressed_data_size(
-     const uint8_t *compressed_data,
-     size_t compressed_data_size,
-     size_t *uncompressed_data_size,
+int assorted_huffman_tree_initialize(
+     assorted_huffman_tree_t **huffman_tree,
+     int number_of_symbols,
+     uint8_t maximum_code_size,
      libcerror_error_t **error );
 
-int lzfu_compress(
-     const uint8_t *uncompressed_data,
-     size_t uncompressed_data_size,
-     uint8_t *compressed_data,
-     size_t *compressed_data_size,
+int assorted_huffman_tree_free(
+     assorted_huffman_tree_t **huffman_tree,
      libcerror_error_t **error );
 
-int lzfu_decompress(
-     const uint8_t *compressed_data,
-     size_t compressed_data_size,
-     uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
+int assorted_huffman_tree_build(
+     assorted_huffman_tree_t *huffman_tree,
+     const uint8_t *code_sizes_array,
+     int number_of_code_sizes,
+     libcerror_error_t **error );
+
+int assorted_huffman_tree_get_symbol_from_bit_stream(
+     assorted_huffman_tree_t *huffman_tree,
+     assorted_bit_stream_t *bit_stream,
+     uint16_t *symbol,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LZFU_H ) */
+#endif /* !defined( _ASSORTED_HUFFMAN_TREE_H ) */
 

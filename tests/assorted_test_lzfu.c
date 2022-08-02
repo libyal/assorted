@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/lzfu.h"
+#include "../src/assorted_lzfu.h"
 
 /* Define to make assorted_test_lzfu generate verbose output
 #define ASSORTED_TEST_LZFU_VERBOSE
@@ -44,7 +44,7 @@ uint8_t assorted_test_lzfu_compressed_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the lzfu_get_uncompressed_data_size function
+/* Tests the assorted_lzfu_get_uncompressed_data_size function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_lzfu_get_uncompressed_data_size(
@@ -57,7 +57,7 @@ int assorted_test_lzfu_get_uncompressed_data_size(
 	/* Test regular cases
 	 */
 /* TODO add representative test data
-	result = lzfu_get_uncompressed_data_size(
+	result = assorted_lzfu_get_uncompressed_data_size(
 	          assorted_test_lzfu_compressed_data,
 	          16,
 	          &uncompressed_data_size,
@@ -80,7 +80,7 @@ int assorted_test_lzfu_get_uncompressed_data_size(
 
 	/* Test error cases
 	 */
-	result = lzfu_get_uncompressed_data_size(
+	result = assorted_lzfu_get_uncompressed_data_size(
 	          NULL,
 	          16,
 	          &uncompressed_data_size,
@@ -98,7 +98,7 @@ int assorted_test_lzfu_get_uncompressed_data_size(
 	libcerror_error_free(
 	 &error );
 
-	result = lzfu_get_uncompressed_data_size(
+	result = assorted_lzfu_get_uncompressed_data_size(
 	          assorted_test_lzfu_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          &uncompressed_data_size,
@@ -116,7 +116,7 @@ int assorted_test_lzfu_get_uncompressed_data_size(
 	libcerror_error_free(
 	 &error );
 
-	result = lzfu_get_uncompressed_data_size(
+	result = assorted_lzfu_get_uncompressed_data_size(
 	          assorted_test_lzfu_compressed_data,
 	          16,
 	          NULL,
@@ -140,7 +140,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the lzfu_decompress function
+/* Tests the assorted_lzfu_decompress function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_lzfu_decompress(
@@ -157,7 +157,7 @@ int assorted_test_lzfu_decompress(
 /* TODO add representative test data
 	uncompressed_data_size = 16;
 
-	result = lzfu_decompress(
+	result = assorted_lzfu_decompress(
 	          assorted_test_lzfu_compressed_data,
 	          16,
 	          uncompressed_data,
@@ -183,7 +183,7 @@ int assorted_test_lzfu_decompress(
 	 */
 	uncompressed_data_size = 16;
 
-	result = lzfu_decompress(
+	result = assorted_lzfu_decompress(
 	          NULL,
 	          16,
 	          uncompressed_data,
@@ -202,7 +202,7 @@ int assorted_test_lzfu_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzfu_decompress(
+	result = assorted_lzfu_decompress(
 	          assorted_test_lzfu_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
@@ -221,7 +221,7 @@ int assorted_test_lzfu_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzfu_decompress(
+	result = assorted_lzfu_decompress(
 	          assorted_test_lzfu_compressed_data,
 	          16,
 	          NULL,
@@ -240,7 +240,7 @@ int assorted_test_lzfu_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzfu_decompress(
+	result = assorted_lzfu_decompress(
 	          assorted_test_lzfu_compressed_data,
 	          16,
 	          uncompressed_data,
@@ -261,7 +261,7 @@ int assorted_test_lzfu_decompress(
 
 	uncompressed_data_size = (size_t) SSIZE_MAX + 1;
 
-	result = lzfu_decompress(
+	result = assorted_lzfu_decompress(
 	          assorted_test_lzfu_compressed_data,
 	          16,
 	          uncompressed_data,
@@ -314,20 +314,24 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "lzfu_get_uncompressed_data_size",
+	 "assorted_lzfu_get_uncompressed_data_size",
 	 assorted_test_lzfu_get_uncompressed_data_size );
 
 	/* TODO add tests for lzfu_compress */
 
 	ASSORTED_TEST_RUN(
-	 "lzfu_decompress",
+	 "assorted_lzfu_decompress",
 	 assorted_test_lzfu_decompress );
 
 #endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

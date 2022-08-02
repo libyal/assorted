@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_huffman_tree"
-	ProjectGUID="{3DE6843D-0A12-493F-8E55-16AA35A28FE7}"
+	ProjectGUID="{C78AD6A9-AF54-4823-9326-C961FDE7D64F}"
 	RootNamespace="assorted_test_huffman_tree"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -180,7 +180,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.c"
+				RelativePath="..\..\src\assorted_huffman_tree.c"
 				>
 			</File>
 			<File
@@ -202,7 +202,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.h"
+				RelativePath="..\..\src\assorted_huffman_tree.h"
 				>
 			</File>
 			<File

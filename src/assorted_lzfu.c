@@ -27,12 +27,12 @@
 #include "assorted_crc32.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "lzfu.h"
+#include "assorted_lzfu.h"
 
-#define LZFU_SIGNATURE_COMPRESSED        0x75465a4c
-#define LZFU_SIGNATURE_UNCOMPRESSED      0x414c454d
+#define ASSORTED_LZFU_SIGNATURE_COMPRESSED        0x75465a4c
+#define ASSORTED_LZFU_SIGNATURE_UNCOMPRESSED      0x414c454d
 
-const char *lzfu_rtf_dictionary = \
+const char *assorted_lzfu_rtf_dictionary = \
 	"{\\rtf1\\ansi\\mac\\deff0\\deftab720"
 	"{\\fonttbl;}"
 	"{\\f0\\fnil \\froman \\fswiss \\fmodern \\fscript \\fdecor MS Sans SerifSymbolArialTimes New RomanCourier"
@@ -41,13 +41,13 @@ const char *lzfu_rtf_dictionary = \
 /* Determines the uncompressed data size from the LZFu header in the compressed data
  * Return 1 on success or -1 on error
  */
-int lzfu_get_uncompressed_data_size(
+int assorted_lzfu_get_uncompressed_data_size(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	lzfu_header_t lzfu_header;
+	assorted_lzfu_header_t lzfu_header;
 
 	uint8_t *lzfu_data                = 0;
 	static char *function             = "lzfu_get_uncompressed_data_size";
@@ -117,8 +117,8 @@ int lzfu_get_uncompressed_data_size(
 
 	lzfu_data += 8;
 
-	if( ( lzfu_header.signature != LZFU_SIGNATURE_COMPRESSED )
-	 && ( lzfu_header.signature != LZFU_SIGNATURE_UNCOMPRESSED ) )
+	if( ( lzfu_header.signature != ASSORTED_LZFU_SIGNATURE_COMPRESSED )
+	 && ( lzfu_header.signature != ASSORTED_LZFU_SIGNATURE_UNCOMPRESSED ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -130,7 +130,7 @@ int lzfu_get_uncompressed_data_size(
 
 		return( -1 );
 	}
-	compressed_data_size -= sizeof( lzfu_header_t );
+	compressed_data_size -= sizeof( assorted_lzfu_header_t );
 
 	/* The compressed data size includes 12 bytes of the header
 	 */
@@ -153,7 +153,7 @@ int lzfu_get_uncompressed_data_size(
 #endif
 	if( memory_copy(
 	     lz_buffer,
-	     lzfu_rtf_dictionary,
+	     assorted_lzfu_rtf_dictionary,
 	     207 ) == NULL )
 	{
 		libcerror_error_set(
@@ -261,7 +261,7 @@ int lzfu_get_uncompressed_data_size(
 /* Compresses data using LZFu compression
  * Returns 1 on success or -1 on error
  */
-int lzfu_compress(
+int assorted_lzfu_compress(
      const uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      uint8_t *compressed_data,
@@ -328,7 +328,7 @@ int lzfu_compress(
 /* Decompresses data using LZFu compression
  * Returns 1 on success or -1 on error
  */
-int lzfu_decompress(
+int assorted_lzfu_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
@@ -337,7 +337,7 @@ int lzfu_decompress(
 {
 	uint8_t lz_buffer[ 4096 ];
 
-	lzfu_header_t lzfu_header;
+	assorted_lzfu_header_t lzfu_header;
 
 	const uint8_t *lzfu_data           = NULL;
 	const uint8_t *lzfu_reference_data = NULL;
@@ -398,7 +398,7 @@ int lzfu_decompress(
 	}
 	if( memory_copy(
 	     lz_buffer,
-	     lzfu_rtf_dictionary,
+	     assorted_lzfu_rtf_dictionary,
 	     207 ) == NULL )
 	{
 		libcerror_error_set(
@@ -474,8 +474,8 @@ int lzfu_decompress(
 		 function,
 		 lzfu_header.crc );
 	}
-	if( ( lzfu_header.signature != LZFU_SIGNATURE_COMPRESSED )
-	 && ( lzfu_header.signature != LZFU_SIGNATURE_UNCOMPRESSED ) )
+	if( ( lzfu_header.signature != ASSORTED_LZFU_SIGNATURE_COMPRESSED )
+	 && ( lzfu_header.signature != ASSORTED_LZFU_SIGNATURE_UNCOMPRESSED ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -487,7 +487,7 @@ int lzfu_decompress(
 
 		return( -1 );
 	}
-	compressed_data_size -= sizeof( lzfu_header_t );
+	compressed_data_size -= sizeof( assorted_lzfu_header_t );
 
 	/* The compressed data size includes 12 bytes of the header
 	 */

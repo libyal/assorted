@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_bzip"
-	ProjectGUID="{F3C4E16C-D5DC-4994-ADD6-64FD785FBBFB}"
+	ProjectGUID="{C66E6A20-EBBA-4687-B361-9ADC38F8CA2F}"
 	RootNamespace="assorted_test_bzip"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -184,7 +184,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.c"
+				RelativePath="..\..\src\assorted_huffman_tree.c"
 				>
 			</File>
 			<File
@@ -206,7 +206,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\huffman_tree.h"
+				RelativePath="..\..\src\assorted_huffman_tree.h"
 				>
 			</File>
 			<File

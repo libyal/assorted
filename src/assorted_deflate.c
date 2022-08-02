@@ -26,35 +26,35 @@
 
 #include "assorted_bit_stream.h"
 #include "assorted_deflate.h"
+#include "assorted_huffman_tree.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "huffman_tree.h"
 
 /* Reads and builds the dynamic Huffman trees
  * Returns 1 on success or -1 on error
  */
 int assorted_deflate_build_dynamic_huffman_trees(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t *literals_huffman_tree,
-     huffman_tree_t *distances_huffman_tree,
+     assorted_huffman_tree_t *literals_huffman_tree,
+     assorted_huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error )
 {
 	uint8_t code_size_array[ 316 ];
 
-	uint8_t code_sizes_sequence[ 19 ] = {
+	uint8_t code_sizes_sequence[ 19 ]               = {
 		16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2,
 	        14, 1, 15 };
 
-	huffman_tree_t *pre_codes_huffman_tree = NULL;
-	static char *function                  = "assorted_deflate_build_dynamic_huffman_trees";
-	uint32_t code_size                     = 0;
-	uint32_t code_size_index               = 0;
-	uint32_t code_size_sequence            = 0;
-	uint32_t number_of_code_sizes          = 0;
-	uint32_t number_of_distance_codes      = 0;
-	uint32_t number_of_literal_codes       = 0;
-	uint32_t times_to_repeat               = 0;
-	uint16_t symbol                        = 0;
+	assorted_huffman_tree_t *pre_codes_huffman_tree = NULL;
+	static char *function                           = "assorted_deflate_build_dynamic_huffman_trees";
+	uint32_t code_size                              = 0;
+	uint32_t code_size_index                        = 0;
+	uint32_t code_size_sequence                     = 0;
+	uint32_t number_of_code_sizes                   = 0;
+	uint32_t number_of_distance_codes               = 0;
+	uint32_t number_of_literal_codes                = 0;
+	uint32_t times_to_repeat                        = 0;
+	uint16_t symbol                                 = 0;
 
 	if( assorted_bit_stream_get_value(
 	     bit_stream,
@@ -184,7 +184,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 		 "\n" );
 	}
 #endif
-	if( huffman_tree_initialize(
+	if( assorted_huffman_tree_initialize(
 	     &pre_codes_huffman_tree,
 	     19,
 	     15,
@@ -199,7 +199,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 
 		goto on_error;
 	}
-	if( huffman_tree_build(
+	if( assorted_huffman_tree_build(
 	     pre_codes_huffman_tree,
 	     code_size_array,
 	     19,
@@ -220,7 +220,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 
 	while( code_size_index < number_of_code_sizes )
 	{
-		if( huffman_tree_get_symbol_from_bit_stream(
+		if( assorted_huffman_tree_get_symbol_from_bit_stream(
 		     pre_codes_huffman_tree,
 		     bit_stream,
 		     &symbol,
@@ -392,7 +392,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 
 		goto on_error;
 	}
-	if( huffman_tree_free(
+	if( assorted_huffman_tree_free(
 	     &pre_codes_huffman_tree,
 	     error ) != 1 )
 	{
@@ -405,7 +405,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 
 		goto on_error;
 	}
-	if( huffman_tree_build(
+	if( assorted_huffman_tree_build(
 	     literals_huffman_tree,
 	     code_size_array,
 	     number_of_literal_codes,
@@ -420,7 +420,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 
 		goto on_error;
 	}
-	if( huffman_tree_build(
+	if( assorted_huffman_tree_build(
 	     distances_huffman_tree,
 	     &( code_size_array[ number_of_literal_codes ] ),
 	     number_of_distance_codes,
@@ -440,7 +440,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 on_error:
 	if( pre_codes_huffman_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &pre_codes_huffman_tree,
 		 NULL );
 	}
@@ -451,8 +451,8 @@ on_error:
  * Returns 1 on success or -1 on error
  */
 int assorted_deflate_build_fixed_huffman_trees(
-     huffman_tree_t *literals_huffman_tree,
-     huffman_tree_t *distances_huffman_tree,
+     assorted_huffman_tree_t *literals_huffman_tree,
+     assorted_huffman_tree_t *distances_huffman_tree,
      libcerror_error_t **error )
 {
 	uint8_t code_size_array[ 318 ];
@@ -485,7 +485,7 @@ int assorted_deflate_build_fixed_huffman_trees(
 			code_size_array[ symbol ] = 5;
 		}
 	}
-	if( huffman_tree_build(
+	if( assorted_huffman_tree_build(
 	     literals_huffman_tree,
 	     code_size_array,
 	     288,
@@ -500,7 +500,7 @@ int assorted_deflate_build_fixed_huffman_trees(
 
 		return( -1 );
 	}
-	if( huffman_tree_build(
+	if( assorted_huffman_tree_build(
 	     distances_huffman_tree,
 	     &( code_size_array[ 288 ] ),
 	     30,
@@ -523,8 +523,8 @@ int assorted_deflate_build_fixed_huffman_trees(
  */
 int assorted_deflate_decode_huffman(
      assorted_bit_stream_t *bit_stream,
-     huffman_tree_t *literals_huffman_tree,
-     huffman_tree_t *distances_huffman_tree,
+     assorted_huffman_tree_t *literals_huffman_tree,
+     assorted_huffman_tree_t *distances_huffman_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
@@ -592,7 +592,7 @@ int assorted_deflate_decode_huffman(
 
 	do
 	{
-		if( huffman_tree_get_symbol_from_bit_stream(
+		if( assorted_huffman_tree_get_symbol_from_bit_stream(
 		     literals_huffman_tree,
 		     bit_stream,
 		     &symbol,
@@ -669,7 +669,7 @@ int assorted_deflate_decode_huffman(
 #endif
 			compression_size = literal_codes_base[ symbol ] + (uint16_t) extra_bits;
 
-			if( huffman_tree_get_symbol_from_bit_stream(
+			if( assorted_huffman_tree_get_symbol_from_bit_stream(
 			     distances_huffman_tree,
 			     bit_stream,
 			     &symbol,
@@ -1449,21 +1449,21 @@ int assorted_deflate_read_block_header(
 int assorted_deflate_read_block(
      assorted_bit_stream_t *bit_stream,
      uint8_t block_type,
-     huffman_tree_t *fixed_huffman_distances_tree,
-     huffman_tree_t *fixed_huffman_literals_tree,
+     assorted_huffman_tree_t *fixed_huffman_distances_tree,
+     assorted_huffman_tree_t *fixed_huffman_literals_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
      libcerror_error_t **error )
 {
-	huffman_tree_t *dynamic_huffman_distances_tree = NULL;
-	huffman_tree_t *dynamic_huffman_literals_tree  = NULL;
-	static char *function                          = "assorted_deflate_read_block";
-	size_t safe_uncompressed_data_offset           = 0;
-	uint32_t block_size                            = 0;
-	uint32_t block_size_copy                       = 0;
-	uint32_t value_32bit                           = 0;
-	uint8_t skip_bits                              = 0;
+	assorted_huffman_tree_t *dynamic_huffman_distances_tree = NULL;
+	assorted_huffman_tree_t *dynamic_huffman_literals_tree  = NULL;
+	static char *function                                   = "assorted_deflate_read_block";
+	size_t safe_uncompressed_data_offset                    = 0;
+	uint32_t block_size                                     = 0;
+	uint32_t block_size_copy                                = 0;
+	uint32_t value_32bit                                    = 0;
+	uint8_t skip_bits                                       = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -1674,7 +1674,7 @@ int assorted_deflate_read_block(
 			break;
 
 		case ASSORTED_DEFLATE_BLOCK_TYPE_HUFFMAN_DYNAMIC:
-			if( huffman_tree_initialize(
+			if( assorted_huffman_tree_initialize(
 			     &dynamic_huffman_literals_tree,
 			     288,
 			     15,
@@ -1689,7 +1689,7 @@ int assorted_deflate_read_block(
 
 				goto on_error;
 			}
-			if( huffman_tree_initialize(
+			if( assorted_huffman_tree_initialize(
 			     &dynamic_huffman_distances_tree,
 			     30,
 			     15,
@@ -1737,7 +1737,7 @@ int assorted_deflate_read_block(
 
 				goto on_error;
 			}
-			if( huffman_tree_free(
+			if( assorted_huffman_tree_free(
 			     &dynamic_huffman_distances_tree,
 			     error ) != 1 )
 			{
@@ -1750,7 +1750,7 @@ int assorted_deflate_read_block(
 
 				goto on_error;
 			}
-			if( huffman_tree_free(
+			if( assorted_huffman_tree_free(
 			     &dynamic_huffman_literals_tree,
 			     error ) != 1 )
 			{
@@ -1788,13 +1788,13 @@ int assorted_deflate_read_block(
 on_error:
 	if( dynamic_huffman_distances_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &dynamic_huffman_distances_tree,
 		 NULL );
 	}
 	if( dynamic_huffman_literals_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &dynamic_huffman_literals_tree,
 		 NULL );
 	}
@@ -1811,15 +1811,15 @@ int assorted_deflate_decompress(
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	assorted_bit_stream_t *bit_stream            = NULL;
-	huffman_tree_t *fixed_huffman_distances_tree = NULL;
-	huffman_tree_t *fixed_huffman_literals_tree  = NULL;
-	static char *function                        = "assorted_deflate_decompress";
-	size_t compressed_data_offset                = 0;
-	size_t safe_uncompressed_data_size           = 0;
-	size_t uncompressed_data_offset              = 0;
-	uint8_t block_type                           = 0;
-	uint8_t last_block_flag                      = 0;
+	assorted_bit_stream_t *bit_stream                     = NULL;
+	assorted_huffman_tree_t *fixed_huffman_distances_tree = NULL;
+	assorted_huffman_tree_t *fixed_huffman_literals_tree  = NULL;
+	static char *function                                 = "assorted_deflate_decompress";
+	size_t compressed_data_offset                         = 0;
+	size_t safe_uncompressed_data_size                    = 0;
+	size_t uncompressed_data_offset                       = 0;
+	uint8_t block_type                                    = 0;
+	uint8_t last_block_flag                               = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -1929,7 +1929,7 @@ int assorted_deflate_decompress(
 			if( ( fixed_huffman_literals_tree == NULL )
 			 && ( fixed_huffman_distances_tree == NULL ) )
 			{
-				if( huffman_tree_initialize(
+				if( assorted_huffman_tree_initialize(
 				     &fixed_huffman_literals_tree,
 				     288,
 				     15,
@@ -1944,7 +1944,7 @@ int assorted_deflate_decompress(
 
 					goto on_error;
 				}
-				if( huffman_tree_initialize(
+				if( assorted_huffman_tree_initialize(
 				     &fixed_huffman_distances_tree,
 				     30,
 				     15,
@@ -2001,7 +2001,7 @@ int assorted_deflate_decompress(
 	}
 	if( fixed_huffman_distances_tree != NULL )
 	{
-		if( huffman_tree_free(
+		if( assorted_huffman_tree_free(
 		     &fixed_huffman_distances_tree,
 		     error ) != 1 )
 		{
@@ -2017,7 +2017,7 @@ int assorted_deflate_decompress(
 	}
 	if( fixed_huffman_literals_tree != NULL )
 	{
-		if( huffman_tree_free(
+		if( assorted_huffman_tree_free(
 		     &fixed_huffman_literals_tree,
 		     error ) != 1 )
 		{
@@ -2051,13 +2051,13 @@ int assorted_deflate_decompress(
 on_error:
 	if( fixed_huffman_distances_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &fixed_huffman_distances_tree,
 		 NULL );
 	}
 	if( fixed_huffman_literals_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &fixed_huffman_literals_tree,
 		 NULL );
 	}
@@ -2080,17 +2080,17 @@ int assorted_deflate_decompress_zlib(
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	assorted_bit_stream_t *bit_stream            = NULL;
-	huffman_tree_t *fixed_huffman_distances_tree = NULL;
-	huffman_tree_t *fixed_huffman_literals_tree  = NULL;
-	static char *function                        = "assorted_deflate_decompress_zlib";
-	size_t compressed_data_offset                = 0;
-	size_t safe_uncompressed_data_size           = 0;
-	size_t uncompressed_data_offset              = 0;
-	uint32_t calculated_checksum                 = 0;
-	uint32_t stored_checksum                     = 0;
-	uint8_t block_type                           = 0;
-	uint8_t last_block_flag                      = 0;
+	assorted_bit_stream_t *bit_stream                     = NULL;
+	assorted_huffman_tree_t *fixed_huffman_distances_tree = NULL;
+	assorted_huffman_tree_t *fixed_huffman_literals_tree  = NULL;
+	static char *function                                 = "assorted_deflate_decompress_zlib";
+	size_t compressed_data_offset                         = 0;
+	size_t safe_uncompressed_data_size                    = 0;
+	size_t uncompressed_data_offset                       = 0;
+	uint32_t calculated_checksum                          = 0;
+	uint32_t stored_checksum                              = 0;
+	uint8_t block_type                                    = 0;
+	uint8_t last_block_flag                               = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -2215,7 +2215,7 @@ int assorted_deflate_decompress_zlib(
 			if( ( fixed_huffman_literals_tree == NULL )
 			 && ( fixed_huffman_distances_tree == NULL ) )
 			{
-				if( huffman_tree_initialize(
+				if( assorted_huffman_tree_initialize(
 				     &fixed_huffman_literals_tree,
 				     288,
 				     15,
@@ -2230,7 +2230,7 @@ int assorted_deflate_decompress_zlib(
 
 					goto on_error;
 				}
-				if( huffman_tree_initialize(
+				if( assorted_huffman_tree_initialize(
 				     &fixed_huffman_distances_tree,
 				     30,
 				     15,
@@ -2342,7 +2342,7 @@ int assorted_deflate_decompress_zlib(
 	}
 	if( fixed_huffman_distances_tree != NULL )
 	{
-		if( huffman_tree_free(
+		if( assorted_huffman_tree_free(
 		     &fixed_huffman_distances_tree,
 		     error ) != 1 )
 		{
@@ -2358,7 +2358,7 @@ int assorted_deflate_decompress_zlib(
 	}
 	if( fixed_huffman_literals_tree != NULL )
 	{
-		if( huffman_tree_free(
+		if( assorted_huffman_tree_free(
 		     &fixed_huffman_literals_tree,
 		     error ) != 1 )
 		{
@@ -2392,13 +2392,13 @@ int assorted_deflate_decompress_zlib(
 on_error:
 	if( fixed_huffman_distances_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &fixed_huffman_distances_tree,
 		 NULL );
 	}
 	if( fixed_huffman_literals_tree != NULL )
 	{
-		huffman_tree_free(
+		assorted_huffman_tree_free(
 		 &fixed_huffman_literals_tree,
 		 NULL );
 	}
