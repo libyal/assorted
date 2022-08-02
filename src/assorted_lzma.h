@@ -43,6 +43,12 @@ int assorted_lzma_read_block_header(
      size_t *compressed_data_offset,
      libcerror_error_t **error );
 
+int assorted_lzma_read_block(
+     const uint8_t *compressed_data,
+     size_t compressed_data_size,
+     size_t *compressed_data_offset,
+     libcerror_error_t **error );
+
 int assorted_lzma_read_stream_footer(
      const uint8_t *compressed_data,
      size_t compressed_data_size,

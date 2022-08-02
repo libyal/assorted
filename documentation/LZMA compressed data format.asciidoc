@@ -108,7 +108,7 @@ A stream footer is 12 bytes of size and consist of:
 A block consist of:
 
 * Block header
-* Compressed data
+* Encoded bit-stream
 * Block padding
 * [yellow-background]*Unknown (check)*
 
@@ -123,13 +123,13 @@ A block header is 10 bytes of size and consist of:
 Contains the number of 4 byte increments - 1
 | 1 | 1 | | Block flags
 4+| _If has compressed size flag is set_
-| 2 | 1 | | Compressed data size
+| ... | ... | | Compressed data size
 4+| _If has uncompressed size flag is set_
-| 3 | 1 | | Uncompressed data size
-| 4 | 1 | | [yellow-background]*Unknown (filter flags)*
+| ... | ... | | Uncompressed data size
 4+| _Common_
-| 5 | 1 | | [yellow-background]*Unknown (header padding)*
-| 6 | 4 | | Checksum
+| ... | ... | | [yellow-background]*Unknown (filter flags)*
+| ... | ... | | [yellow-background]*Unknown (header padding)*
+| ... | 4 | | Checksum
 |===
 
 ==== Block flags
@@ -143,6 +143,72 @@ Contains the number of 4 byte increments - 1
 | 0.7 | 1 bit | | Has uncompressed size
 |===
 
+==== Filter flags
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | Filter identifier
+| 1 | 1 | | Filter data size
+| 2 | ... | | Filter data
+|===
+
+===== Filter identifiers
+
+[cols="1,5",options="header"]
+|===
+| Value | Description
+| 0x03 | Delta filter
+| 0x04 | x86 Branch/Call/Jump filter (BCJ)
+| 0x05 | PowerPC (big-endian) Branch/Call/Jump filter
+| 0x06 | IA64 Branch/Call/Jump filter
+| 0x07 | ARM (little-endian) Branch/Call/Jump filter
+| 0x08 | ARM Thumb (little-endian) Branch/Call/Jump filter
+| 0x09 | SPARC Branch/Call/Jump filter
+2+|
+| 0x21 | LZMA2
+|===
+
+==== Encoded bit-stream
+
+The LZMA compressed data consists of different types of code sequences:
+
+[cols="1,1,5",options="header"]
+|===
+| Bit sequence | Name | Description
+| 0, byte | literal | literal byte
+| 1, 0, length + distance | match | distance-length pair
+| 1, 1, 0, 0	| shortrep | 1 byte match at latest used distance
+| 1, 1, 0, 1, length | rep0 | length bytes match at latest used distance
+| 1, 1, 1, 0, length | rep1 | length bytes match at second latest used distance
+| 1, 1, 1, 1, 0, length | rep2 | length bytes match at third latest used distance
+| 1, 1, 1, 1, 1, length | rep3 | length bytes match at fourth latest used distance
+|===
+
+Length values are encoded as:
+
+[cols="1,5",options="header"]
+|===
+| Bit sequence | Description
+| 0 + 3 bits | lengths from 2 to 9
+| 1 + 0 + 3 bits | lengths from 10 to 17
+| 1 + 1 + 8 bits | lengths from 18 to 273
+|===
+
+==== LZMA2
+
+[cols="1,5",options="header"]
+|===
+| Control code | Description
+| 0x00 | end-of-stream
+| 0x01 | [yellow-background]*Unknown (reset dictionary?)*
+| 0x02 - 0x7f | Invalid
+| 0x80 - 0x9f | LZMA compressed chunk
+| 0xa0 - 0xbf | LZMA compressed chunk, with state reset
+| 0xc0 - 0xef | LZMA compressed chunk, with properties
+| 0xe0 - 0xff | LZMA compressed chunk, with properties and dictionary reset
+|===
+
 :numbered!:
 [appendix]
 == References
@@ -154,6 +220,12 @@ Contains the number of 4 byte increments - 1
 | Version: | Version 1.0.4
 | Date: | August 27, 2009
 | URL: | https://tukaani.org/xz/xz-file-format.txt
+|===
+
+[cols="1,5",options="header"]
+|===
+| Title: | Format of the LZMA stream in lzip files
+| URL: | https://www.nongnu.org/lzip/manual/lzip_manual.html#Stream-format
 |===
 
 [appendix]

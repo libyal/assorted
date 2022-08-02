@@ -299,6 +299,122 @@ int assorted_lzma_read_block_header(
 	return( 1 );
 }
 
+/* Reads the block
+ * Returns 1 on success or -1 on error
+ */
+int assorted_lzma_read_block(
+     const uint8_t *compressed_data,
+     size_t compressed_data_size,
+     size_t *compressed_data_offset,
+     libcerror_error_t **error )
+{
+	static char *function              = "assorted_lzma_read_block";
+	size_t safe_compressed_data_offset = 0;
+	uint16_t uncompressed_chunk_size   = 0;
+	uint8_t byte_value                 = 0;
+	uint8_t has_properties             = 0;
+	uint8_t reset_dictionary           = 0;
+
+	if( compressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid compressed data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( compressed_data_size < 1 )
+	 || ( compressed_data_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid compressed data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( compressed_data_offset == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid compressed data offset.",
+		 function );
+
+		return( -1 );
+	}
+	safe_compressed_data_offset = *compressed_data_offset;
+
+	while( safe_compressed_data_offset < compressed_data_size )
+	{
+		if( safe_compressed_data_offset > ( compressed_data_size - 1 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+			 "%s: invalid compressed data value too small.",
+			 function );
+
+			return( -1 );
+		}
+		byte_value = compressed_data[ safe_compressed_data_offset++ ];
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: control value\t\t\t\t\t: 0x%02" PRIx8 "\n",
+			 function,
+			 byte_value );
+		}
+#endif
+		if( byte_value == 0x00 )
+		{
+			break;
+		}
+		if( ( byte_value >= 0x02 )
+		 && ( byte_value <= 0x7f ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: unsupported control code value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		if( ( byte_value == 0x01 )
+		 && ( byte_value >= 0xe0 ) )
+		{
+			reset_dictionary = 1;
+		}
+		if( byte_value >= 0xc0 )
+		{
+			has_properties = 1;
+		}
+		uncompressed_chunk_size = (uint16_t) ( byte_value & 0x1f ) << 8;
+/* TODO implement */
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	*compressed_data_offset = safe_compressed_data_offset;
+
+	return( 1 );
+}
+
 /* Reads the stream footer
  * Returns 1 on success or -1 on error
  */
@@ -508,10 +624,6 @@ int assorted_lzma_decompress(
 	}
 	while( compressed_data_offset < compressed_data_size )
 	{
-		if( uncompressed_data_offset >= safe_uncompressed_data_size )
-		{
-			break;
-		}
 		if( assorted_lzma_read_block_header(
 		     compressed_data,
 		     compressed_data_size,
@@ -527,8 +639,21 @@ int assorted_lzma_decompress(
 
 			return( -1 );
 		}
-/* TODO implement */
-		break;
+		if( assorted_lzma_read_block(
+		     compressed_data,
+		     compressed_data_size,
+		     &compressed_data_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read block.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	if( assorted_lzma_read_stream_footer(
 	     compressed_data,
