@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LZVN_H )
-#define _LZVN_H
+#if !defined( _ASSORTED_LZVN_H )
+#define _ASSORTED_LZVN_H
 
 #include <common.h>
 #include <types.h>
@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-int lzvn_decompress(
+int assorted_lzvn_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
@@ -42,5 +42,5 @@ int lzvn_decompress(
 }
 #endif
 
-#endif /* !defined( _LZVN_H ) */
+#endif /* !defined( _ASSORTED_LZVN_H ) */
 

@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/lzvn.h"
+#include "../src/assorted_lzvn.h"
 
 /* Define to make assorted_test_lzvn generate verbose output
 #define ASSORTED_TEST_LZVN_VERBOSE
@@ -49,7 +49,7 @@ uint8_t assorted_test_lzvn_uncompressed_data[ 19 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the lzvn_decompress function
+/* Tests the assorted_lzvn_decompress function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_lzvn_decompress(
@@ -63,7 +63,7 @@ int assorted_test_lzvn_decompress(
 
 	/* Test regular cases
 	 */
-	result = lzvn_decompress(
+	result = assorted_lzvn_decompress(
 	          assorted_test_lzvn_compressed_data,
 	          29,
 	          uncompressed_data,
@@ -98,7 +98,7 @@ int assorted_test_lzvn_decompress(
 
 	/* Test error cases
 	 */
-	result = lzvn_decompress(
+	result = assorted_lzvn_decompress(
 	          NULL,
 	          29,
 	          uncompressed_data,
@@ -117,7 +117,7 @@ int assorted_test_lzvn_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzvn_decompress(
+	result = assorted_lzvn_decompress(
 	          assorted_test_lzvn_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
@@ -136,7 +136,7 @@ int assorted_test_lzvn_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzvn_decompress(
+	result = assorted_lzvn_decompress(
 	          assorted_test_lzvn_compressed_data,
 	          29,
 	          NULL,
@@ -155,7 +155,7 @@ int assorted_test_lzvn_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = lzvn_decompress(
+	result = assorted_lzvn_decompress(
 	          assorted_test_lzvn_compressed_data,
 	          29,
 	          uncompressed_data,
@@ -213,7 +213,7 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "lzvn_decompress",
+	 "assorted_lzvn_decompress",
 	 assorted_test_lzvn_decompress );
 
 #endif /* defined( __GNUC__ ) */

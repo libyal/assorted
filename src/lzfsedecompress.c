@@ -36,7 +36,7 @@
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
 #include "assorted_system_string.h"
-#include "lzfse.h"
+#include "assorted_lzfse.h"
 
 /* Prints the executable usage information
  */
@@ -299,7 +299,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( lzfse_decompress(
+	if( assorted_lzfse_decompress(
 	     buffer,
 	     source_size,
 	     uncompressed_data,

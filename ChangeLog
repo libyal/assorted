@@ -1,4 +1,6 @@
 TODO
+* prefix source with assorted_
+
 * create decompress handle for decompression tools
 * add tests for mssearchdecode.c
 * msvscpp build
@@ -24,8 +26,6 @@ TODO
   - zdecompress enlarge buffer when zlib uncompress fails (size uncompressed = 81 x size compressed)
   - add support for adler
 
-* lznt1decompress
-  - allow to set size of decompressed data
 * lzxpressdecompress
   - allow to set size of decompressed data
 

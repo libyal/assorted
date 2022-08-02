@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="lzxdecompress"
-	ProjectGUID="{1C6E18A5-B534-466C-9F07-062A11CF546B}"
+	ProjectGUID="{88041193-B4CF-4153-B854-69CFFB1C6F4B}"
 	RootNamespace="lzxdecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -231,6 +231,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_signal.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_system_string.h"
 				>
 			</File>
 			<File

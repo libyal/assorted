@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libuna"
-	ProjectGUID="{5AA646B3-9C6F-4803-8A07-C59CFEF4F2DA}"
+	ProjectGUID="{56287D30-9C20-4EE0-8CA4-787E65B8333C}"
 	RootNamespace="libuna"
 	TargetFrameworkVersion="131072"
 	>

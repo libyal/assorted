@@ -184,8 +184,8 @@ assorted_test_huffman_tree_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_lzfse_SOURCES = \
-	../src/lzfse.c ../src/lzfse.h \
-	../src/lzvn.c ../src/lzvn.h \
+	../src/assorted_lzfse.c ../src/assorted_lzfse.h \
+	../src/assorted_lzvn.c ../src/assorted_lzvn.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
 	assorted_test_lzfse.c \
@@ -210,7 +210,7 @@ assorted_test_lzfu_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_lzvn_SOURCES = \
-	../src/lzvn.c ../src/lzvn.h \
+	../src/assorted_lzvn.c ../src/assorted_lzvn.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
 	assorted_test_lzvn.c \

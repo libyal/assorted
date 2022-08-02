@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_lzfse"
-	ProjectGUID="{650614FE-0F2B-4634-B857-E68161E2998D}"
+	ProjectGUID="{94990965-0E4F-494F-B75F-4E31524BEB3C}"
 	RootNamespace="assorted_test_lzfse"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\lzfse.c"
+				RelativePath="..\..\src\assorted_lzfse.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\lzvn.c"
+				RelativePath="..\..\src\assorted_lzvn.c"
 				>
 			</File>
 			<File
@@ -194,11 +194,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\lzfse.h"
+				RelativePath="..\..\src\assorted_lzfse.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\lzvn.h"
+				RelativePath="..\..\src\assorted_lzvn.h"
 				>
 			</File>
 			<File

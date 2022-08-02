@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LZFSE_H )
-#define _LZFSE_H
+#if !defined( _ASSORTED_LZFSE_H )
+#define _ASSORTED_LZFSE_H
 
 #include <common.h>
 #include <types.h>
@@ -31,21 +31,21 @@
 extern "C" {
 #endif
 
-#define LZFSE_NUMBER_OF_LITERAL_STATES		1024
-#define LZFSE_NUMBER_OF_LITERAL_SYMBOLS		256
+#define ASSORTED_LZFSE_NUMBER_OF_LITERAL_STATES		1024
+#define ASSORTED_LZFSE_NUMBER_OF_LITERAL_SYMBOLS		256
 
-#define LZFSE_NUMBER_OF_L_VALUE_STATES		64
-#define LZFSE_NUMBER_OF_L_VALUE_SYMBOLS		20
+#define ASSORTED_LZFSE_NUMBER_OF_L_VALUE_STATES		64
+#define ASSORTED_LZFSE_NUMBER_OF_L_VALUE_SYMBOLS		20
 
-#define LZFSE_NUMBER_OF_M_VALUE_STATES		64
-#define LZFSE_NUMBER_OF_M_VALUE_SYMBOLS		20
+#define ASSORTED_LZFSE_NUMBER_OF_M_VALUE_STATES		64
+#define ASSORTED_LZFSE_NUMBER_OF_M_VALUE_SYMBOLS		20
 
-#define LZFSE_NUMBER_OF_D_VALUE_STATES		256
-#define LZFSE_NUMBER_OF_D_VALUE_SYMBOLS		64
+#define ASSORTED_LZFSE_NUMBER_OF_D_VALUE_STATES		256
+#define ASSORTED_LZFSE_NUMBER_OF_D_VALUE_SYMBOLS		64
 
-typedef struct lzfse_bit_stream lzfse_bit_stream_t;
+typedef struct assorted_lzfse_bit_stream assorted_lzfse_bit_stream_t;
 
-struct lzfse_bit_stream
+struct assorted_lzfse_bit_stream
 {
 	/* The byte stream
 	 */
@@ -68,9 +68,9 @@ struct lzfse_bit_stream
 	uint8_t bit_buffer_size;
 };
 
-typedef struct lzfse_decoder_entry lzfse_decoder_entry_t;
+typedef struct assorted_lzfse_decoder_entry assorted_lzfse_decoder_entry_t;
 
-struct lzfse_decoder_entry
+struct assorted_lzfse_decoder_entry
 {
 	/* The number of bits
 	 */
@@ -85,9 +85,9 @@ struct lzfse_decoder_entry
 	int16_t delta;
 };
 
-typedef struct lzfse_value_decoder_entry lzfse_value_decoder_entry_t;
+typedef struct assorted_lzfse_value_decoder_entry assorted_lzfse_value_decoder_entry_t;
 
-struct lzfse_value_decoder_entry
+struct assorted_lzfse_value_decoder_entry
 {
 	/* The (total) number of bits
 	 */
@@ -110,9 +110,9 @@ struct lzfse_value_decoder_entry
 	uint32_t value_bitmask;
 };
 
-typedef struct lzfse_state lzfse_state_t;
+typedef struct assorted_lzfse_state assorted_lzfse_state_t;
 
-struct lzfse_state
+struct assorted_lzfse_state
 {
 	/* The number of literals
 	 */
@@ -156,90 +156,90 @@ struct lzfse_state
 
 	/* The literal decoder table
 	 */
-	lzfse_decoder_entry_t literal_decoder_table[ LZFSE_NUMBER_OF_LITERAL_STATES ];
+	assorted_lzfse_decoder_entry_t literal_decoder_table[ ASSORTED_LZFSE_NUMBER_OF_LITERAL_STATES ];
 
 	/* The L value decoder table
 	 */
-	lzfse_value_decoder_entry_t l_value_decoder_table[ LZFSE_NUMBER_OF_L_VALUE_STATES ];
+	assorted_lzfse_value_decoder_entry_t l_value_decoder_table[ ASSORTED_LZFSE_NUMBER_OF_L_VALUE_STATES ];
 
 	/* The M value decoder table
 	 */
-	lzfse_value_decoder_entry_t m_value_decoder_table[ LZFSE_NUMBER_OF_M_VALUE_STATES ];
+	assorted_lzfse_value_decoder_entry_t m_value_decoder_table[ ASSORTED_LZFSE_NUMBER_OF_M_VALUE_STATES ];
 
 	/* The D value decoder table
 	 */
-	lzfse_value_decoder_entry_t d_value_decoder_table[ LZFSE_NUMBER_OF_D_VALUE_STATES ];
+	assorted_lzfse_value_decoder_entry_t d_value_decoder_table[ ASSORTED_LZFSE_NUMBER_OF_D_VALUE_STATES ];
 };
 
-int lzfse_bit_stream_initialize(
-     lzfse_bit_stream_t **bit_stream,
+int assorted_lzfse_bit_stream_initialize(
+     assorted_lzfse_bit_stream_t **bit_stream,
      const uint8_t *byte_stream,
      size_t byte_stream_size,
      libcerror_error_t **error );
 
-int lzfse_bit_stream_free(
-     lzfse_bit_stream_t **bit_stream,
+int assorted_lzfse_bit_stream_free(
+     assorted_lzfse_bit_stream_t **bit_stream,
      libcerror_error_t **error );
 
-int lzfse_bit_stream_read(
-     lzfse_bit_stream_t *bit_stream,
+int assorted_lzfse_bit_stream_read(
+     assorted_lzfse_bit_stream_t *bit_stream,
      uint8_t number_of_bits,
      libcerror_error_t **error );
 
-int lzfse_bit_stream_get_value(
-     lzfse_bit_stream_t *bit_stream,
+int assorted_lzfse_bit_stream_get_value(
+     assorted_lzfse_bit_stream_t *bit_stream,
      uint8_t number_of_bits,
      uint32_t *value_32bit,
      libcerror_error_t **error );
 
-int lzfse_state_initialize(
-     lzfse_state_t **state,
+int assorted_lzfse_state_initialize(
+     assorted_lzfse_state_t **state,
      libcerror_error_t **error );
 
-int lzfse_state_free(
-     lzfse_state_t **state,
+int assorted_lzfse_state_free(
+     assorted_lzfse_state_t **state,
      libcerror_error_t **error );
 
-int lzfse_build_decoder_table(
+int assorted_lzfse_build_decoder_table(
      int number_of_states,
      uint16_t number_of_symbols,
      const uint16_t *frequency_table,
-     lzfse_decoder_entry_t *decoder_table,
+     assorted_lzfse_decoder_entry_t *decoder_table,
      libcerror_error_t **error );
 
-int lzfse_build_value_decoder_table(
+int assorted_lzfse_build_value_decoder_table(
      int number_of_states,
      uint16_t number_of_symbols,
      const uint16_t *frequency_table,
      const uint8_t *value_bits_table,
      const int32_t *value_base_table,
-     lzfse_value_decoder_entry_t *value_decoder_table,
+     assorted_lzfse_value_decoder_entry_t *value_decoder_table,
      libcerror_error_t **error );
 
-int lzfse_read_block_v1_header(
-     lzfse_state_t *state,
+int assorted_lzfse_read_block_v1_header(
+     assorted_lzfse_state_t *state,
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
      uint16_t *frequency_table,
      libcerror_error_t **error );
 
-int lzfse_read_block_v2_header(
-     lzfse_state_t *state,
+int assorted_lzfse_read_block_v2_header(
+     assorted_lzfse_state_t *state,
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
      uint16_t *frequency_table,
      libcerror_error_t **error );
 
-int lzfse_read_compressed_frequency_table(
+int assorted_lzfse_read_compressed_frequency_table(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint16_t *frequency_table,
      libcerror_error_t **error );
 
-int lzfse_read_block(
-     lzfse_state_t *state,
+int assorted_lzfse_read_block(
+     assorted_lzfse_state_t *state,
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
@@ -248,22 +248,22 @@ int lzfse_read_block(
      size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
-int lzfse_read_literal_values(
-     lzfse_state_t *state,
-     lzfse_bit_stream_t *bit_stream,
+int assorted_lzfse_read_literal_values(
+     assorted_lzfse_state_t *state,
+     assorted_lzfse_bit_stream_t *bit_stream,
      uint8_t *literal_values,
      libcerror_error_t **error );
 
-int lzfse_read_lmd_values(
-     lzfse_state_t *state,
-     lzfse_bit_stream_t *bit_stream,
+int assorted_lzfse_read_lmd_values(
+     assorted_lzfse_state_t *state,
+     assorted_lzfse_bit_stream_t *bit_stream,
      uint8_t *literal_values,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
-int lzfse_decompress(
+int assorted_lzfse_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
@@ -274,5 +274,5 @@ int lzfse_decompress(
 }
 #endif
 
-#endif /* !defined( _LZFSE_H ) */
+#endif /* !defined( _ASSORTED_LZFSE_H ) */
 

@@ -220,11 +220,11 @@ lzfsedecompress_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
+	assorted_lzfse.c assorted_lzfse.h \
+	assorted_lzvn.c assorted_lzvn.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h \
-	lzfse.c lzfse.h \
-	lzfsedecompress.c \
-	lzvn.c lzvn.h
+	lzfsedecompress.c
 
 lzfsedecompress_LDADD = \
 	@LIBCFILE_LIBADD@ \
@@ -295,8 +295,9 @@ lzvndecompress_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
+	assorted_lzvn.c assorted_lzvn.h \
 	assorted_output.c assorted_output.h \
-	lzvn.c lzvn.h \
+	assorted_system_string.h \
 	lzvndecompress.c
 
 lzvndecompress_LDADD = \
@@ -315,6 +316,7 @@ lzxdecompress_SOURCES = \
 	assorted_libfwnt.h \
 	assorted_output.c assorted_output.h \
 	assorted_signal.c assorted_signal.h \
+	assorted_system_string.h \
 	assorted_unused.h \
 	decompression_handle.c decompression_handle.h \
 	lzxdecompress.c

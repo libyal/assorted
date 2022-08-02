@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="lzfsedecompress"
-	ProjectGUID="{AAA81DBD-AA66-45E9-A942-C15F3A5EA4C7}"
+	ProjectGUID="{1D51F9DC-066F-47CC-9DDA-082E9DD54DA4}"
 	RootNamespace="lzfsedecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -180,19 +180,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\assorted_lzfse.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_lzvn.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_output.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\lzfse.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\lzfsedecompress.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\lzvn.c"
 				>
 			</File>
 		</Filter>
@@ -222,19 +222,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\assorted_lzfse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_lzvn.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_output.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_system_string.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\lzfse.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\lzvn.h"
 				>
 			</File>
 		</Filter>

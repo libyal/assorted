@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_lzvn"
-	ProjectGUID="{5AFD7365-7A6A-47E2-9379-25A6A3214813}"
+	ProjectGUID="{FBCEB418-4164-4242-894D-A76E99D870D1}"
 	RootNamespace="assorted_test_lzvn"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\lzvn.c"
+				RelativePath="..\..\src\assorted_lzvn.c"
 				>
 			</File>
 			<File
@@ -190,7 +190,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\lzvn.h"
+				RelativePath="..\..\src\assorted_lzvn.h"
 				>
 			</File>
 			<File
