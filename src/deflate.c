@@ -97,7 +97,8 @@ int deflate_build_dynamic_huffman_trees(
 		 number_of_code_sizes + 4,
 		 number_of_code_sizes );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	number_of_literal_codes += 257;
 
 	if( number_of_literal_codes > 286 )
@@ -246,6 +247,7 @@ int deflate_build_dynamic_huffman_trees(
 #endif
 		if( symbol < 16 )
 		{
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -254,6 +256,7 @@ int deflate_build_dynamic_huffman_trees(
 				 code_size_index,
 				 symbol );
 			}
+#endif
 			code_size_array[ code_size_index++ ] = (uint8_t) symbol;
 
 			continue;

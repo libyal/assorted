@@ -1,5 +1,5 @@
 /*
- * Decompresses LZFSE compressed data
+ * Decompresses LZMA compressed data
  *
  * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -30,13 +30,17 @@
 #include <stdlib.h>
 #endif
 
+#if defined( HAVE_LIBLZMA ) || defined( LIBLZMA_DLL )
+#include <lzma.h>
+#endif
+
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
+#include "assorted_lzma.h"
 #include "assorted_output.h"
 #include "assorted_system_string.h"
-#include "lzfse.h"
 
 /* Prints the executable usage information
  */
@@ -47,14 +51,17 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use lzfsedecompress to decompress data as LZFSE compressed data.\n\n" );
+	fprintf( stream, "Use lzmadecompress to decompress data as LZMA compressed data.\n\n" );
 
-	fprintf( stream, "Usage: lzfsedecompress [ -d size ] [ -o offset ] [ -s size ] [ -hvV ]\n"
+	fprintf( stream, "Usage: lzmadecompress [ -d size ] [ -o offset ] [ -s size ] [ -12hvV ]\n"
 	                 "       source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
-	fprintf( stream, "\t-d:     size of the decompressed data (default is 16384).\n" );
+	fprintf( stream, "\t-1:     use the liblzma decompression method\n" );
+	fprintf( stream, "\t-2:     use the internal decompression method (default)\n" );
+	fprintf( stream, "\t-d:     size of the decompressed data (default is 16 times the size\n"
+	                 "\t        the data)).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
@@ -73,22 +80,27 @@ int main( int argc, char * const argv[] )
 {
 	char destination[ 128 ];
 
-	libcerror_error_t *error          = NULL;
-	libcfile_file_t *destination_file = NULL;
-	libcfile_file_t *source_file      = NULL;
-	system_character_t *source        = NULL;
-	uint8_t *buffer                   = NULL;
-	uint8_t *uncompressed_data        = NULL;
-	char *program                     = "lzfsedecompress";
-	system_integer_t option           = 0;
-	size64_t source_size              = 0;
-	size_t uncompressed_data_size     = 0;
-	ssize_t read_count                = 0;
-	ssize_t write_count               = 0;
-	off_t source_offset               = 0;
-	int print_count                   = 0;
-	int result                        = 0;
-	int verbose                       = 0;
+	libcerror_error_t *error           = NULL;
+	libcfile_file_t *destination_file  = NULL;
+	libcfile_file_t *source_file       = NULL;
+	system_character_t *source         = NULL;
+	uint8_t *buffer                    = NULL;
+	uint8_t *uncompressed_data         = NULL;
+	char *program                      = "lzmadecompress";
+	system_integer_t option            = 0;
+	size64_t source_size               = 0;
+	size_t uncompressed_data_size      = 0;
+	ssize_t read_count                 = 0;
+	ssize_t write_count                = 0;
+	off_t source_offset                = 0;
+	int decompression_method           = 2;
+	int print_count                    = 0;
+	int result                         = 0;
+	int verbose                        = 0;
+
+#if defined( HAVE_LIBLZMA ) || defined( LIBLZMA_DLL )
+	lzma_stream lzma_compressed_stream = LZMA_STREAM_INIT;
+#endif
 
 	assorted_output_version_fprint(
 	 stdout,
@@ -97,7 +109,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = assorted_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "d:ho:s:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "12d:ho:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -112,6 +124,16 @@ int main( int argc, char * const argv[] )
 				 stdout );
 
 				return( EXIT_FAILURE );
+
+			case '1':
+				decompression_method = 1;
+
+				break;
+
+			case '2':
+				decompression_method = 2;
+
+				break;
 
 			case (system_integer_t) 'd':
 				uncompressed_data_size = system_string_copy_to_long( optarg );
@@ -241,7 +263,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( uncompressed_data_size == 0 )
 	{
-		uncompressed_data_size = 16384;
+		uncompressed_data_size = source_size * 16;
 	}
 	uncompressed_data = (uint8_t *) memory_allocate(
 	                                 sizeof( uint8_t ) * uncompressed_data_size );
@@ -271,7 +293,7 @@ int main( int argc, char * const argv[] )
 	print_count = narrow_string_snprintf(
 	               destination,
 	               128,
-	               "%s.lzfsedecompressed",
+	               "%s.lzmadecompressed",
 	               source );
 
 	if( ( print_count < 0 )
@@ -299,18 +321,64 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( lzfse_decompress(
-	     buffer,
-	     source_size,
-	     uncompressed_data,
-	     &uncompressed_data_size,
-	     &error ) != 1 )
+	if( decompression_method == 1 )
 	{
+#if !defined( HAVE_LIBLZMA ) && !defined( LIBLZMA_DLL )
 		fprintf(
 		 stderr,
-		 "Unable to decompress data.\n" );
+		 "Missing liblzma support.\n" );
 
 		goto on_error;
+
+#else
+		if( lzma_stream_decoder(
+		     &lzma_compressed_stream,
+		     UINT64_MAX,
+		     0 ) != LZMA_OK )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to decompress data.\n" );
+
+			goto on_error;
+		}
+		lzma_compressed_stream.next_in   = buffer;
+		lzma_compressed_stream.avail_in  = source_size;
+		lzma_compressed_stream.next_out  = uncompressed_data;
+		lzma_compressed_stream.avail_out = uncompressed_data_size;
+
+		if( lzma_code(
+		     &lzma_compressed_stream,
+		     LZMA_RUN ) != LZMA_STREAM_END )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to decompress data.\n" );
+
+			goto on_error;
+		}
+		uncompressed_data_size = (size_t) lzma_compressed_stream.total_out;
+
+		lzma_end(
+		 &lzma_compressed_stream );
+
+#endif /* !defined( HAVE_BZLIB ) && !defined( BZ_DLL ) */
+	}
+	else if( decompression_method == 2 )
+	{
+		if( assorted_lzma_decompress(
+		     buffer,
+		     source_size,
+		     uncompressed_data,
+		     &uncompressed_data_size,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to decompress data.\n" );
+
+			goto on_error;
+		}
 	}
 	/* Open the destination file
 	 */
@@ -411,13 +479,13 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stdout,
-		 "LZFSE decompression:\tFAILURE\n" );
+		 "LZMA decompression:\tFAILURE\n" );
 
 		return( EXIT_FAILURE );
 	}
 	fprintf(
 	 stdout,
-	 "LZFSE decompression:\tSUCCESS\n" );
+	 "LZMA decompression:\tSUCCESS\n" );
 
 	return( EXIT_SUCCESS );
 

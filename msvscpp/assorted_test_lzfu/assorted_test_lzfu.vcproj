@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_lzfu"
-	ProjectGUID="{DCF406F1-6C0E-419F-883A-2807919D6668}"
+	ProjectGUID="{F3C38645-5F1E-4236-824D-F08181026C62}"
 	RootNamespace="assorted_test_lzfu"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

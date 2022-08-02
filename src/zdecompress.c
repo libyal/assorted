@@ -39,6 +39,7 @@
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
+#include "assorted_system_string.h"
 #include "deflate.h"
 
 /* Prints the executable usage information

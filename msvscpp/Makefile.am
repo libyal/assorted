@@ -42,6 +42,7 @@ MSVSCPP_FILES = \
 	libuna/libuna.vcproj \
 	lzfsedecompress/lzfsedecompress.vcproj \
 	lzfudecompress/lzfudecompress.vcproj \
+	lzmadecompress/lzmadecompress.vcproj \
 	lznt1decompress/lznt1decompress.vcproj \
 	lzvndecompress/lzvndecompress.vcproj \
 	lzxdecompress/lzxdecompress.vcproj \

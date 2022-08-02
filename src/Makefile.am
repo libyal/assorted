@@ -17,6 +17,7 @@ AM_CPPFLAGS = \
 	@LIBFWNT_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@BZIP2_CPPFLAGS@ \
+	@LZMA_CPPFLAGS@ \
 	@LIBCRYPTO_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@
@@ -35,6 +36,7 @@ bin_PROGRAMS = \
 	fletcher64sum \
 	lzfsedecompress \
 	lzfudecompress \
+	lzmadecompress \
 	lznt1decompress \
 	lzvndecompress \
 	lzxdecompress \
@@ -124,6 +126,7 @@ banalyze_LDADD = \
 	@PTHREAD_LIBADD@
 
 bz2decompress_SOURCES = \
+	assorted_bzip.c assorted_bzip.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
@@ -133,7 +136,6 @@ bz2decompress_SOURCES = \
 	assorted_system_string.h \
 	bit_stream.c bit_stream.h \
 	bz2decompress.c \
-	bzip.c bzip.h \
 	huffman_tree.c huffman_tree.h
 
 bz2decompress_LDADD = \
@@ -248,6 +250,25 @@ lzfudecompress_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@
+
+lzmadecompress_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_lzma.c assorted_lzma.h \
+	assorted_output.c assorted_output.h \
+	assorted_system_string.h \
+	lzmadecompress.c
+
+lzmadecompress_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LZMA_LIBADD@
 
 lznt1decompress_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -535,6 +556,7 @@ zdecompress_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
+	assorted_system_string.h \
 	bit_stream.c bit_stream.h \
 	deflate.c deflate.h \
 	huffman_tree.c huffman_tree.h \
@@ -555,36 +577,60 @@ distclean: clean
 	/bin/rm -f Makefile
 
 splint:
+	@echo "Running splint on adcdecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(adcdecompress_SOURCES)
 	@echo "Running splint on adler32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(adler32sum_SOURCES)
 	@echo "Running splint on ascii7decompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(ascii7decompress_SOURCES)
+	@echo "Running splint on banalyze ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(banalyze_SOURCES)
+	@echo "Running splint on bz2decompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(bz2decompress_SOURCES)
 	@echo "Running splint on crc32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(crc32sum_SOURCES)
 	@echo "Running splint on crc64sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(crc64sum_SOURCES)
 	@echo "Running splint on fletcher32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(fletcher32sum_SOURCES)
-	@echo "Running splint on mssearchdecode ..."
-	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(mssearchdecode_SOURCES)
+	@echo "Running splint on fletcher64sum ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(fletcher64sum_SOURCES)
+	@echo "Running splint on lzfsedecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzfsedecompress_SOURCES)
 	@echo "Running splint on lzfudecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzfudecompress_SOURCES)
+	@echo "Running splint on lzmadecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzmadecompress_SOURCES)
 	@echo "Running splint on lznt1decompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lznt1decompress_SOURCES)
+	@echo "Running splint on lzvndecompress ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzvndecompress_SOURCES)
 	@echo "Running splint on lzxdecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzxdecompress_SOURCES)
 	@echo "Running splint on lzxpressdecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(lzxpressdecompress_SOURCES)
+	@echo "Running splint on mssearchdecode ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(mssearchdecode_SOURCES)
+	@echo "Running splint on plistinfo ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(plistinfo_SOURCES)
 	@echo "Running splint on rc4crypt ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(rc4crypt_SOURCES)
 	@echo "Running splint on serpentcrypt ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(serpentcrypt_SOURCES)
+	@echo "Running splint on wevtinfo ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(wevtinfo_SOURCES)
+	@echo "Running splint on winregsave ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(winregsave_SOURCES)
+	@echo "Running splint on winshellfolder ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(winshellfolder_SOURCES)
+	@echo "Running splint on winshelllink ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(winshelllink_SOURCES)
 	@echo "Running splint on xor32sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(xor32sum_SOURCES)
 	@echo "Running splint on xor64sum ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(xor64sum_SOURCES)
 	@echo "Running splint on zcompress ..."
-	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(zdecompress_SOURCES)
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(zcompress_SOURCES)
 	@echo "Running splint on zdecompress ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(zdecompress_SOURCES)
 

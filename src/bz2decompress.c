@@ -34,13 +34,13 @@
 #include <bzlib.h>
 #endif
 
+#include "assorted_bzip.h"
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
 #include "assorted_system_string.h"
-#include "bzip.h"
 
 /* Prints the executable usage information
  */
@@ -53,12 +53,15 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use bz2decompress to decompress data as bzip2 compressed data.\n\n" );
 
-	fprintf( stream, "Usage: bz2decompress [ -o offset ] [ -s size ] [ -12hvV ] source\n\n" );
+	fprintf( stream, "Usage: bz2decompress [ -d size ] [ -o offset ] [ -s size ] [ -12hvV ]\n"
+	                 "       source\n\n" );
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
-	fprintf( stream, "\t-1:     use the bzip2 decompression method\n" );
+	fprintf( stream, "\t-1:     use the bzlib decompression method\n" );
 	fprintf( stream, "\t-2:     use the internal decompression method (default)\n" );
+	fprintf( stream, "\t-d:     size of the decompressed data (default is 16 times the size\n"
+	                 "\t        the data)).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );
@@ -106,7 +109,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = assorted_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "12ho:s:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "12d:ho:s:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -129,6 +132,11 @@ int main( int argc, char * const argv[] )
 
 			case '2':
 				decompression_method = 2;
+
+				break;
+
+			case (system_integer_t) 'd':
+				uncompressed_data_size = system_string_copy_to_long( optarg );
 
 				break;
 
@@ -253,8 +261,10 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	uncompressed_data_size = source_size * 16;
-
+	if( uncompressed_data_size == 0 )
+	{
+		uncompressed_data_size = source_size * 16;
+	}
 	uncompressed_data = (uint8_t *) memory_allocate(
 	                                 sizeof( uint8_t ) * uncompressed_data_size );
 
@@ -316,7 +326,7 @@ int main( int argc, char * const argv[] )
 #if !defined( HAVE_BZLIB ) && !defined( BZ_DLL )
 		fprintf(
 		 stderr,
-		 "Missing bzip2 support.\n" );
+		 "Missing bzlib support.\n" );
 
 		goto on_error;
 
@@ -343,7 +353,7 @@ int main( int argc, char * const argv[] )
 	}
 	else if( decompression_method == 2 )
 	{
-		if( bzip_decompress(
+		if( assorted_bzip_decompress(
 		     buffer,
 		     source_size,
 		     uncompressed_data,

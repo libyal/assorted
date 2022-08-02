@@ -74,8 +74,14 @@ const int32_t lzfse_m_value_base_table[ LZFSE_NUMBER_OF_M_VALUE_SYMBOLS ] = {
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
        	16, 24, 56, 312 };
 
+#if defined( _MSC_VER )
 #define lzfse_count_leading_zeros( value ) \
-	__builtin_clz( value )
+	__lzcnt( (unsigned int) value )
+
+#else
+#define lzfse_count_leading_zeros( value ) \
+	__builtin_clz( (unsigned int) value )
+#endif
 
 /* Creates a bit stream
  * Make sure the value bit_stream is referencing, is set to NULL
@@ -504,9 +510,7 @@ int lzfse_build_decoder_table(
 
 		return( -1 );
 	}
-/* TODO fse_check_freq */
-
-	number_of_leading_zeros = lzfse_count_leading_zeros( number_of_states );
+	number_of_leading_zeros = (int) lzfse_count_leading_zeros( number_of_states );
 
 	for( symbol = 0;
 	     symbol < number_of_symbols;
@@ -533,7 +537,7 @@ int lzfse_build_decoder_table(
 
 			return( -1 );
 		}
-		number_of_bits = lzfse_count_leading_zeros( frequency ) - number_of_leading_zeros;
+		number_of_bits = (int) lzfse_count_leading_zeros( frequency ) - number_of_leading_zeros;
 
 		base_decoder_weight = ( ( 2 * number_of_states ) >> number_of_bits ) - frequency;
 
@@ -586,6 +590,7 @@ int lzfse_build_value_decoder_table(
 	int frequency                                    = 0;
 	int number_of_bits                               = 0;
 	int number_of_leading_zeros                      = 0;
+	int sum_of_frequencies                           = 0;
 
 	if( number_of_symbols > 256 )
 	{
@@ -642,9 +647,7 @@ int lzfse_build_value_decoder_table(
 
 		return( -1 );
 	}
-/* TODO fse_check_freq */
-
-	number_of_leading_zeros = lzfse_count_leading_zeros( number_of_states );
+	number_of_leading_zeros = (int) lzfse_count_leading_zeros( number_of_states );
 
 	for( symbol = 0;
 	     symbol < number_of_symbols;
@@ -658,7 +661,20 @@ int lzfse_build_value_decoder_table(
 		{
 			continue;
 		}
-		number_of_bits = lzfse_count_leading_zeros( frequency ) - number_of_leading_zeros;
+		sum_of_frequencies += frequency;
+
+		if( sum_of_frequencies > number_of_states )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid sum of frequencies value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		number_of_bits = (int) lzfse_count_leading_zeros( frequency ) - number_of_leading_zeros;
 
 		base_decoder_weight = ( ( 2 * number_of_states ) >> number_of_bits ) - frequency;
 

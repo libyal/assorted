@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="crc64sum"
-	ProjectGUID="{77991E66-995B-49E6-8EE2-54BAA1BA67E7}"
-	RootNamespace="crc64sum"
+	Name="lzmadecompress"
+	ProjectGUID="{51941255-1FF8-4600-964A-3C0CDBDB544B}"
+	RootNamespace="lzmadecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -180,15 +180,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\assorted_lzma.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_output.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\crc64.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\crc64sum.c"
+				RelativePath="..\..\src\lzmadecompress.c"
 				>
 			</File>
 		</Filter>
@@ -218,11 +218,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\assorted_lzma.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_output.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\crc64.h"
+				RelativePath="..\..\src\assorted_system_string.h"
 				>
 			</File>
 		</Filter>

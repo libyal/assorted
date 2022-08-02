@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="ascii7decompress"
-	ProjectGUID="{B43B2EC3-478B-4A0C-8D05-01373FC5AA13}"
+	ProjectGUID="{E66FFC8D-D24F-49BE-9DAA-02F6D735ADE6}"
 	RootNamespace="ascii7decompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

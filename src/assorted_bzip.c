@@ -23,27 +23,27 @@
 #include <memory.h>
 #include <types.h>
 
+#include "assorted_bzip.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
 #include "bit_stream.h"
-#include "bzip.h"
 #include "huffman_tree.h"
 
 #define BLOCK_DATA_SIZE 8192
 
 /* Table of the CRC-32 of all 8-bit messages.
  */
-uint32_t bzip_crc32_table[ 256 ];
+uint32_t assorted_bzip_crc32_table[ 256 ];
 
 /* Value to indicate the CRC-32 table been computed
  */
-int bzip_crc32_table_computed = 0;
+int assorted_bzip_crc32_table_computed = 0;
 
 /* Initializes the internal CRC-32 table
  * The table speeds up the CRC-32 calculation
  * The table is calcuted in reverse bit-order
  */
-void bzip_initialize_crc32_table(
+void assorted_bzip_initialize_crc32_table(
       void )
 {
 	uint32_t crc32             = 0;
@@ -69,23 +69,23 @@ void bzip_initialize_crc32_table(
 				crc32 = crc32 << 1;
 			}
 		}
-		bzip_crc32_table[ crc32_table_index ] = crc32;
+		assorted_bzip_crc32_table[ crc32_table_index ] = crc32;
 	}
-	bzip_crc32_table_computed = 1;
+	assorted_bzip_crc32_table_computed = 1;
 }
 
 /* Calculates the CRC-32 of a buffer
  * Use a previous key of 0 to calculate a new CRC-32
  * Returns 1 if successful or -1 on error
  */
-int bzip_calculate_crc32(
+int assorted_bzip_calculate_crc32(
      uint32_t *crc32,
      const uint8_t *data,
      size_t data_size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function      = "bzip_calculate_crc32";
+	static char *function      = "assorted_bzip_calculate_crc32";
 	size_t data_offset         = 0;
 	uint32_t crc32_table_index = 0;
 	uint32_t safe_crc32        = 0;
@@ -123,9 +123,9 @@ int bzip_calculate_crc32(
 
 		return( -1 );
 	}
-        if( bzip_crc32_table_computed == 0 )
+        if( assorted_bzip_crc32_table_computed == 0 )
 	{
-		bzip_initialize_crc32_table();
+		assorted_bzip_initialize_crc32_table();
 	}
 	safe_crc32 = initial_value ^ (uint32_t) 0xffffffffUL;
 
@@ -137,7 +137,7 @@ int bzip_calculate_crc32(
 		 */
 		crc32_table_index = ( ( safe_crc32 >> 24 ) ^ data[ data_offset ] ) & 0x000000ffUL;
 
-		safe_crc32 = bzip_crc32_table[ crc32_table_index ] ^ ( safe_crc32 << 8 );
+		safe_crc32 = assorted_bzip_crc32_table[ crc32_table_index ] ^ ( safe_crc32 << 8 );
         }
         *crc32 = safe_crc32 ^ (uint32_t) 0xffffffffUL;
 
@@ -147,7 +147,7 @@ int bzip_calculate_crc32(
 /* Reverses a Burrows-Wheeler transform and run-length encoded strings
  * Returns 1 on success or -1 on error
  */
-int bzip_reverse_burrows_wheeler_transform(
+int assorted_bzip_reverse_burrows_wheeler_transform(
      const uint8_t *input_data,
      size_t input_data_size,
      size_t *permutations,
@@ -159,7 +159,7 @@ int bzip_reverse_burrows_wheeler_transform(
 {
 	size_t distributions[ 256 ];
 
-	static char *function                = "bzip_reverse_burrows_wheeler_transform";
+	static char *function                = "assorted_bzip_reverse_burrows_wheeler_transform";
 	size_t input_data_offset             = 0;
 	size_t distribution_value            = 0;
 	size_t number_of_values              = 0;
@@ -355,13 +355,13 @@ int bzip_reverse_burrows_wheeler_transform(
 /* Reads the stream header
  * Returns 1 on success or -1 on error
  */
-int bzip_read_stream_header(
+int assorted_bzip_read_stream_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *compression_level,
      libcerror_error_t **error )
 {
-	static char *function          = "bzip_read_stream_header";
+	static char *function          = "assorted_bzip_read_stream_header";
 	uint8_t safe_compression_level = 0;
 
 	if( compressed_data == NULL )
@@ -481,12 +481,12 @@ int bzip_read_stream_header(
 /* Reads a (stream) block header or stream footer signature
  * Returns 1 on success or -1 on error
  */
-int bzip_read_signature(
+int assorted_bzip_read_signature(
      bit_stream_t *bit_stream,
      uint64_t *signature,
      libcerror_error_t **error )
 {
-	static char *function   = "bzip_read_signature";
+	static char *function   = "assorted_bzip_read_signature";
 	uint32_t value_32bit    = 0;
 	uint64_t safe_signature = 0;
 
@@ -544,13 +544,13 @@ int bzip_read_signature(
 /* Reads a (stream) block header
  * Returns 1 on success or -1 on error
  */
-int bzip_read_block_header(
+int assorted_bzip_read_block_header(
      bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *origin_pointer,
      libcerror_error_t **error )
 {
-	static char *function        = "bzip_read_block_header";
+	static char *function        = "assorted_bzip_read_block_header";
 	uint32_t checksum            = 0;
 	uint32_t safe_origin_pointer = 0;
 	uint32_t value_32bit         = 0;
@@ -659,13 +659,13 @@ int bzip_read_block_header(
 /* Reads a (stream block) symbol stack
  * Returns 1 on success or -1 on error
  */
-int bzip_read_symbol_stack(
+int assorted_bzip_read_symbol_stack(
      bit_stream_t *bit_stream,
      uint8_t *symbol_stack,
      uint16_t *number_of_symbols,
      libcerror_error_t **error )
 {
-	static char *function    = "bzip_read_symbol_stack";
+	static char *function    = "assorted_bzip_read_symbol_stack";
 	uint32_t level1_bitmask  = 0;
 	uint32_t level1_value    = 0;
 	uint32_t level2_bitmask  = 0;
@@ -807,7 +807,7 @@ int bzip_read_symbol_stack(
 /* Reads selectors
  * Returns 1 on success or -1 on error
  */
-int bzip_read_selectors(
+int assorted_bzip_read_selectors(
      bit_stream_t *bit_stream,
      uint8_t *selectors,
      uint8_t number_of_trees,
@@ -815,7 +815,7 @@ int bzip_read_selectors(
      libcerror_error_t **error )
 {
 	uint8_t stack[ 7 ]      = { 0, 1, 2, 3, 4, 5, 6 };
-	static char *function   = "bzip_read_selectors";
+	static char *function   = "assorted_bzip_read_selectors";
 	uint32_t value_32bit    = 0;
 	uint16_t selector_index = 0;
 	uint8_t selector_value  = 0;
@@ -910,7 +910,7 @@ int bzip_read_selectors(
 /* Reads a Huffman tree
  * Returns 1 on success or -1 on error
  */
-int bzip_read_huffman_tree(
+int assorted_bzip_read_huffman_tree(
      bit_stream_t *bit_stream,
      huffman_tree_t *huffman_tree,
      uint16_t number_of_symbols,
@@ -918,7 +918,7 @@ int bzip_read_huffman_tree(
 {
 	uint8_t code_size_array[ 258 ];
 
-	static char *function     = "bzip_read_huffman_tree";
+	static char *function     = "assorted_bzip_read_huffman_tree";
 	uint32_t check_value      = 0;
 	uint32_t value_32bit      = 0;
 	uint16_t symbol_index     = 0;
@@ -1079,7 +1079,7 @@ int bzip_read_huffman_tree(
 /* Reads the Huffman trees
  * Returns 1 on success or -1 on error
  */
-int bzip_read_huffman_trees(
+int assorted_bzip_read_huffman_trees(
      bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
@@ -1087,7 +1087,7 @@ int bzip_read_huffman_trees(
      libcerror_error_t **error )
 {
 	huffman_tree_t *huffman_tree = NULL;
-	static char *function        = "bzip_read_huffman_trees";
+	static char *function        = "assorted_bzip_read_huffman_trees";
 	uint8_t tree_index           = 0;
 
 	if( huffman_trees == NULL )
@@ -1130,7 +1130,7 @@ int bzip_read_huffman_trees(
 
 			goto on_error;
 		}
-		if( bzip_read_huffman_tree(
+		if( assorted_bzip_read_huffman_tree(
 		     bit_stream,
 		     huffman_tree,
 		     number_of_symbols,
@@ -1164,7 +1164,7 @@ on_error:
 /* Reads block data
  * Returns 1 on success or -1 on error
  */
-int bzip_read_block_data(
+int assorted_bzip_read_block_data(
      bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
@@ -1176,7 +1176,7 @@ int bzip_read_block_data(
      size_t *block_data_size,
      libcerror_error_t **error )
 {
-	static char *function                = "bzip_read_block_data";
+	static char *function                = "assorted_bzip_read_block_data";
 	size_t block_data_offset             = 0;
 	size_t safe_block_data_size          = 0;
 	size_t selector_index                = 0;
@@ -1447,13 +1447,13 @@ int bzip_read_block_data(
 /* Reads a stream foorter
  * Returns 1 on success or -1 on error
  */
-int bzip_read_stream_footer(
+int assorted_bzip_read_stream_footer(
      bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *checksum,
      libcerror_error_t **error )
 {
-	static char *function  = "bzip_read_stream_footer";
+	static char *function  = "assorted_bzip_read_stream_footer";
 	uint32_t safe_checksum = 0;
 
 	if( checksum == NULL )
@@ -1518,7 +1518,7 @@ int bzip_read_stream_footer(
 /* Decompresses data using BZIP2 compression
  * Returns 1 on success or -1 on error
  */
-int bzip_decompress(
+int assorted_bzip_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
@@ -1533,7 +1533,7 @@ int bzip_decompress(
 	huffman_tree_t *huffman_trees[ 7 ] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 	bit_stream_t *bit_stream           = NULL;
-	static char *function              = "bzip_decompress";
+	static char *function              = "assorted_bzip_decompress";
 	size_t block_data_size             = 0;
 	size_t compressed_data_offset      = 0;
 	size_t safe_uncompressed_data_size = 0;
@@ -1589,7 +1589,7 @@ int bzip_decompress(
 	}
 	safe_uncompressed_data_size = *uncompressed_data_size;
 
-	if( bzip_read_stream_header(
+	if( assorted_bzip_read_stream_header(
 	     compressed_data,
 	     compressed_data_size,
 	     &compression_level,
@@ -1636,7 +1636,7 @@ int bzip_decompress(
 	}
 	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
 	{
-		if( bzip_read_signature(
+		if( assorted_bzip_read_signature(
 		     bit_stream,
 		     &signature,
 		     error ) != 1 )
@@ -1666,7 +1666,7 @@ int bzip_decompress(
 		{
 			break;
 		}
-		if( bzip_read_block_header(
+		if( assorted_bzip_read_block_header(
 		     bit_stream,
 		     signature,
 		     &origin_pointer,
@@ -1695,7 +1695,7 @@ int bzip_decompress(
 
 			goto on_error;
 		}
-		if( bzip_read_symbol_stack(
+		if( assorted_bzip_read_symbol_stack(
 		     bit_stream,
 		     symbol_stack,
 		     &number_of_symbols,
@@ -1746,7 +1746,7 @@ int bzip_decompress(
 			 "\n" );
 		}
 #endif
-		if( bzip_read_selectors(
+		if( assorted_bzip_read_selectors(
 		     bit_stream,
 		     selectors,
 		     number_of_trees,
@@ -1762,7 +1762,7 @@ int bzip_decompress(
 
 			goto on_error;
 		}
-		if( bzip_read_huffman_trees(
+		if( assorted_bzip_read_huffman_trees(
 		     bit_stream,
 		     huffman_trees,
 		     number_of_trees,
@@ -1780,7 +1780,7 @@ int bzip_decompress(
 		}
 		block_data_size = BLOCK_DATA_SIZE;
 
-		if( bzip_read_block_data(
+		if( assorted_bzip_read_block_data(
 		     bit_stream,
 		     huffman_trees,
 		     number_of_trees,
@@ -1821,7 +1821,7 @@ int bzip_decompress(
 		}
 		/* Perform Burrows-Wheeler transform
 		 */
-		if( bzip_reverse_burrows_wheeler_transform(
+		if( assorted_bzip_reverse_burrows_wheeler_transform(
 		     block_data,
 		     block_data_size,
 		     permutations,
@@ -1872,7 +1872,7 @@ int bzip_decompress(
 			}
 		}
 	}
-	if( bzip_read_stream_footer(
+	if( assorted_bzip_read_stream_footer(
 	     bit_stream,
 	     signature,
 	     &stored_checksum,
@@ -1900,7 +1900,7 @@ int bzip_decompress(
 
 		goto on_error;
 	}
-	if( bzip_calculate_crc32(
+	if( assorted_bzip_calculate_crc32(
 	     &calculated_checksum,
 	     uncompressed_data,
 	     uncompressed_data_offset,

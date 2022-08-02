@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libfplist"
-	ProjectGUID="{F53A74D8-26D0-4B5F-AB6F-58B48FE8BDC4}"
+	ProjectGUID="{A62435FF-3966-48D2-B4FE-05B5A958E837}"
 	RootNamespace="libfplist"
 	TargetFrameworkVersion="131072"
 	>

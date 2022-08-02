@@ -2,7 +2,7 @@ AC_PREREQ([2.69])
 
 AC_INIT(
  [assorted],
- [20210801],
+ [20210802],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -110,6 +110,10 @@ AX_ZLIB_CHECK_UNCOMPRESS
 
 dnl Check for bz2lib compression support
 AX_BZIP2_CHECK_ENABLE
+AX_BZIP2_CHECK_DECOMPRESS
+
+dnl Check if lzma or required headers and functions are available
+AX_LZMA_CHECK_ENABLE
 
 dnl Check for enabling libhmac for message digest hash function support
 AX_LIBHMAC_CHECK_ENABLE
@@ -180,10 +184,11 @@ Building:
    libfwnt support:                                $ac_cv_libfwnt
    ADC compression support:                        local
    ADLER32 checksum support:                       $ac_cv_adler32
-   DEFLATE compression support:                    $ac_cv_zlib
-   BZIP2 compression support:                      $ac_cv_bzip2
+   DEFLATE compression support:                    $ac_cv_uncompress
+   BZIP2 compression support:                      $ac_cv_bzip2_decompress
    LZFSE compression support:                      local
    LZFU compression support:                       local
+   LZMA compression support:                       $ac_cv_lzma
    LZNT1 compression support:                      $ac_cv_libfwnt
    LZX compression support:                        $ac_cv_libfwnt
    LZXPRESS compression support:                   $ac_cv_libfwnt

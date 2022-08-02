@@ -33,8 +33,8 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
+#include "../src/assorted_bzip.h"
 #include "../src/bit_stream.h"
-#include "../src/bzip.h"
 #include "../src/huffman_tree.h"
 
 /* Define to make assorted_test_bzip generate verbose output
@@ -63,7 +63,7 @@ uint8_t assorted_test_bzip_uncompressed_data[ 108 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the bzip_initialize_crc32_table function
+/* Tests the assorted_bzip_initialize_crc32_table function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_initialize_crc32_table(
@@ -71,12 +71,12 @@ int assorted_test_bzip_initialize_crc32_table(
 {
 	/* Test invocation of function only
 	 */
-	bzip_initialize_crc32_table();
+	assorted_bzip_initialize_crc32_table();
 
 	return( 1 );
 }
 
-/* Tests the bzip_calculate_crc32 function
+/* Tests the assorted_bzip_calculate_crc32 function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_calculate_crc32(
@@ -89,7 +89,7 @@ int assorted_test_bzip_calculate_crc32(
 
 	/* Test regular cases
 	 */
-	result = bzip_calculate_crc32(
+	result = assorted_bzip_calculate_crc32(
 	          &checksum,
 	          (uint8_t *) data,
 	          13,
@@ -112,7 +112,7 @@ int assorted_test_bzip_calculate_crc32(
 
 	/* Test error cases
 	 */
-	result = bzip_calculate_crc32(
+	result = assorted_bzip_calculate_crc32(
 	          NULL,
 	          (uint8_t *) data,
 	          13,
@@ -131,7 +131,7 @@ int assorted_test_bzip_calculate_crc32(
 	libcerror_error_free(
 	 &error );
 
-	result = bzip_calculate_crc32(
+	result = assorted_bzip_calculate_crc32(
 	          &checksum,
 	          NULL,
 	          13,
@@ -150,7 +150,7 @@ int assorted_test_bzip_calculate_crc32(
 	libcerror_error_free(
 	 &error );
 
-	result = bzip_calculate_crc32(
+	result = assorted_bzip_calculate_crc32(
 	          &checksum,
 	          (uint8_t *) data,
 	          (size_t) SSIZE_MAX + 1,
@@ -175,7 +175,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_reverse_burrows_wheeler_transform function
+/* Tests the assorted_bzip_reverse_burrows_wheeler_transform function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_reverse_burrows_wheeler_transform(
@@ -214,7 +214,7 @@ int assorted_test_bzip_reverse_burrows_wheeler_transform(
 	 */
 	output_data_offset = 0;
 
-	result = bzip_reverse_burrows_wheeler_transform(
+	result = assorted_bzip_reverse_burrows_wheeler_transform(
 	          input_data,
 	          35,
 	          permutations,
@@ -252,7 +252,7 @@ int assorted_test_bzip_reverse_burrows_wheeler_transform(
 	 */
 	output_data_offset = 0;
 
-	result = bzip_reverse_burrows_wheeler_transform(
+	result = assorted_bzip_reverse_burrows_wheeler_transform(
 	          NULL,
 	          35,
 	          permutations,
@@ -280,7 +280,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_stream_header function
+/* Tests the assorted_bzip_read_stream_header function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_stream_header(
@@ -292,7 +292,7 @@ int assorted_test_bzip_read_stream_header(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_stream_header(
+	result = assorted_bzip_read_stream_header(
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          &compression_level,
@@ -314,7 +314,7 @@ int assorted_test_bzip_read_stream_header(
 
 	/* Test error cases
 	 */
-	result = bzip_read_stream_header(
+	result = assorted_bzip_read_stream_header(
 	          NULL,
 	          125,
 	          &compression_level,
@@ -338,7 +338,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_signature function
+/* Tests the assorted_bzip_read_signature function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_signature(
@@ -374,7 +374,7 @@ int assorted_test_bzip_read_signature(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -395,7 +395,7 @@ int assorted_test_bzip_read_signature(
 
 	/* Test error cases
 	 */
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          NULL,
 	          &signature,
 	          &error );
@@ -443,7 +443,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_block_header function
+/* Tests the assorted_bzip_read_block_header function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_block_header(
@@ -478,7 +478,7 @@ int assorted_test_bzip_read_block_header(
 	 "error",
 	 error );
 
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -499,7 +499,7 @@ int assorted_test_bzip_read_block_header(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_block_header(
+	result = assorted_bzip_read_block_header(
 	          bit_stream,
 	          signature,
 	          &origin_pointer,
@@ -521,7 +521,7 @@ int assorted_test_bzip_read_block_header(
 
 	/* Test error cases
 	 */
-	result = bzip_read_block_header(
+	result = assorted_bzip_read_block_header(
 	          NULL,
 	          signature,
 	          &origin_pointer,
@@ -570,7 +570,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_symbol_stack function
+/* Tests the assorted_bzip_read_symbol_stack function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_symbol_stack(
@@ -613,7 +613,7 @@ int assorted_test_bzip_read_symbol_stack(
 	 "error",
 	 error );
 
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -632,7 +632,7 @@ int assorted_test_bzip_read_symbol_stack(
 	 "error",
 	 error );
 
-	result = bzip_read_block_header(
+	result = assorted_bzip_read_block_header(
 	          bit_stream,
 	          signature,
 	          &origin_pointer,
@@ -663,7 +663,7 @@ int assorted_test_bzip_read_symbol_stack(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_symbol_stack(
+	result = assorted_bzip_read_symbol_stack(
 	          bit_stream,
 	          symbol_stack,
 	          &number_of_symbols,
@@ -695,7 +695,7 @@ int assorted_test_bzip_read_symbol_stack(
 
 	/* Test error cases
 	 */
-	result = bzip_read_symbol_stack(
+	result = assorted_bzip_read_symbol_stack(
 	          NULL,
 	          symbol_stack,
 	          &number_of_symbols,
@@ -744,7 +744,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_selectors function
+/* Tests the assorted_bzip_read_selectors function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_selectors(
@@ -790,7 +790,7 @@ int assorted_test_bzip_read_selectors(
 	 "error",
 	 error );
 
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -809,7 +809,7 @@ int assorted_test_bzip_read_selectors(
 	 "error",
 	 error );
 
-	result = bzip_read_block_header(
+	result = assorted_bzip_read_block_header(
 	          bit_stream,
 	          signature,
 	          &origin_pointer,
@@ -838,7 +838,7 @@ int assorted_test_bzip_read_selectors(
 	 "memset_result",
 	 memset_result );
 
-	result = bzip_read_symbol_stack(
+	result = assorted_bzip_read_symbol_stack(
 	          bit_stream,
 	          symbol_stack,
 	          &number_of_symbols,
@@ -889,7 +889,7 @@ int assorted_test_bzip_read_selectors(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_selectors(
+	result = assorted_bzip_read_selectors(
 	          bit_stream,
 	          selectors,
 	          number_of_selectors,
@@ -917,7 +917,7 @@ int assorted_test_bzip_read_selectors(
 
 	/* Test error cases
 	 */
-	result = bzip_read_selectors(
+	result = assorted_bzip_read_selectors(
 	          NULL,
 	          selectors,
 	          number_of_selectors,
@@ -967,7 +967,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_huffman_tree function
+/* Tests the assorted_bzip_read_huffman_tree function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_huffman_tree(
@@ -1011,7 +1011,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 "error",
 	 error );
 
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -1030,7 +1030,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 "error",
 	 error );
 
-	result = bzip_read_block_header(
+	result = assorted_bzip_read_block_header(
 	          bit_stream,
 	          signature,
 	          &origin_pointer,
@@ -1059,7 +1059,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 "memset_result",
 	 memset_result );
 
-	result = bzip_read_symbol_stack(
+	result = assorted_bzip_read_symbol_stack(
 	          bit_stream,
 	          symbol_stack,
 	          &number_of_symbols,
@@ -1108,7 +1108,7 @@ int assorted_test_bzip_read_huffman_tree(
 	 number_of_trees,
 	 (uint16_t) 2 );
 
-	result = bzip_read_selectors(
+	result = assorted_bzip_read_selectors(
 	          bit_stream,
 	          selectors,
 	          number_of_selectors,
@@ -1145,7 +1145,7 @@ int assorted_test_bzip_read_huffman_tree(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_huffman_tree(
+	result = assorted_bzip_read_huffman_tree(
 	          bit_stream,
 	          huffman_tree,
 	          number_of_symbols,
@@ -1162,7 +1162,7 @@ int assorted_test_bzip_read_huffman_tree(
 
 	/* Test error cases
 	 */
-	result = bzip_read_huffman_tree(
+	result = assorted_bzip_read_huffman_tree(
 	          NULL,
 	          huffman_tree,
 	          number_of_symbols,
@@ -1234,7 +1234,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_huffman_trees function
+/* Tests the assorted_bzip_read_huffman_trees function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_huffman_trees(
@@ -1279,7 +1279,7 @@ int assorted_test_bzip_read_huffman_trees(
 	 "error",
 	 error );
 
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -1298,7 +1298,7 @@ int assorted_test_bzip_read_huffman_trees(
 	 "error",
 	 error );
 
-	result = bzip_read_block_header(
+	result = assorted_bzip_read_block_header(
 	          bit_stream,
 	          signature,
 	          &origin_pointer,
@@ -1327,7 +1327,7 @@ int assorted_test_bzip_read_huffman_trees(
 	 "memset_result",
 	 memset_result );
 
-	result = bzip_read_symbol_stack(
+	result = assorted_bzip_read_symbol_stack(
 	          bit_stream,
 	          symbol_stack,
 	          &number_of_symbols,
@@ -1376,7 +1376,7 @@ int assorted_test_bzip_read_huffman_trees(
 	 number_of_trees,
 	 (uint16_t) 2 );
 
-	result = bzip_read_selectors(
+	result = assorted_bzip_read_selectors(
 	          bit_stream,
 	          selectors,
 	          number_of_selectors,
@@ -1394,7 +1394,7 @@ int assorted_test_bzip_read_huffman_trees(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_huffman_trees(
+	result = assorted_bzip_read_huffman_trees(
 	          bit_stream,
 	          huffman_trees,
 	          number_of_trees,
@@ -1412,7 +1412,7 @@ int assorted_test_bzip_read_huffman_trees(
 
 	/* Test error cases
 	 */
-	result = bzip_read_huffman_trees(
+	result = assorted_bzip_read_huffman_trees(
 	          NULL,
 	          huffman_trees,
 	          number_of_trees,
@@ -1491,7 +1491,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_block_data function
+/* Tests the assorted_bzip_read_block_data function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_block_data(
@@ -1547,7 +1547,7 @@ int assorted_test_bzip_read_block_data(
 	 "error",
 	 error );
 
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -1566,7 +1566,7 @@ int assorted_test_bzip_read_block_data(
 	 "error",
 	 error );
 
-	result = bzip_read_block_header(
+	result = assorted_bzip_read_block_header(
 	          bit_stream,
 	          signature,
 	          &origin_pointer,
@@ -1595,7 +1595,7 @@ int assorted_test_bzip_read_block_data(
 	 "memset_result",
 	 memset_result );
 
-	result = bzip_read_symbol_stack(
+	result = assorted_bzip_read_symbol_stack(
 	          bit_stream,
 	          symbol_stack,
 	          &number_of_symbols,
@@ -1644,7 +1644,7 @@ int assorted_test_bzip_read_block_data(
 	 number_of_trees,
 	 (uint16_t) 2 );
 
-	result = bzip_read_selectors(
+	result = assorted_bzip_read_selectors(
 	          bit_stream,
 	          selectors,
 	          number_of_selectors,
@@ -1660,7 +1660,7 @@ int assorted_test_bzip_read_block_data(
 	 "error",
 	 error );
 
-	result = bzip_read_huffman_trees(
+	result = assorted_bzip_read_huffman_trees(
 	          bit_stream,
 	          huffman_trees,
 	          number_of_trees,
@@ -1680,7 +1680,7 @@ int assorted_test_bzip_read_block_data(
 	 */
 	block_data_size = 128;
 
-	result = bzip_read_block_data(
+	result = assorted_bzip_read_block_data(
 	          bit_stream,
 	          huffman_trees,
 	          number_of_trees,
@@ -1718,7 +1718,7 @@ int assorted_test_bzip_read_block_data(
 
 	/* Test error cases
 	 */
-	result = bzip_read_block_data(
+	result = assorted_bzip_read_block_data(
 	          NULL,
 	          huffman_trees,
 	          number_of_trees,
@@ -1802,7 +1802,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_read_stream_footer function
+/* Tests the assorted_bzip_read_stream_footer function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_read_stream_footer(
@@ -1837,7 +1837,7 @@ int assorted_test_bzip_read_stream_footer(
 	 "error",
 	 error );
 
-	result = bzip_read_signature(
+	result = assorted_bzip_read_signature(
 	          bit_stream,
 	          &signature,
 	          &error );
@@ -1858,7 +1858,7 @@ int assorted_test_bzip_read_stream_footer(
 
 	/* Test regular cases
 	 */
-	result = bzip_read_stream_footer(
+	result = assorted_bzip_read_stream_footer(
 	          bit_stream,
 	          signature,
 	          &checksum,
@@ -1880,7 +1880,7 @@ int assorted_test_bzip_read_stream_footer(
 
 	/* Test error cases
 	 */
-	result = bzip_read_stream_footer(
+	result = assorted_bzip_read_stream_footer(
 	          NULL,
 	          signature,
 	          &checksum,
@@ -1929,7 +1929,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the bzip_decompress function
+/* Tests the assorted_bzip_decompress function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_bzip_decompress(
@@ -1943,7 +1943,7 @@ int assorted_test_bzip_decompress(
 
 	/* Test regular cases
 	 */
-	result = bzip_decompress(
+	result = assorted_bzip_decompress(
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          uncompressed_data,
@@ -1978,7 +1978,7 @@ int assorted_test_bzip_decompress(
 
 	/* Test error cases
 	 */
-	result = bzip_decompress(
+	result = assorted_bzip_decompress(
 	          NULL,
 	          125,
 	          uncompressed_data,
@@ -1997,7 +1997,7 @@ int assorted_test_bzip_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = bzip_decompress(
+	result = assorted_bzip_decompress(
 	          assorted_test_bzip_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
@@ -2016,7 +2016,7 @@ int assorted_test_bzip_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = bzip_decompress(
+	result = assorted_bzip_decompress(
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          NULL,
@@ -2035,7 +2035,7 @@ int assorted_test_bzip_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = bzip_decompress(
+	result = assorted_bzip_decompress(
 	          assorted_test_bzip_compressed_data,
 	          125,
 	          uncompressed_data,
@@ -2093,55 +2093,55 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "bzip_initialize_crc32_table",
+	 "assorted_bzip_initialize_crc32_table",
 	 assorted_test_bzip_initialize_crc32_table );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_calculate_crc32",
+	 "assorted_bzip_calculate_crc32",
 	 assorted_test_bzip_calculate_crc32 );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_reverse_burrows_wheeler_transform",
+	 "assorted_bzip_reverse_burrows_wheeler_transform",
 	 assorted_test_bzip_reverse_burrows_wheeler_transform );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_stream_header",
+	 "assorted_bzip_read_stream_header",
 	 assorted_test_bzip_read_stream_header );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_signature",
+	 "assorted_bzip_read_signature",
 	 assorted_test_bzip_read_signature );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_block_header",
+	 "assorted_bzip_read_block_header",
 	 assorted_test_bzip_read_block_header );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_symbol_stack",
+	 "assorted_bzip_read_symbol_stack",
 	 assorted_test_bzip_read_symbol_stack );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_selectors",
+	 "assorted_bzip_read_selectors",
 	 assorted_test_bzip_read_selectors );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_huffman_tree",
+	 "assorted_bzip_read_huffman_tree",
 	 assorted_test_bzip_read_huffman_tree );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_huffman_trees",
+	 "assorted_bzip_read_huffman_trees",
 	 assorted_test_bzip_read_huffman_trees );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_block_data",
+	 "assorted_bzip_read_block_data",
 	 assorted_test_bzip_read_block_data );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_read_stream_footer",
+	 "assorted_bzip_read_stream_footer",
 	 assorted_test_bzip_read_stream_footer );
 
 	ASSORTED_TEST_RUN(
-	 "bzip_decompress",
+	 "assorted_bzip_decompress",
 	 assorted_test_bzip_decompress );
 
 #endif /* defined( __GNUC__ ) */

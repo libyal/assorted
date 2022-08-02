@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="adcdecompress"
-	ProjectGUID="{0BB0BD0F-D00A-4B36-94BA-383EDE0E91A5}"
+	ProjectGUID="{94E26F5B-B390-4EC6-A621-C5DCE908D003}"
 	RootNamespace="adcdecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

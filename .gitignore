@@ -128,6 +128,7 @@ stamp-h[1-9]
 /src/fletcher64sum
 /src/lzfsedecompress
 /src/lzfudecompress
+/src/lzmadecompress
 /src/lznt1decompress
 /src/lzvndecompress
 /src/lzxdecompress
@@ -158,6 +159,7 @@ stamp-h[1-9]
 /tests/assorted_test_huffman_tree
 /tests/assorted_test_lzfse
 /tests/assorted_test_lzfu
+/tests/assorted_test_lzma
 /tests/assorted_test_lzvn
 /tests/assorted_test_xor32
 /tests/assorted_test_xor64

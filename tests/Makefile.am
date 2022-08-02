@@ -94,8 +94,8 @@ assorted_test_bit_stream_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_bzip_SOURCES = \
+	../src/assorted_bzip.c ../src/assorted_bzip.h \
 	../src/bit_stream.c ../src/bit_stream.h \
-	../src/bzip.c ../src/bzip.h \
 	../src/huffman_tree.c ../src/huffman_tree.h \
 	assorted_test_bzip.c \
 	assorted_test_libcerror.h \

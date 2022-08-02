@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _BZIP_COMPRESSION_H )
-#define _BZIP_COMPRESSION_H
+#if !defined( _ASSORTED_ASSORTED_BZIP_COMPRESSION_H )
+#define _ASSORTED_BZIP_COMPRESSION_H
 
 #include <common.h>
 #include <types.h>
@@ -33,17 +33,17 @@
 extern "C" {
 #endif
 
-void bzip_initialize_crc32_table(
+void assorted_bzip_initialize_crc32_table(
       void );
 
-int bzip_calculate_crc32(
+int assorted_bzip_calculate_crc32(
      uint32_t *crc32,
      const uint8_t *data,
      size_t data_size,
      uint32_t initial_value,
      libcerror_error_t **error );
 
-int bzip_reverse_burrows_wheeler_transform(
+int assorted_bzip_reverse_burrows_wheeler_transform(
      const uint8_t *input_data,
      size_t input_data_size,
      size_t *permutations,
@@ -53,55 +53,55 @@ int bzip_reverse_burrows_wheeler_transform(
      size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
-int bzip_read_stream_header(
+int assorted_bzip_read_stream_header(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *compression_level,
      libcerror_error_t **error );
 
-int bzip_read_signature(
+int assorted_bzip_read_signature(
      bit_stream_t *bit_stream,
      uint64_t *signature,
      libcerror_error_t **error );
 
-int bzip_read_block_header(
+int assorted_bzip_read_block_header(
      bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *origin_pointer,
      libcerror_error_t **error );
 
-int bzip_read_symbol_stack(
+int assorted_bzip_read_symbol_stack(
      bit_stream_t *bit_stream,
      uint8_t *symbol_stack,
      uint16_t *number_of_symbols,
      libcerror_error_t **error );
 
-int bzip_read_selectors(
+int assorted_bzip_read_selectors(
      bit_stream_t *bit_stream,
      uint8_t *selectors,
      uint8_t number_of_trees,
      uint16_t number_of_selectors,
      libcerror_error_t **error );
 
-int bzip_read_huffman_tree(
+int assorted_bzip_read_huffman_tree(
      bit_stream_t *bit_stream,
      huffman_tree_t *huffman_tree,
      uint16_t number_of_symbols,
      libcerror_error_t **error );
 
-int bzip_read_huffman_trees(
+int assorted_bzip_read_huffman_trees(
      bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
      uint16_t number_of_symbols,
      libcerror_error_t **error );
 
-int bzip_read_symbol(
+int assorted_bzip_read_symbol(
      bit_stream_t *bit_stream,
      uint32_t *symbol,
      libcerror_error_t **error );
 
-int bzip_read_block_data(
+int assorted_bzip_read_block_data(
      bit_stream_t *bit_stream,
      huffman_tree_t **huffman_trees,
      uint8_t number_of_trees,
@@ -113,13 +113,13 @@ int bzip_read_block_data(
      size_t *block_data_size,
      libcerror_error_t **error );
 
-int bzip_read_stream_footer(
+int assorted_bzip_read_stream_footer(
      bit_stream_t *bit_stream,
      uint64_t signature,
      uint32_t *checksum,
      libcerror_error_t **error );
 
-int bzip_decompress(
+int assorted_bzip_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
@@ -130,5 +130,5 @@ int bzip_decompress(
 }
 #endif
 
-#endif /* !defined( _BZIP_COMPRESSION_H ) */
+#endif /* !defined( _ASSORTED_BZIP_COMPRESSION_H ) */
 

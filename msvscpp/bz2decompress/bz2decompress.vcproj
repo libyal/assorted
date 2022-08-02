@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="bz2decompress"
-	ProjectGUID="{0A1D94CE-6CDF-4588-A8F1-523B6DD2264A}"
+	ProjectGUID="{8E17ADC6-8F98-4202-B401-DC8ACD2672A0}"
 	RootNamespace="bz2decompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,6 +176,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\assorted_bzip.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_getopt.c"
 				>
 			</File>
@@ -192,10 +196,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\bzip.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\huffman_tree.c"
 				>
 			</File>
@@ -205,6 +205,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\src\assorted_bzip.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\src\assorted_getopt.h"
 				>
@@ -235,10 +239,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\bit_stream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\bzip.h"
 				>
 			</File>
 			<File
