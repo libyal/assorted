@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="zdecompress"
-	ProjectGUID="{DF43A3DA-914F-4B12-A4C0-45C8FF70C4A7}"
+	ProjectGUID="{2EE58195-4F85-44AC-B3BF-D1609D790C4F}"
 	RootNamespace="zdecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

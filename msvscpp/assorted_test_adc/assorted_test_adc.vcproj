@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_adc"
-	ProjectGUID="{EC852AB2-F6F4-4DA5-8107-2324DE3A4E8D}"
+	ProjectGUID="{45B2F824-5228-4C6F-9083-4642C707DC79}"
 	RootNamespace="assorted_test_adc"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\adc.c"
+				RelativePath="..\..\src\assorted_adc.c"
 				>
 			</File>
 			<File
@@ -190,7 +190,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\adc.h"
+				RelativePath="..\..\src\assorted_adc.h"
 				>
 			</File>
 			<File

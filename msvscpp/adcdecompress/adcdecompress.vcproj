@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="adcdecompress"
-	ProjectGUID="{1333F086-D392-4C6A-A2C6-65682821B1D4}"
+	ProjectGUID="{EF982B9D-31C0-4B62-BDD1-A2E288FECC11}"
 	RootNamespace="adcdecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\adc.c"
+				RelativePath="..\..\src\adcdecompress.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\adcdecompress.c"
+				RelativePath="..\..\src\assorted_adc.c"
 				>
 			</File>
 			<File
@@ -198,7 +198,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\adc.h"
+				RelativePath="..\..\src\assorted_adc.h"
 				>
 			</File>
 			<File
@@ -223,6 +223,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_system_string.h"
 				>
 			</File>
 		</Filter>

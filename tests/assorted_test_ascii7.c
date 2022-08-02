@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/ascii7.h"
+#include "../src/assorted_ascii7.h"
 
 /* Define to make assorted_test_ascii7 generate verbose output
 #define ASSORTED_TEST_ASCII7_VERBOSE
@@ -44,7 +44,7 @@ uint8_t assorted_test_ascii7_compressed_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the ascii7_get_uncompressed_data_size function
+/* Tests the assorted_ascii7_get_uncompressed_data_size function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_ascii7_get_uncompressed_data_size(
@@ -56,7 +56,7 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 
 	/* Test regular cases
 	 */
-	result = ascii7_get_uncompressed_data_size(
+	result = assorted_ascii7_get_uncompressed_data_size(
 	          assorted_test_ascii7_compressed_data,
 	          16,
 	          &uncompressed_data_size,
@@ -78,7 +78,7 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 
 	/* Test error cases
 	 */
-	result = ascii7_get_uncompressed_data_size(
+	result = assorted_ascii7_get_uncompressed_data_size(
 	          NULL,
 	          16,
 	          &uncompressed_data_size,
@@ -96,7 +96,7 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_get_uncompressed_data_size(
+	result = assorted_ascii7_get_uncompressed_data_size(
 	          assorted_test_ascii7_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          &uncompressed_data_size,
@@ -114,7 +114,7 @@ int assorted_test_ascii7_get_uncompressed_data_size(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_get_uncompressed_data_size(
+	result = assorted_ascii7_get_uncompressed_data_size(
 	          assorted_test_ascii7_compressed_data,
 	          16,
 	          NULL,
@@ -138,25 +138,27 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the ascii7_decompress function
+/* Tests the assorted_ascii7_decompress function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_ascii7_decompress(
      void )
 {
-	uint8_t uncompressed_data[ 16 ];
+	uint8_t uncompressed_data[ 32 ];
 
-	libcerror_error_t *error = NULL;
-	int result               = 0;
+	libcerror_error_t *error      = NULL;
+	size_t uncompressed_data_size = 0;
+	int result                    = 0;
 
 	/* Test regular cases
 	 */
-/* TODO add representative test data
-	result = ascii7_decompress(
-	          uncompressed_data,
-	          16,
+	uncompressed_data_size = 32;
+
+	result = assorted_ascii7_decompress(
 	          assorted_test_ascii7_compressed_data,
 	          16,
+	          uncompressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -167,20 +169,21 @@ int assorted_test_ascii7_decompress(
 	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
 	 "uncompressed_data_size",
 	 uncompressed_data_size,
-	 (size_t) 18 );
+	 (size_t) 19 );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-*/
 
 	/* Test error cases
 	 */
-	result = ascii7_decompress(
+	uncompressed_data_size = 32;
+
+	result = assorted_ascii7_decompress(
 	          NULL,
 	          16,
 	          assorted_test_ascii7_compressed_data,
-	          16,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -195,11 +198,11 @@ int assorted_test_ascii7_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_decompress(
+	result = assorted_ascii7_decompress(
 	          uncompressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          assorted_test_ascii7_compressed_data,
-	          16,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -214,11 +217,11 @@ int assorted_test_ascii7_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_decompress(
+	result = assorted_ascii7_decompress(
 	          uncompressed_data,
 	          16,
 	          NULL,
-	          16,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -233,11 +236,53 @@ int assorted_test_ascii7_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = ascii7_decompress(
+	result = assorted_ascii7_decompress(
 	          uncompressed_data,
 	          16,
 	          assorted_test_ascii7_compressed_data,
-	          (size_t) SSIZE_MAX + 1,
+	          NULL,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	uncompressed_data_size = 0;
+
+	result = assorted_ascii7_decompress(
+	          uncompressed_data,
+	          16,
+	          assorted_test_ascii7_compressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	ASSORTED_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	uncompressed_data_size = (size_t) SSIZE_MAX + 1;
+
+	result = assorted_ascii7_decompress(
+	          uncompressed_data,
+	          16,
+	          assorted_test_ascii7_compressed_data,
+	          &uncompressed_data_size,
 	          &error );
 
 	ASSORTED_TEST_ASSERT_EQUAL_INT(
@@ -286,18 +331,22 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "ascii7_get_uncompressed_data_size",
+	 "assorted_ascii7_get_uncompressed_data_size",
 	 assorted_test_ascii7_get_uncompressed_data_size );
 
 	ASSORTED_TEST_RUN(
-	 "ascii7_decompress",
+	 "assorted_ascii7_decompress",
 	 assorted_test_ascii7_decompress );
 
 #endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

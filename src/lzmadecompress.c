@@ -61,7 +61,7 @@ void usage_fprint(
 	fprintf( stream, "\t-1:     use the liblzma decompression method\n" );
 	fprintf( stream, "\t-2:     use the internal decompression method (default)\n" );
 	fprintf( stream, "\t-d:     size of the decompressed data (default is 16 times the size\n"
-	                 "\t        the data)).\n" );
+	                 "\t        of the data)).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-o:     data offset (default is 0)\n" );
 	fprintf( stream, "\t-s:     size of data (default is the file size)\n" );

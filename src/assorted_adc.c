@@ -23,21 +23,21 @@
 #include <memory.h>
 #include <types.h>
 
-#include "adc.h"
+#include "assorted_adc.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
 
 /* Decompresses ADC compressed data
  * Returns 1 on success or -1 on error
  */
-int adc_decompress(
+int assorted_adc_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	static char *function              = "adc_decompress";
+	static char *function              = "assorted_adc_decompress";
 	size_t compressed_data_offset      = 0;
 	size_t match_offset                = 0;
 	size_t safe_uncompressed_data_size = 0;

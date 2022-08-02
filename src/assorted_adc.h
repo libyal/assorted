@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _ADC_H )
-#define _ADC_H
+#if !defined( _ASSORTED_ADC_H )
+#define _ASSORTED_ADC_H
 
 #include <common.h>
 #include <types.h>
@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-int adc_decompress(
+int assorted_adc_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      uint8_t *uncompressed_data,
@@ -42,5 +42,5 @@ int adc_decompress(
 }
 #endif
 
-#endif /* !defined( _ADC_H ) */
+#endif /* !defined( _ASSORTED_ADC_H ) */
 

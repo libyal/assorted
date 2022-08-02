@@ -104,14 +104,14 @@ void usage_fprint(
 	                 "                       [ -t target ] [ -12hvV ] source\n\n" );
 #else
 	fprintf( stream, "Usage: lznt1decompress [ -d size ] [ -o offset ] [ -s size ]\n"
-	                 "                       [ -t target ] [ -1hvV ] source\n\n" );
+	                 "                       [ -t target ] [ -hvV ] source\n\n" );
 #endif
 
 	fprintf( stream, "\tsource: the source file\n\n" );
 
-	fprintf( stream, "\t-1:     use the LZNT1 decompression method (default)\n" );
 #if defined( WINAPI )
-	fprintf( stream, "\t-2:     use the WINAPI LZNT1 decompression method\n" );
+	fprintf( stream, "\t-1:     use the WINAPI LZNT1 decompression method\n" );
+	fprintf( stream, "\t-2:     use the LZNT1 decompression method (default)\n" );
 #endif
 	fprintf( stream, "\t-d:     size of the decompressed data (default is 65536).\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
@@ -149,12 +149,12 @@ int main( int argc, char * const argv[] )
 	ssize_t read_count                       = 0;
 	ssize_t write_count                      = 0;
 	off_t source_offset                      = 0;
-	int decompression_method                 = 1;
 	int result                               = 0;
 	int verbose                              = 0;
 
 #if defined( WINAPI )
 	unsigned short winapi_compression_method = 0;
+	int decompression_method                 = 2;
 #endif
 
 	assorted_output_version_fprint(
@@ -164,7 +164,7 @@ int main( int argc, char * const argv[] )
 #if defined( WINAPI )
 	options_string = _SYSTEM_STRING( "d:ho:s:t:vV12" );
 #else
-	options_string = _SYSTEM_STRING( "d:ho:s:t:vV1" );
+	options_string = _SYSTEM_STRING( "d:ho:s:t:vV" );
 #endif
 	while( ( option = assorted_getopt(
 	                   argc,
@@ -184,18 +184,16 @@ int main( int argc, char * const argv[] )
 				 stdout );
 
 				return( EXIT_FAILURE );
-
+#if defined( WINAPI )
 			case (system_integer_t) '1':
 				decompression_method = 1;
 
 				break;
 
-#if defined( WINAPI )
 			case (system_integer_t) '2':
 				decompression_method = 2;
 
 				break;
-
 #endif
 			case (system_integer_t) 'd':
 				uncompressed_data_size = system_string_copy_to_long( optarg );
@@ -412,17 +410,8 @@ int main( int argc, char * const argv[] )
 		 source_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
-	if( decompression_method == 1 )
-	{
-		result = libfwnt_lznt1_decompress(
-		          buffer,
-		          (size_t) source_size,
-		          uncompressed_data,
-		          &uncompressed_data_size,
-		          &error );
-	}
 #if defined( WINAPI )
-	else if( decompression_method == 2 )
+	if( decompression_method == 1 )
 	{
 		result = lznt1compress_RtlDecompressBuffer(
 		          COMPRESSION_FORMAT_LZNT1,
@@ -441,7 +430,16 @@ int main( int argc, char * const argv[] )
 			result = 1;
 		}
 	}
+	else if( decompression_method == 2 )
 #endif
+	{
+		result = libfwnt_lznt1_decompress(
+		          buffer,
+		          (size_t) source_size,
+		          uncompressed_data,
+		          &uncompressed_data_size,
+		          &error );
+	}
 	if( result == -1 )
 	{
 		fprintf(

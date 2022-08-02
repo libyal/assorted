@@ -55,14 +55,15 @@ bin_PROGRAMS = \
 	zdecompress
 
 adcdecompress_SOURCES = \
-	adc.c adc.h \
 	adcdecompress.c \
+	assorted_adc.c assorted_adc.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_output.c assorted_output.h
+	assorted_output.c assorted_output.h \
+	assorted_system_string.h
 
 adcdecompress_LDADD = \
 	@LIBCFILE_LIBADD@ \
@@ -89,13 +90,14 @@ adler32sum_LDADD = \
 	@ZLIB_LIBADD@
 
 ascii7decompress_SOURCES = \
-	ascii7.c ascii7.h \
 	ascii7decompress.c \
+	assorted_ascii7.c assorted_ascii7.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcnotify.h \
-	assorted_output.c assorted_output.h
+	assorted_output.c assorted_output.h \
+	assorted_system_string.h
 
 ascii7decompress_LDADD = \
 	@LIBCFILE_LIBADD@ \

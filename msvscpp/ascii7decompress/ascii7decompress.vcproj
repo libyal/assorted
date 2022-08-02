@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="ascii7decompress"
-	ProjectGUID="{A00A5DC5-C0BC-46B7-B2AE-700846337267}"
+	ProjectGUID="{81E11CE6-5F7C-4D07-89CB-D0DF159E3CF7}"
 	RootNamespace="ascii7decompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\ascii7.c"
+				RelativePath="..\..\src\ascii7decompress.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\ascii7decompress.c"
+				RelativePath="..\..\src\assorted_ascii7.c"
 				>
 			</File>
 			<File
@@ -198,7 +198,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\ascii7.h"
+				RelativePath="..\..\src\assorted_ascii7.h"
 				>
 			</File>
 			<File
@@ -219,6 +219,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_system_string.h"
 				>
 			</File>
 		</Filter>

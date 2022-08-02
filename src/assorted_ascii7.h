@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _ASCII_7BIT_COMPRESSION_H )
-#define _ASCII_7BIT_COMPRESSION_H
+#if !defined( _ASSORTED_ASCII_7BIT_COMPRESSION_H )
+#define _ASSORTED_ASCII_7BIT_COMPRESSION_H
 
 #include <common.h>
 #include <types.h>
@@ -31,22 +31,22 @@
 extern "C" {
 #endif
 
-int ascii7_get_uncompressed_data_size(
+int assorted_ascii7_get_uncompressed_data_size(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *uncompressed_data_size,
      libcerror_error_t **error );
 
-int ascii7_decompress(
-     uint8_t *uncompressed_data,
-     size_t uncompressed_data_size,
+int assorted_ascii7_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
+     uint8_t *uncompressed_data,
+     size_t *uncompressed_data_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _ASCII_7BIT_COMPRESSION_H ) */
+#endif /* !defined( _ASSORTED_ASCII_7BIT_COMPRESSION_H ) */
 

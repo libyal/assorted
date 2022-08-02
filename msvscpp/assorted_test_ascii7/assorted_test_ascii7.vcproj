@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_ascii7"
-	ProjectGUID="{0E2D1A4C-250D-4B92-B28A-9B1DE9EE7807}"
+	ProjectGUID="{FE8E1313-F89E-425B-B703-8A53FD572DB1}"
 	RootNamespace="assorted_test_ascii7"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\ascii7.c"
+				RelativePath="..\..\src\assorted_ascii7.c"
 				>
 			</File>
 			<File
@@ -190,7 +190,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\ascii7.h"
+				RelativePath="..\..\src\assorted_ascii7.h"
 				>
 			</File>
 			<File

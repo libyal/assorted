@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="adler32sum"
-	ProjectGUID="{36F24F93-1FE5-4EC0-B2B8-5DE45303DB41}"
+	ProjectGUID="{BFFE7695-BB1B-4971-97F5-97E42BE7CFDE}"
 	RootNamespace="adler32sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

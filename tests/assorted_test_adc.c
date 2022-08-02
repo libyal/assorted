@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/adc.h"
+#include "../src/assorted_adc.h"
 
 /* Define to make assorted_test_adc generate verbose output
 #define ASSORTED_TEST_ADC_VERBOSE
@@ -44,7 +44,7 @@ uint8_t assorted_test_adc_compressed_data[ 10 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the adc_decompress function
+/* Tests the assorted_adc_decompress function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_adc_decompress(
@@ -63,7 +63,7 @@ int assorted_test_adc_decompress(
 	 */
 	uncompressed_data_size = 16;
 
-	result = adc_decompress(
+	result = assorted_adc_decompress(
 	          assorted_test_adc_compressed_data,
 	          10,
 	          uncompressed_data,
@@ -98,7 +98,7 @@ int assorted_test_adc_decompress(
 	 */
 	uncompressed_data_size = 16;
 
-	result = adc_decompress(
+	result = assorted_adc_decompress(
 	          NULL,
 	          10,
 	          uncompressed_data,
@@ -117,7 +117,7 @@ int assorted_test_adc_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = adc_decompress(
+	result = assorted_adc_decompress(
 	          assorted_test_adc_compressed_data,
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
@@ -136,7 +136,7 @@ int assorted_test_adc_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = adc_decompress(
+	result = assorted_adc_decompress(
 	          assorted_test_adc_compressed_data,
 	          10,
 	          NULL,
@@ -155,7 +155,7 @@ int assorted_test_adc_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = adc_decompress(
+	result = assorted_adc_decompress(
 	          assorted_test_adc_compressed_data,
 	          10,
 	          uncompressed_data,
@@ -176,7 +176,7 @@ int assorted_test_adc_decompress(
 
 	uncompressed_data_size = (size_t) SSIZE_MAX + 1;
 
-	result = adc_decompress(
+	result = assorted_adc_decompress(
 	          assorted_test_adc_compressed_data,
 	          10,
 	          uncompressed_data,
@@ -229,7 +229,7 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "adc_decompress",
+	 "assorted_adc_decompress",
 	 assorted_test_adc_decompress );
 
 #endif /* defined( __GNUC__ ) */

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libfcrypto"
-	ProjectGUID="{2795C376-D475-4C1D-AAE2-4C1E48F745FE}"
+	ProjectGUID="{9E30ED4A-5A98-40BF-AD3B-C3C9CD0C7936}"
 	RootNamespace="libfcrypto"
 	TargetFrameworkVersion="131072"
 	>

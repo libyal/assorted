@@ -45,7 +45,7 @@ check_PROGRAMS = \
 	assorted_test_xor64
 
 assorted_test_adc_SOURCES = \
-	../src/adc.c ../src/adc.h \
+	../src/assorted_adc.c ../src/assorted_adc.h \
 	assorted_test_adc.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -69,7 +69,7 @@ assorted_test_adler32_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_ascii7_SOURCES = \
-	../src/ascii7.c ../src/ascii7.h \
+	../src/assorted_ascii7.c ../src/assorted_ascii7.h \
 	assorted_test_ascii7.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
