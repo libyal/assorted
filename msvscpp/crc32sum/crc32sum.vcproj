@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="crc32sum"
-	ProjectGUID="{C74C15F3-A9AE-4D2F-B0F8-1E988AF5DBAB}"
+	ProjectGUID="{3CC84465-065A-4C42-AEBC-26E126FFEF60}"
 	RootNamespace="crc32sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -223,6 +223,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_system_string.h"
 				>
 			</File>
 		</Filter>

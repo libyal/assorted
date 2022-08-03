@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libcnotify"
-	ProjectGUID="{205D9FC9-7E9A-4C53-85E6-38806531BE62}"
+	ProjectGUID="{B6C4FB4A-EB04-48D5-99AA-34C834538E01}"
 	RootNamespace="libcnotify"
 	TargetFrameworkVersion="131072"
 	>

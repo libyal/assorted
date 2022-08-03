@@ -146,7 +146,7 @@ assorted_test_deflate_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_fletcher32_SOURCES = \
-	../src/fletcher32.c ../src/fletcher32.h \
+	../src/assorted_fletcher32.c ../src/assorted_fletcher32.h \
 	assorted_test_fletcher32.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
@@ -158,7 +158,7 @@ assorted_test_fletcher32_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_fletcher64_SOURCES = \
-	../src/fletcher64.c ../src/fletcher64.h \
+	../src/assorted_fletcher64.c ../src/assorted_fletcher64.h \
 	assorted_test_fletcher64.c \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \

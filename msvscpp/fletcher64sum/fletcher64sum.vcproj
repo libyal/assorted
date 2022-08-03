@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fletcher64sum"
-	ProjectGUID="{FD0789C9-8A72-485B-9B10-D89C23461F23}"
+	ProjectGUID="{182FAEC9-9F7C-41A8-9C32-8D4317937C2B}"
 	RootNamespace="fletcher64sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,15 +176,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\assorted_fletcher64.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_getopt.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\assorted_output.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\fletcher64.c"
 				>
 			</File>
 			<File
@@ -197,6 +197,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\src\assorted_fletcher64.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\src\assorted_getopt.h"
 				>
@@ -222,7 +226,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fletcher64.h"
+				RelativePath="..\..\src\assorted_system_string.h"
 				>
 			</File>
 		</Filter>

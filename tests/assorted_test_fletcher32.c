@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/fletcher32.h"
+#include "../src/assorted_fletcher32.h"
 
 /* Define to make assorted_test_fletcher32 generate verbose output
 #define ASSORTED_TEST_FLETCHER32_VERBOSE
@@ -44,7 +44,7 @@ uint8_t assorted_test_fletcher32_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the fletcher32_calculate function
+/* Tests the assorted_fletcher32_calculate function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_fletcher32_calculate(
@@ -56,7 +56,7 @@ int assorted_test_fletcher32_calculate(
 
 	/* Test regular cases
 	 */
-	result = fletcher32_calculate(
+	result = assorted_fletcher32_calculate(
 	          &checksum_value,
 	          assorted_test_fletcher32_data,
 	          16,
@@ -79,7 +79,7 @@ int assorted_test_fletcher32_calculate(
 
 	/* Test error cases
 	 */
-	result = fletcher32_calculate(
+	result = assorted_fletcher32_calculate(
 	          NULL,
 	          assorted_test_fletcher32_data,
 	          16,
@@ -98,7 +98,7 @@ int assorted_test_fletcher32_calculate(
 	libcerror_error_free(
 	 &error );
 
-	result = fletcher32_calculate(
+	result = assorted_fletcher32_calculate(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -117,7 +117,7 @@ int assorted_test_fletcher32_calculate(
 	libcerror_error_free(
 	 &error );
 
-	result = fletcher32_calculate(
+	result = assorted_fletcher32_calculate(
 	          &checksum_value,
 	          assorted_test_fletcher32_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -170,14 +170,18 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "fletcher32_calculate",
+	 "assorted_fletcher32_calculate",
 	 assorted_test_fletcher32_calculate );
 
 #endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 

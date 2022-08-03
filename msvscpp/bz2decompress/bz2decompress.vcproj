@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="bz2decompress"
-	ProjectGUID="{C237A405-D82E-4E7C-8B8E-5D1044843C6A}"
+	ProjectGUID="{5A58C9C3-7FFA-417B-A0B8-CA6632636BE2}"
 	RootNamespace="bz2decompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

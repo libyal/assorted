@@ -304,7 +304,7 @@ int main( int argc, char * const argv[] )
 		          buffer,
 		          source_size,
 		          initial_value,
-		          NULL );
+		          &error );
 	}
 	else if( calculation_method == 2 )
 	{
@@ -313,7 +313,7 @@ int main( int argc, char * const argv[] )
 		          buffer,
 		          source_size,
 		          initial_value,
-		          NULL );
+		          &error );
 	}
 	if( result != 1 )
 	{

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="banalyze"
-	ProjectGUID="{065A51EE-347D-448E-B746-7786E76ED2A0}"
+	ProjectGUID="{401ECBBE-290E-4971-AC27-1122E46B2909}"
 	RootNamespace="banalyze"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

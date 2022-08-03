@@ -1,5 +1,5 @@
 /*
- * Fletcher-32 functions
+ * Fletcher-64 functions
  *
  * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _FLETCHER32_H )
-#define _FLETCHER32_H
+#if !defined( _ASSORTED_FLETCHER64_H )
+#define _ASSORTED_FLETCHER64_H
 
 #include <common.h>
 #include <types.h>
@@ -31,16 +31,16 @@
 extern "C" {
 #endif
 
-int fletcher32_calculate(
-     uint32_t *fletcher32,
+int assorted_fletcher64_calculate(
+     uint64_t *fletcher64,
      const uint8_t *buffer,
      size_t size,
-     uint32_t previous_key,
+     uint64_t previous_key,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _FLETCHER32_H ) */
+#endif /* !defined( _ASSORTED_FLETCHER64_H ) */
 

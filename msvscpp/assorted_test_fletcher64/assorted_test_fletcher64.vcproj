@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_fletcher64"
-	ProjectGUID="{65E0A1DB-32E7-4C5D-8847-CDCC9EFC4F3E}"
+	ProjectGUID="{1B36AB30-AA51-4113-9D9C-667B44B0B016}"
 	RootNamespace="assorted_test_fletcher64"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\fletcher64.c"
+				RelativePath="..\..\src\assorted_fletcher64.c"
 				>
 			</File>
 			<File
@@ -190,7 +190,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\fletcher64.h"
+				RelativePath="..\..\src\assorted_fletcher64.h"
 				>
 			</File>
 			<File

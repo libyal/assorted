@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="bzip2"
-	ProjectGUID="{ED7ABA87-1BD7-4F21-ADEF-78C0D698D438}"
+	ProjectGUID="{2CF8A6DB-FE1F-46BA-B12D-5FE94E7D9B67}"
 	RootNamespace="bzip2"
 	TargetFrameworkVersion="131072"
 	>

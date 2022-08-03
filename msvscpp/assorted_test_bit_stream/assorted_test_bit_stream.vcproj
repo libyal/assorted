@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_bit_stream"
-	ProjectGUID="{0A0DE549-B156-4E09-A29F-91F8C12A672F}"
+	ProjectGUID="{FF89C06B-890B-497D-A04B-65530C54D7E4}"
 	RootNamespace="assorted_test_bit_stream"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

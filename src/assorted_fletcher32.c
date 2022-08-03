@@ -1,5 +1,5 @@
 /*
- * Fletcher-64 functions
+ * Fletcher-32 functions
  *
  * Copyright (C) 2008-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -20,91 +20,98 @@
  */
 
 #include <common.h>
-#include <byte_stream.h>
 #include <types.h>
 
+#include "assorted_fletcher32.h"
 #include "assorted_libcerror.h"
-#include "fletcher64.h"
 
-/* Calculates the Fletcher-64 of a buffer of data
- * Use a previous key of 0 to calculate a new Fletcher-64
+/* Calculates the Fletcher-32 of a buffer
+ * Use a previous key of 0 to calculate a new Fletcher-32
  * Returns 1 if successful or -1 on error
  */
-int fletcher64_calculate(
-     uint64_t *fletcher64,
-     const uint8_t *data,
-     size_t data_size,
-     uint64_t previous_key,
+int assorted_fletcher32_calculate(
+     uint32_t *fletcher32,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t previous_key,
      libcerror_error_t **error )
 {
-	static char *function = "fletcher64_calculate";
-	size_t data_offset    = 0;
-	uint64_t lower_32bit  = 0;
-	uint64_t upper_32bit  = 0;
-	uint32_t value_32bit  = 0;
+	static char *function = "assorted_fletcher32_calculate";
+	size_t tsize          = 0;
+	uint32_t lower_word   = 0;
+	uint32_t upper_word   = 0;
 
-	if( fletcher64 == NULL )
+	if( fletcher32 == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid Fletcher-64.",
+		 "%s: invalid Fletcher-32.",
 		 function );
 
 		return( -1 );
 	}
-	if( data == NULL )
+	if( buffer == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid data.",
+		 "%s: invalid buffer.",
 		 function );
 
 		return( -1 );
 	}
-	if( data_size > (size_t) SSIZE_MAX )
+	if( size > (size_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid data size value exceeds maximum.",
+		 "%s: invalid size value exceeds maximum.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( data_size % 4 ) != 0 )
+/*
+	lower_word = previous_key & 0xffff;
+	upper_word = ( previous_key >> 16 ) & 0xffff;
+*/
+
+	lower_word = 0xffff;
+	upper_word = 0xffff;
+
+        while( size )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid data size value out of bounds.",
-		 function );
+		if( size > 360 )
+		{
+			tsize = 360;
+		}
+		else
+		{
+			tsize = size;
+		}
+		size -= tsize;
 
-		return( -1 );
+                do
+		{
+			lower_word += *buffer;
+			upper_word += lower_word;
+
+			buffer += 1;
+		}
+		while( --tsize );
+
+                lower_word = ( lower_word & 0xffff ) + ( lower_word >> 16 );
+                upper_word = ( upper_word & 0xffff ) + ( upper_word >> 16 );
 	}
-	lower_32bit = previous_key & 0xffffffffUL;
-	upper_32bit = ( previous_key >> 32 ) & 0xffffffffUL;
+        /* Second reduction step to reduce sums to 16 bits
+	 */
+        lower_word = ( lower_word & 0xffff ) + ( lower_word >> 16 );
+        upper_word = ( upper_word & 0xffff ) + ( upper_word >> 16 );
 
-        for( data_offset = 0;
-	     data_offset < data_size;
-	     data_offset += 4 )
-	{
-		byte_stream_copy_to_uint32_little_endian(
-		 &( data[ data_offset ] ),
-		 value_32bit );
-
-		lower_32bit += value_32bit;
-		upper_32bit += lower_32bit;
-	}
-	lower_32bit %= 0xffffffffUL;
-	upper_32bit %= 0xffffffffUL;
-
-	*fletcher64 = ( upper_32bit << 32 ) | lower_32bit;
+	*fletcher32 = ( upper_word << 16 ) | lower_word;
 
 	return( 1 );
 }

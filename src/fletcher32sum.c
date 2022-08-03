@@ -29,12 +29,13 @@
 #include <stdlib.h>
 #endif
 
+#include "assorted_fletcher32.h"
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
-#include "fletcher32.h"
+#include "assorted_system_string.h"
 
 /* Prints the executable usage information
  */
@@ -113,27 +114,18 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case 'i':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				previous_key = _wtol( optarg );
-#else
-				previous_key = atol( optarg );
-#endif
+				previous_key = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 'o':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_offset = _wtol( optarg );
-#else
-				source_offset = atol( optarg );
-#endif
+				source_offset = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 's':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_size = _wtol( optarg );
-#else
-				source_size = atol( optarg );
-#endif
+				source_size = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 'v':
@@ -277,12 +269,12 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( fletcher32_calculate(
+	if( assorted_fletcher32_calculate(
 	     &fletcher32,
 	     buffer,
 	     source_size,
 	     previous_key,
-	     NULL ) != 1 )
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,

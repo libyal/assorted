@@ -156,6 +156,7 @@ crc32sum_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
+	assorted_system_string.h \
 	crc32sum.c
 
 crc32sum_LDADD = \
@@ -183,13 +184,14 @@ crc64sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fletcher32sum_SOURCES = \
+	assorted_fletcher32.c assorted_fletcher32.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	fletcher32.c fletcher32.h \
+	assorted_system_string.h \
 	fletcher32sum.c
 
 fletcher32sum_LDADD = \
@@ -200,13 +202,14 @@ fletcher32sum_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fletcher64sum_SOURCES = \
+	assorted_fletcher64.c assorted_fletcher64.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	fletcher64.c fletcher64.h \
+	assorted_system_string.h \
 	fletcher64sum.c
 
 fletcher64sum_LDADD = \

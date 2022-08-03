@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_deflate"
-	ProjectGUID="{A1E8030F-53F7-499E-A088-05D91E1FB03D}"
+	ProjectGUID="{3506929E-AB3B-42E5-883A-076C368F5641}"
 	RootNamespace="assorted_test_deflate"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

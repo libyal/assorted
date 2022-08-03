@@ -102,28 +102,6 @@ int assorted_ascii7_decompress(
 	uint16_t value_16bit               = 0;
 	uint8_t bit_index                  = 0;
 
-	if( uncompressed_data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid uncompressed data.",
-		 function );
-
-		return( -1 );
-	}
-	if( uncompressed_data_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid uncompressed data size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
 	if( compressed_data == NULL )
 	{
 		libcerror_error_set(
@@ -142,6 +120,17 @@ int assorted_ascii7_decompress(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid compressed data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data.",
 		 function );
 
 		return( -1 );
