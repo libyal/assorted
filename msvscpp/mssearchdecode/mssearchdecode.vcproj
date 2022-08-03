@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="mssearchdecode"
-	ProjectGUID="{6F561DED-AED1-4302-AA59-C7714543A465}"
+	ProjectGUID="{4E297FB8-57CF-4E67-82F3-22F5C6AC8A76}"
 	RootNamespace="mssearchdecode"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -180,11 +180,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.c"
+				RelativePath="..\..\src\assorted_mssearch.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\mssearch.c"
+				RelativePath="..\..\src\assorted_output.c"
 				>
 			</File>
 			<File
@@ -222,11 +222,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\assorted_output.h"
+				RelativePath="..\..\src\assorted_mssearch.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\mssearch.h"
+				RelativePath="..\..\src\assorted_output.h"
 				>
 			</File>
 		</Filter>

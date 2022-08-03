@@ -361,8 +361,8 @@ mssearchdecode_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_libuna.h \
+	assorted_mssearch.c assorted_mssearch.h \
 	assorted_output.c assorted_output.h \
-	mssearch.c mssearch.h \
 	mssearchdecode.c
 
 mssearchdecode_LDADD = \

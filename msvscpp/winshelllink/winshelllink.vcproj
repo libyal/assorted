@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="winshelllink"
-	ProjectGUID="{B97426BC-1EEE-4DD3-8E0C-6DF4859F01C9}"
+	ProjectGUID="{213FF75E-3A95-4A8B-9895-9D218DC22AFB}"
 	RootNamespace="winshelllink"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

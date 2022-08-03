@@ -54,6 +54,7 @@ Filetime:
 Tests:
 * add LZFSE v1 header test data
 * add LZFu test data
+* add mssearch test
 
 20141110
 * see `git log' for more recent change log

@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _MSSEARCH_ENCODING_H )
-#define _MSSEARCH_ENCODING_H
+#if !defined( _ASSORTED_MSSEARCH_H )
+#define _ASSORTED_MSSEARCH_H
 
 #include <common.h>
 #include <types.h>
@@ -31,33 +31,33 @@
 extern "C" {
 #endif
 
-int mssearch_decode(
+int assorted_mssearch_decode(
      uint8_t *data,
      size_t data_size,
      uint8_t *encoded_data,
      size_t encoded_data_size,
      libcerror_error_t **error );
 
-int mssearch_get_run_length_uncompressed_utf16_string_size(
+int assorted_mssearch_get_run_length_uncompressed_utf16_string_size(
      uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *uncompressed_data_size,
      libcerror_error_t **error );
 
-int mssearch_decompress_run_length_compressed_utf16_string(
+int assorted_mssearch_decompress_run_length_compressed_utf16_string(
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      uint8_t *compressed_data,
      size_t compressed_data_size,
      libcerror_error_t **error );
 
-int mssearch_get_byte_index_uncompressed_data_size(
+int assorted_mssearch_get_byte_index_uncompressed_data_size(
      uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *uncompressed_data_size,
      libcerror_error_t **error );
 
-int mssearch_decompress_byte_indexed_compressed_data(
+int assorted_mssearch_decompress_byte_indexed_compressed_data(
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      uint8_t *compressed_data,
@@ -68,5 +68,5 @@ int mssearch_decompress_byte_indexed_compressed_data(
 }
 #endif
 
-#endif /* !defined( _MSSEARCH_ENCODING_H ) */
+#endif /* !defined( _ASSORTED_MSSEARCH_H ) */
 

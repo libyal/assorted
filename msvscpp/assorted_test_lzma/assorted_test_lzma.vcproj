@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_lzma"
-	ProjectGUID="{1AFD7A63-A454-4529-AB2F-D94BAD0968D1}"
+	ProjectGUID="{E8884E5A-649D-48AE-9601-BEFD4EEBF642}"
 	RootNamespace="assorted_test_lzma"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

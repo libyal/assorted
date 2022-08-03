@@ -36,8 +36,8 @@
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_libuna.h"
+#include "assorted_mssearch.h"
 #include "assorted_output.h"
-#include "mssearch.h"
 
 /* Prints the executable usage information
  */
@@ -334,7 +334,7 @@ int main( int argc, char * const argv[] )
 	 source_size,
 	 0 );
 
-	if( mssearch_decode(
+	if( assorted_mssearch_decode(
 	     decoded_data,
 	     decoded_data_size,
 	     buffer,
@@ -373,7 +373,7 @@ int main( int argc, char * const argv[] )
 	 */
 	if( ( compression_type & 0x02 ) != 0 )
 	{
-		if( mssearch_get_byte_index_uncompressed_data_size(
+		if( assorted_mssearch_get_byte_index_uncompressed_data_size(
 		     &( decoded_data[ 1 ] ),
 		     decoded_data_size - 1,
 		     &uncompressed_data_size,
@@ -409,7 +409,7 @@ int main( int argc, char * const argv[] )
 		 */
 		uncompressed_data[ 0 ] = decoded_data[ 0 ] - 2;
 
-		result = mssearch_decompress_byte_indexed_compressed_data(
+		result = assorted_mssearch_decompress_byte_indexed_compressed_data(
 		          &( uncompressed_data[ 1 ] ),
 		          uncompressed_data_size - 1,
 		          &( decoded_data[ 1 ] ),
@@ -446,7 +446,7 @@ int main( int argc, char * const argv[] )
 	 */
 	if( compression_type == 0 )
 	{
-		if( mssearch_get_run_length_uncompressed_utf16_string_size(
+		if( assorted_mssearch_get_run_length_uncompressed_utf16_string_size(
 		     &( decoded_data[ 1 ] ),
 		     decoded_data_size - 1,
 		     &value_utf16_stream_size,
@@ -486,7 +486,7 @@ int main( int argc, char * const argv[] )
 
 				goto on_error;
 			}
-			if( mssearch_decompress_run_length_compressed_utf16_string(
+			if( assorted_mssearch_decompress_run_length_compressed_utf16_string(
 			     value_utf16_stream,
 			     value_utf16_stream_size,
 			     &( decoded_data[ 1 ] ),

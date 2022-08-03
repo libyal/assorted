@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="serpentcrypt"
-	ProjectGUID="{19A7963D-67F4-422F-9EBC-1144C8716C6B}"
+	ProjectGUID="{0BA78C6C-C137-4206-B0F9-0E0416A95ECF}"
 	RootNamespace="serpentcrypt"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

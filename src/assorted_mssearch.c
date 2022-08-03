@@ -26,19 +26,19 @@
 
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
-#include "mssearch.h"
+#include "assorted_mssearch.h"
 
 /* Decode data using Windows Search encoding
  * Returns 1 on success or -1 on error
  */
-int mssearch_decode(
+int assorted_mssearch_decode(
      uint8_t *data,
      size_t data_size,
      uint8_t *encoded_data,
      size_t encoded_data_size,
      libcerror_error_t **error )
 {
-	static char *function        = "mssearch_decode";
+	static char *function        = "assorted_mssearch_decode";
 	size_t data_iterator         = 0;
 	size_t encoded_data_iterator = 0;
 	uint32_t bitmask32           = 0;
@@ -109,13 +109,13 @@ int mssearch_decode(
 /* Determines the uncompressed size of a run-length compressed UTF-16 string
  * Returns 1 on success or -1 on error
  */
-int mssearch_get_run_length_uncompressed_utf16_string_size(
+int assorted_mssearch_get_run_length_uncompressed_utf16_string_size(
      uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	static char *function           = "mssearch_get_run_length_uncompressed_utf16_string_size";
+	static char *function           = "assorted_mssearch_get_run_length_uncompressed_utf16_string_size";
 	size_t compressed_data_iterator = 0;
 	uint8_t compression_size        = 0;
 
@@ -211,14 +211,14 @@ fprintf( stderr, "MARKER: %zd, %d, %zd, %zd\n",
 /* Decompresses a run-length compressed UTF-16 string
  * Returns 1 on success or -1 on error
  */
-int mssearch_decompress_run_length_compressed_utf16_string(
+int assorted_mssearch_decompress_run_length_compressed_utf16_string(
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      uint8_t *compressed_data,
      size_t compressed_data_size,
      libcerror_error_t **error )
 {
-	static char *function             = "mssearch_decompress_run_length_compressed_utf16_string";
+	static char *function             = "assorted_mssearch_decompress_run_length_compressed_utf16_string";
 	size_t compressed_data_iterator   = 0;
 	size_t uncompressed_data_iterator = 0;
 	uint8_t compression_size          = 0;
@@ -345,13 +345,13 @@ int mssearch_decompress_run_length_compressed_utf16_string(
 /* Determines the uncompressed data size of a run-length compressed UTF-16 string
  * Returns 1 on success or -1 on error
  */
-int mssearch_get_byte_index_uncompressed_data_size(
+int assorted_mssearch_get_byte_index_uncompressed_data_size(
      uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *uncompressed_data_size,
      libcerror_error_t **error )
 {
-	static char *function                  = "mssearch_get_byte_index_uncompressed_size";
+	static char *function                  = "assorted_mssearch_get_byte_index_uncompressed_size";
 	uint16_t stored_uncompressed_data_size = 0;
 
 	if( compressed_data == NULL )
@@ -401,7 +401,7 @@ int mssearch_get_byte_index_uncompressed_data_size(
 /* Decompresses byte-index compressed data
  * Returns 1 on success or -1 on error
  */
-int mssearch_decompress_byte_indexed_compressed_data(
+int assorted_mssearch_decompress_byte_indexed_compressed_data(
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      uint8_t *compressed_data,
@@ -413,7 +413,7 @@ int mssearch_decompress_byte_indexed_compressed_data(
 	uint32_t nibble_count_table[ 16 ]       = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	uint32_t total_nibble_count_table[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	static char *function                   = "mssearch_decompress_byte_indexed_compressed_data";
+	static char *function                   = "assorted_mssearch_decompress_byte_indexed_compressed_data";
 	size_t compressed_data_iterator         = 0;
 	size_t compression_iterator             = 0;
 	size_t uncompressed_data_iterator       = 0;
