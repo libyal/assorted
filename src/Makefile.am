@@ -507,7 +507,8 @@ xor32sum_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	xor32.c xor32.h \
+	assorted_xor32.c assorted_xor32.h \
+	assorted_system_string.h \
 	xor32sum.c
 
 xor32sum_LDADD = \
@@ -524,7 +525,8 @@ xor64sum_SOURCES = \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
 	assorted_output.c assorted_output.h \
-	xor64.c xor64.h \
+	assorted_system_string.h \
+	assorted_xor64.c assorted_xor64.h \
 	xor64sum.c
 
 xor64sum_LDADD = \

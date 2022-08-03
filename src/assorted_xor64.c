@@ -24,25 +24,25 @@
 #include <types.h>
 
 #include "assorted_libcerror.h"
-#include "xor64.h"
+#include "assorted_xor64.h"
 
 /* The largest primary (or scalar) available
  * supported by a single load and store instruction
  */
-typedef unsigned long int xor64_aligned_t;
+typedef unsigned long int assorted_xor64_aligned_t;
 
 /* Calculates the little-endian XOR-64 of a buffer
  * Use a intial value to calculate a new XOR-64
  * Returns 1 if successful or -1 on error
  */
-int xor64_calculate_checksum_little_endian_basic(
+int assorted_xor64_calculate_checksum_little_endian_basic(
      uint64_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
      uint64_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "xor64_calculate_checksum_little_endian_basic";
+	static char *function = "assorted_xor64_calculate_checksum_little_endian_basic";
 	uint64_t value_64bit  = 0;
 
 	if( checksum_value == NULL )
@@ -140,23 +140,23 @@ int xor64_calculate_checksum_little_endian_basic(
  * It uses the initial value to calculate a new XOR-64
  * Returns 1 if successful or -1 on error
  */
-int xor64_calculate_checksum_little_endian_cpu_aligned(
+int assorted_xor64_calculate_checksum_little_endian_cpu_aligned(
      uint64_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
      uint64_t initial_value,
      libcerror_error_t **error )
 {
-	xor64_aligned_t *aligned_buffer_iterator = NULL;
-	uint8_t *buffer_iterator                 = NULL;
-	static char *function                    = "xor64_calculate_checksum_little_endian_cpu_aligned";
-	xor64_aligned_t value_aligned            = 0;
-	uint64_t value_64bit                     = 0;
-	uint8_t alignment_count                  = 0;
-	uint8_t alignment_size                   = 0;
-	uint8_t byte_count                       = 0;
-	uint8_t byte_order                       = 0;
-	uint8_t byte_size                        = 0;
+	assorted_xor64_aligned_t *aligned_buffer_iterator = NULL;
+	uint8_t *buffer_iterator                          = NULL;
+	static char *function                             = "assorted_xor64_calculate_checksum_little_endian_cpu_aligned";
+	assorted_xor64_aligned_t value_aligned            = 0;
+	uint64_t value_64bit                              = 0;
+	uint8_t alignment_count                           = 0;
+	uint8_t alignment_size                            = 0;
+	uint8_t byte_count                                = 0;
+	uint8_t byte_order                                = 0;
+	uint8_t byte_size                                 = 0;
 
 	if( checksum_value == NULL )
 	{
@@ -198,12 +198,12 @@ int xor64_calculate_checksum_little_endian_cpu_aligned(
 	/* Only optimize when there is the alignment is a multitude of 64-bit
 	 * and for buffers larger than the alignment
 	 */
-	if( ( ( sizeof( xor64_aligned_t ) % 4 ) == 0 )
-	 && ( size > ( 2 * sizeof( xor64_aligned_t ) ) ) )
+	if( ( ( sizeof( assorted_xor64_aligned_t ) % 4 ) == 0 )
+	 && ( size > ( 2 * sizeof( assorted_xor64_aligned_t ) ) ) )
 	{
 		/* Align the buffer iterator
 		 */
-		alignment_size = (uint8_t) ( (intptr_t) buffer_iterator % sizeof( xor64_aligned_t ) );
+		alignment_size = (uint8_t) ( (intptr_t) buffer_iterator % sizeof( assorted_xor64_aligned_t ) );
 
 		byte_size = alignment_size;
 
@@ -240,7 +240,7 @@ int xor64_calculate_checksum_little_endian_cpu_aligned(
 
 			*checksum_value ^= value_64bit;
 		}
-		aligned_buffer_iterator = (xor64_aligned_t *) buffer_iterator;
+		aligned_buffer_iterator = (assorted_xor64_aligned_t *) buffer_iterator;
 
 		size -= alignment_size;
 
@@ -254,20 +254,20 @@ int xor64_calculate_checksum_little_endian_cpu_aligned(
 		}
 		/* Determine the aligned XOR value
 		 */
-		while( size > sizeof( xor64_aligned_t ) )
+		while( size > sizeof( assorted_xor64_aligned_t ) )
 		{
 			value_aligned ^= *aligned_buffer_iterator;
 
 			aligned_buffer_iterator++;
 
-			size -= sizeof( xor64_aligned_t );
+			size -= sizeof( assorted_xor64_aligned_t );
 		}
 		/* Align the aligned XOR value with the 64-bit XOR value
 		 */
 		if( alignment_size > 0 )
 		{
 			byte_count      = ( alignment_size % 4 ) * 8;
-			alignment_count = ( sizeof( xor64_aligned_t ) - alignment_size ) * 8;
+			alignment_count = ( sizeof( assorted_xor64_aligned_t ) - alignment_size ) * 8;
 
 			if( byte_order == _BYTE_STREAM_ENDIAN_BIG )
 			{
@@ -291,7 +291,7 @@ int xor64_calculate_checksum_little_endian_cpu_aligned(
 		}
 		/* Update the 64-bit XOR value with the aligned XOR value
 		 */
-		byte_size = (uint8_t) sizeof( xor64_aligned_t );
+		byte_size = (uint8_t) sizeof( assorted_xor64_aligned_t );
 
 		while( byte_size != 0 )
 		{

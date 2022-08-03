@@ -222,7 +222,7 @@ assorted_test_lzvn_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_xor32_SOURCES = \
-	../src/xor32.c ../src/xor32.h \
+	../src/assorted_xor32.c ../src/assorted_xor32.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
 	assorted_test_macros.h \
@@ -234,7 +234,7 @@ assorted_test_xor32_LDADD = \
 	@LIBCERROR_LIBADD@
 
 assorted_test_xor64_SOURCES = \
-	../src/xor64.c ../src/xor64.h \
+	../src/assorted_xor64.c ../src/assorted_xor64.h \
 	assorted_test_libcerror.h \
 	assorted_test_libcnotify.h \
 	assorted_test_macros.h \

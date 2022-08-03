@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _XOR64_H )
-#define _XOR64_H
+#if !defined( _ASSORTED_XOR64_H )
+#define _ASSORTED_XOR64_H
 
 #include <common.h>
 #include <types.h>
@@ -31,14 +31,14 @@
 extern "C" {
 #endif
 
-int xor64_calculate_checksum_little_endian_basic(
+int assorted_xor64_calculate_checksum_little_endian_basic(
      uint64_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
      uint64_t initial_value,
      libcerror_error_t **error );
 
-int xor64_calculate_checksum_little_endian_cpu_aligned(
+int assorted_xor64_calculate_checksum_little_endian_cpu_aligned(
      uint64_t *checksum_value,
      const uint8_t *buffer,
      size_t size,
@@ -49,5 +49,5 @@ int xor64_calculate_checksum_little_endian_cpu_aligned(
 }
 #endif
 
-#endif /* !defined( _XOR64_H ) */
+#endif /* !defined( _ASSORTED_XOR64_H ) */
 

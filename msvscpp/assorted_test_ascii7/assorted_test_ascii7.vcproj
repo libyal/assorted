@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_ascii7"
-	ProjectGUID="{CE71B493-1954-4238-9DEC-BC186EA3F6C4}"
+	ProjectGUID="{864E641D-9F79-4FF0-8C3C-12B31A671F23}"
 	RootNamespace="assorted_test_ascii7"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

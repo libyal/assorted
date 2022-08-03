@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="lzfsedecompress"
-	ProjectGUID="{0FE794DA-2AF8-423D-90B6-B9A081A3D4AC}"
+	ProjectGUID="{275EFE18-FF99-4695-BC94-CF5B57364900}"
 	RootNamespace="lzfsedecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="zlib"
-	ProjectGUID="{79C2EEED-799D-4F3D-A239-F92645758BED}"
+	ProjectGUID="{393819D2-905B-41B2-B186-928F61FC7A31}"
 	RootNamespace="zlib"
 	TargetFrameworkVersion="131072"
 	>

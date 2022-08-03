@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="xor32sum"
-	ProjectGUID="{D52C5A15-C9BF-4DE8-AB29-9D2DF8E59EDD}"
+	ProjectGUID="{B943EB1F-64C0-4CA2-8B44-E1DE20A31F3F}"
 	RootNamespace="xor32sum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -184,7 +184,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.c"
+				RelativePath="..\..\src\assorted_xor32.c"
 				>
 			</File>
 			<File
@@ -222,7 +222,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\xor32.h"
+				RelativePath="..\..\src\assorted_system_string.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\assorted_xor32.h"
 				>
 			</File>
 		</Filter>

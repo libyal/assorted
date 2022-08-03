@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="assorted_test_xor64"
-	ProjectGUID="{C112CEC3-BDF3-4FDA-915C-FC9C019D8E34}"
+	ProjectGUID="{EEB4C5AD-2976-4450-9AB5-FEBD6B9C558E}"
 	RootNamespace="assorted_test_xor64"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\xor64.c"
+				RelativePath="..\..\src\assorted_xor64.c"
 				>
 			</File>
 			<File
@@ -190,7 +190,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\xor64.h"
+				RelativePath="..\..\src\assorted_xor64.h"
 				>
 			</File>
 			<File

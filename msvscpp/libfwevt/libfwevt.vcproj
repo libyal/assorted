@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libfwevt"
-	ProjectGUID="{467350B3-835B-4DA3-AC3C-A26CCDE4164D}"
+	ProjectGUID="{A0D53E74-8480-4921-A4D4-DAF469B01C6C}"
 	RootNamespace="libfwevt"
 	TargetFrameworkVersion="131072"
 	>

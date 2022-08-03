@@ -35,7 +35,8 @@
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
 #include "assorted_output.h"
-#include "xor32.h"
+#include "assorted_system_string.h"
+#include "assorted_xor32.h"
 
 /* Prints the executable usage information
  */
@@ -127,27 +128,18 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case 'i':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				initial_value = _wtol( optarg );
-#else
-				initial_value = atol( optarg );
-#endif
+				initial_value = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 'o':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_offset = _wtol( optarg );
-#else
-				source_offset = atol( optarg );
-#endif
+				source_offset = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 's':
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				source_size = _wtol( optarg );
-#else
-				source_size = atol( optarg );
-#endif
+				source_size = system_string_copy_to_long( optarg );
+
 				break;
 
 			case 'v':
@@ -307,7 +299,7 @@ int main( int argc, char * const argv[] )
 	}
 	if( calculation_method == 1 )
 	{
-		result = xor32_calculate_checksum_little_endian_basic(
+		result = assorted_xor32_calculate_checksum_little_endian_basic(
 		          &checksum_value,
 		          buffer,
 		          source_size,
@@ -316,7 +308,7 @@ int main( int argc, char * const argv[] )
 	}
 	else if( calculation_method == 2 )
 	{
-		result = xor32_calculate_checksum_little_endian_cpu_aligned(
+		result = assorted_xor32_calculate_checksum_little_endian_cpu_aligned(
 		          &checksum_value,
 		          buffer,
 		          source_size,

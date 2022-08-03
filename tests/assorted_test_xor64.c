@@ -33,7 +33,7 @@
 #include "assorted_test_macros.h"
 #include "assorted_test_unused.h"
 
-#include "../src/xor64.h"
+#include "../src/assorted_xor64.h"
 
 /* Define to make assorted_test_xor64 generate verbose output
 #define ASSORTED_TEST_XOR64_VERBOSE
@@ -44,7 +44,7 @@ uint8_t assorted_test_xor64_data[ 16 ] = {
 
 #if defined( __GNUC__ )
 
-/* Tests the xor64_calculate_checksum_little_endian_basic function
+/* Tests the assorted_xor64_calculate_checksum_little_endian_basic function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_xor64_calculate_checksum_little_endian_basic(
@@ -56,7 +56,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_basic(
 
 	/* Test regular cases
 	 */
-	result = xor64_calculate_checksum_little_endian_basic(
+	result = assorted_xor64_calculate_checksum_little_endian_basic(
 	          &checksum_value,
 	          assorted_test_xor64_data,
 	          16,
@@ -79,7 +79,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_basic(
 
 	/* Test error cases
 	 */
-	result = xor64_calculate_checksum_little_endian_basic(
+	result = assorted_xor64_calculate_checksum_little_endian_basic(
 	          NULL,
 	          assorted_test_xor64_data,
 	          16,
@@ -98,7 +98,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_basic(
 	libcerror_error_free(
 	 &error );
 
-	result = xor64_calculate_checksum_little_endian_basic(
+	result = assorted_xor64_calculate_checksum_little_endian_basic(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -117,7 +117,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_basic(
 	libcerror_error_free(
 	 &error );
 
-	result = xor64_calculate_checksum_little_endian_basic(
+	result = assorted_xor64_calculate_checksum_little_endian_basic(
 	          &checksum_value,
 	          assorted_test_xor64_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -142,7 +142,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the xor64_calculate_checksum_little_endian_cpu_aligned function
+/* Tests the assorted_xor64_calculate_checksum_little_endian_cpu_aligned function
  * Returns 1 if successful or 0 if not
  */
 int assorted_test_xor64_calculate_checksum_little_endian_cpu_aligned(
@@ -154,7 +154,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_cpu_aligned(
 
 	/* Test regular cases
 	 */
-	result = xor64_calculate_checksum_little_endian_cpu_aligned(
+	result = assorted_xor64_calculate_checksum_little_endian_cpu_aligned(
 	          &checksum_value,
 	          assorted_test_xor64_data,
 	          16,
@@ -177,7 +177,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_cpu_aligned(
 
 	/* Test error cases
 	 */
-	result = xor64_calculate_checksum_little_endian_cpu_aligned(
+	result = assorted_xor64_calculate_checksum_little_endian_cpu_aligned(
 	          NULL,
 	          assorted_test_xor64_data,
 	          16,
@@ -196,7 +196,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_cpu_aligned(
 	libcerror_error_free(
 	 &error );
 
-	result = xor64_calculate_checksum_little_endian_cpu_aligned(
+	result = assorted_xor64_calculate_checksum_little_endian_cpu_aligned(
 	          &checksum_value,
 	          NULL,
 	          16,
@@ -215,7 +215,7 @@ int assorted_test_xor64_calculate_checksum_little_endian_cpu_aligned(
 	libcerror_error_free(
 	 &error );
 
-	result = xor64_calculate_checksum_little_endian_cpu_aligned(
+	result = assorted_xor64_calculate_checksum_little_endian_cpu_aligned(
 	          &checksum_value,
 	          assorted_test_xor64_data,
 	          (size_t) SSIZE_MAX + 1,
@@ -268,18 +268,22 @@ int main(
 #if defined( __GNUC__ )
 
 	ASSORTED_TEST_RUN(
-	 "xor64_calculate_checksum_little_endian_basic",
+	 "assorted_xor64_calculate_checksum_little_endian_basic",
 	 assorted_test_xor64_calculate_checksum_little_endian_basic );
 
 	ASSORTED_TEST_RUN(
-	 "xor64_calculate_checksum_little_endian_cpu_aligned",
+	 "assorted_xor64_calculate_checksum_little_endian_cpu_aligned",
 	 assorted_test_xor64_calculate_checksum_little_endian_cpu_aligned );
 
 #endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) */
 }
 
