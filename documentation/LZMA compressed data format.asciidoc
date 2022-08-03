@@ -197,16 +197,31 @@ Length values are encoded as:
 
 ==== LZMA2
 
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | Control code +
+The lower 5 bits are part of the upper 8-bits of the uncompressed chunk size
+4+| _If compressed chunk_
+| 1 | 1 | | Upper 8-bits of the uncompressed chunk size
+| 2 | 1 | | Lower 8-bits of the uncompressed chunk size
+4+| _Common_
+| ... | 1 | | Lower 8-bits of the chunk data size
+| ... | 1 | | Lower 8-bits of the chunk data size
+4+| _If compressed chunk with properties_
+| ... | 1 | | Properties
+|===
+
 [cols="1,5",options="header"]
 |===
 | Control code | Description
-| 0x00 | end-of-stream
-| 0x01 | [yellow-background]*Unknown (reset dictionary?)*
+| 0x00 | End-of-stream
+| 0x01 | Uncompressed chunk
 | 0x02 - 0x7f | Invalid
 | 0x80 - 0x9f | LZMA compressed chunk
-| 0xa0 - 0xbf | LZMA compressed chunk, with state reset
-| 0xc0 - 0xef | LZMA compressed chunk, with properties
-| 0xe0 - 0xff | LZMA compressed chunk, with properties and dictionary reset
+| 0xa0 - 0xbf | LZMA compressed chunk and state reset
+| 0xc0 - 0xef | LZMA compressed chunk with properties
+| 0xe0 - 0xff | LZMA compressed chunk with properties and dictionary reset
 |===
 
 :numbered!:

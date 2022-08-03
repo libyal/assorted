@@ -308,12 +308,20 @@ int assorted_lzma_read_block(
      size_t *compressed_data_offset,
      libcerror_error_t **error )
 {
-	static char *function              = "assorted_lzma_read_block";
-	size_t safe_compressed_data_offset = 0;
-	uint16_t uncompressed_chunk_size   = 0;
-	uint8_t byte_value                 = 0;
-	uint8_t has_properties             = 0;
-	uint8_t reset_dictionary           = 0;
+	static char *function                = "assorted_lzma_read_block";
+	size_t safe_compressed_data_offset   = 0;
+	uint32_t chunk_data_size             = 0;
+	uint32_t uncompressed_chunk_size     = 0;
+	uint8_t control_code                 = 0;
+	uint8_t properties_value             = 0;
+	uint8_t read_encoded_data            = 0;
+	uint8_t read_properties              = 0;
+	uint8_t read_uncompressed_chunk_size = 0;
+	uint8_t reset_dictionary             = 0;
+
+	uint8_t pb_value                     = 0;
+	uint8_t lp_value                     = 0;
+	uint8_t lc_value                     = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -364,23 +372,23 @@ int assorted_lzma_read_block(
 
 			return( -1 );
 		}
-		byte_value = compressed_data[ safe_compressed_data_offset++ ];
+		control_code = compressed_data[ safe_compressed_data_offset++ ];
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: control value\t\t\t\t\t: 0x%02" PRIx8 "\n",
+			 "%s: control code\t\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
-			 byte_value );
+			 control_code );
 		}
 #endif
-		if( byte_value == 0x00 )
+		if( control_code == 0x00 )
 		{
 			break;
 		}
-		if( ( byte_value >= 0x02 )
-		 && ( byte_value <= 0x7f ) )
+		if( ( control_code >= 0x02 )
+		 && ( control_code <= 0x7f ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -391,17 +399,150 @@ int assorted_lzma_read_block(
 
 			return( -1 );
 		}
-		if( ( byte_value == 0x01 )
-		 && ( byte_value >= 0xe0 ) )
+		if( control_code == 0x01 )
 		{
-			reset_dictionary = 1;
+			reset_dictionary  = 1;
+			read_encoded_data = 0;
 		}
-		if( byte_value >= 0xc0 )
+		else
 		{
-			has_properties = 1;
-		}
-		uncompressed_chunk_size = (uint16_t) ( byte_value & 0x1f ) << 8;
+			if( control_code >= 0xe0 )
+			{
+				reset_dictionary = 1;
+			}
+			if( control_code >= 0xc0 )
+			{
+				read_properties = 1;
+			}
+			if( control_code >= 0xa0 )
+			{
 /* TODO implement */
+			}
+			read_uncompressed_chunk_size = 1;
+			read_encoded_data            = 1;
+		}
+		if( read_uncompressed_chunk_size != 0 )
+		{
+			if( safe_compressed_data_offset > ( compressed_data_size - 2 ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+				 "%s: invalid compressed data value too small.",
+				 function );
+
+				return( -1 );
+			}
+			uncompressed_chunk_size  = (uint32_t) ( control_code & 0x1f ) << 8;
+			uncompressed_chunk_size += (uint32_t) compressed_data[ safe_compressed_data_offset++ ] << 8;
+			uncompressed_chunk_size |= compressed_data[ safe_compressed_data_offset++ ];
+			uncompressed_chunk_size += 1;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: uncompressed chunk size\t\t\t: %" PRIu32 "\n",
+				 function,
+				 uncompressed_chunk_size );
+			}
+#endif
+			read_uncompressed_chunk_size = 0;
+		}
+		if( safe_compressed_data_offset > ( compressed_data_size - 2 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+			 "%s: invalid compressed data value too small.",
+			 function );
+
+			return( -1 );
+		}
+		chunk_data_size  = (uint32_t) compressed_data[ safe_compressed_data_offset++ ] << 8;
+		chunk_data_size |= compressed_data[ safe_compressed_data_offset++ ];
+		chunk_data_size += 1;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: chunk data size\t\t\t\t: %" PRIu32 "\n",
+			 function,
+			 chunk_data_size );
+		}
+#endif
+		if( read_properties != 0 )
+		{
+			if( safe_compressed_data_offset > ( compressed_data_size - 1 ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+				 "%s: invalid compressed data value too small.",
+				 function );
+
+				return( -1 );
+			}
+			properties_value = compressed_data[ safe_compressed_data_offset++ ];
+
+/* TODO implement */
+			pb_value          = properties_value / ( 9 * 5 );
+			properties_value -= pb_value * 9 * 5;
+			lp_value          = properties_value / 9;
+			lc_value          = properties_value - ( properties_value * 9 );
+			properties_value += pb_value * 9 * 5;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: properties value\t\t\t\t: 0x%02" PRIx8 " (pb: %" PRId8 ", lp: %" PRId8 ", lc: %" PRId8 ")\n",
+				 function,
+				 properties_value,
+				 pb_value,
+				 lp_value,
+				 lc_value );
+			}
+#endif
+			read_properties = 0;
+		}
+		if( ( chunk_data_size > compressed_data_size )
+		 || ( safe_compressed_data_offset > ( compressed_data_size - chunk_data_size ) ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+			 "%s: invalid compressed data value too small.",
+			 function );
+
+			return( -1 );
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: compressed chunk data:\n",
+			 function );
+			libcnotify_print_data(
+			 &( compressed_data[ safe_compressed_data_offset ] ),
+			 chunk_data_size,
+			 0 );
+		}
+#endif
+		if( read_encoded_data != 0 )
+		{
+/* TODO implement read LZMA encoded data*/
+		}
+		else
+		{
+/* TODO implement read uncompressed data */
+		}
+		safe_compressed_data_offset += chunk_data_size;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
