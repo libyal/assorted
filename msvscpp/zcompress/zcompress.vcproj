@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="zcompress"
-	ProjectGUID="{C88D863E-0EBD-4E47-AA56-48241BEF5904}"
+	ProjectGUID="{3BC75C1F-F82B-4584-AAC5-47093D6B4509}"
 	RootNamespace="zcompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

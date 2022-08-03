@@ -277,9 +277,9 @@ not 0.
 ===== Encoded bit-stream
 
 The encoded bit-stream is stored in 8-bit integers, where bit values are stored
-back-to-front. So that 3 least-significant bits (LSB) would resprent a 3-bit
-value at the start of the encoded bit-stream. Note that the LSB of the 3-bit
-value is the LSB of the byte value.
+back-to-front. So that 3 least-significant bits (LSB) would represent a 3-bit
+value at the start of the -stream. Note that the LSB of the 3-bit value is the
+LSB of the byte value.
 
 Deflate uses a Huffman tree of 288 Huffman codes (or symbols) where the values:
 

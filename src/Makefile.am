@@ -258,6 +258,7 @@ lzfudecompress_LDADD = \
 	@LIBCERROR_LIBADD@
 
 lzmadecompress_SOURCES = \
+	assorted_bit_stream.c assorted_bit_stream.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \

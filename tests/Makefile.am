@@ -40,6 +40,7 @@ check_PROGRAMS = \
 	assorted_test_huffman_tree \
 	assorted_test_lzfse \
 	assorted_test_lzfu \
+	assorted_test_lzma \
 	assorted_test_lzvn \
 	assorted_test_xor32 \
 	assorted_test_xor64
@@ -206,6 +207,19 @@ assorted_test_lzfu_SOURCES = \
 	assorted_test_unused.h
 
 assorted_test_lzfu_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+assorted_test_lzma_SOURCES = \
+	../src/assorted_bit_stream.c ../src/assorted_bit_stream.h \
+	../src/assorted_lzma.c ../src/assorted_lzma.h \
+	assorted_test_libcerror.h \
+	assorted_test_libcnotify.h \
+	assorted_test_lzma.c \
+	assorted_test_macros.h \
+	assorted_test_unused.h
+
+assorted_test_lzma_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 

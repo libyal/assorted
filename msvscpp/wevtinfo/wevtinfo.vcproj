@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="wevtinfo"
-	ProjectGUID="{73E01925-DA6D-465B-9A72-A7F00403C484}"
+	ProjectGUID="{8C8FADF7-851B-461E-99D8-506DB8B1D955}"
 	RootNamespace="wevtinfo"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

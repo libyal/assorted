@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="lzmadecompress"
-	ProjectGUID="{A1BD332C-8B0D-4D0F-8884-83DE8EEEC568}"
+	ProjectGUID="{FF4BAB49-9ED5-4C99-89C4-CD441F875F96}"
 	RootNamespace="lzmadecompress"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -176,6 +176,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\assorted_bit_stream.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\assorted_getopt.c"
 				>
 			</File>
@@ -197,6 +201,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\src\assorted_bit_stream.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\src\assorted_getopt.h"
 				>

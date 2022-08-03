@@ -30,12 +30,12 @@
 #include "assorted_lzvn.h"
 
 #define ASSORTED_LZFSE_ENDOFSTREAM_BLOCK_MARKER		0x24787662UL
-#define ASSORTED_LZFSE_UNCOMPRESSED_BLOCK_MARKER		0x2d787662UL
+#define ASSORTED_LZFSE_UNCOMPRESSED_BLOCK_MARKER	0x2d787662UL
 #define ASSORTED_LZFSE_COMPRESSED_BLOCK_V1_MARKER	0x31787662UL
 #define ASSORTED_LZFSE_COMPRESSED_BLOCK_V2_MARKER	0x32787662UL
 #define ASSORTED_LZFSE_COMPRESSED_BLOCK_LZVN_MARKER	0x6e787662UL
 
-#define ASSORTED_LZFSE_MATCHES_PER_BLOCK			10000
+#define ASSORTED_LZFSE_MATCHES_PER_BLOCK		10000
 #define ASSORTED_LZFSE_LITERALS_PER_BLOCK		( 4 * ASSORTED_LZFSE_MATCHES_PER_BLOCK )
 
 const uint8_t assorted_lzfse_frequency_number_of_bits_table[ 32 ] = {
@@ -352,62 +352,62 @@ int assorted_lzfse_bit_stream_get_value(
 	return( 1 );
 }
 
-/* Creates a state
- * Make sure the value state is referencing, is set to NULL
+/* Creates a decoder
+ * Make sure the value decoder is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
-int assorted_lzfse_state_initialize(
-     assorted_lzfse_state_t **state,
+int assorted_lzfse_decoder_initialize(
+     assorted_lzfse_decoder_t **decoder,
      libcerror_error_t **error )
 {
-	static char *function = "assorted_lzfse_state_initialize";
+	static char *function = "assorted_lzfse_decoder_initialize";
 
-	if( state == NULL )
+	if( decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid state.",
+		 "%s: invalid decoder.",
 		 function );
 
 		return( -1 );
 	}
-	if( *state != NULL )
+	if( *decoder != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid state value already set.",
+		 "%s: invalid decoder value already set.",
 		 function );
 
 		return( -1 );
 	}
-	*state = memory_allocate_structure(
-	          assorted_lzfse_state_t );
+	*decoder = memory_allocate_structure(
+	            assorted_lzfse_decoder_t );
 
-	if( *state == NULL )
+	if( *decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create state.",
+		 "%s: unable to create decoder.",
 		 function );
 
 		goto on_error;
 	}
 	if( memory_set(
-	     *state,
+	     *decoder,
 	     0,
-	     sizeof( assorted_lzfse_state_t ) ) == NULL )
+	     sizeof( assorted_lzfse_decoder_t ) ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear state.",
+		 "%s: unable to clear decoder.",
 		 function );
 
 		goto on_error;
@@ -415,42 +415,42 @@ int assorted_lzfse_state_initialize(
 	return( 1 );
 
 on_error:
-	if( *state != NULL )
+	if( *decoder != NULL )
 	{
 		memory_free(
-		 *state );
+		 *decoder );
 
-		*state = NULL;
+		*decoder = NULL;
 	}
 	return( -1 );
 }
 
-/* Frees a state
+/* Frees a decoder
  * Returns 1 if successful or -1 on error
  */
-int assorted_lzfse_state_free(
-     assorted_lzfse_state_t **state,
+int assorted_lzfse_decoder_free(
+     assorted_lzfse_decoder_t **decoder,
      libcerror_error_t **error )
 {
-	static char *function = "assorted_lzfse_state_free";
+	static char *function = "assorted_lzfse_decoder_free";
 
-	if( state == NULL )
+	if( decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid state.",
+		 "%s: invalid decoder.",
 		 function );
 
 		return( -1 );
 	}
-	if( *state != NULL )
+	if( *decoder != NULL )
 	{
 		memory_free(
-		 *state );
+		 *decoder );
 
-		*state = NULL;
+		*decoder = NULL;
 	}
 	return( 1 );
 }
@@ -712,7 +712,7 @@ int assorted_lzfse_build_value_decoder_table(
  * Returns 1 on success or -1 on error
  */
 int assorted_lzfse_read_block_v1_header(
-     assorted_lzfse_state_t *state,
+     assorted_lzfse_decoder_t *decoder,
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
@@ -725,15 +725,15 @@ int assorted_lzfse_read_block_v1_header(
 	uint32_t literal_bits              = 0;
 	uint32_t lmd_values_bits           = 0;
 	uint16_t table_index               = 0;
-	uint8_t literal_state_index        = 0;
+	uint8_t literal_decoder_index        = 0;
 
-	if( state == NULL )
+	if( decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid state.",
+		 "%s: invalid decoder.",
 		 function );
 
 		return( -1 );
@@ -816,25 +816,25 @@ int assorted_lzfse_read_block_v1_header(
 
 	byte_stream_copy_to_uint32_little_endian(
 	 &( compressed_data[ safe_compressed_data_offset ] ),
-	 state->number_of_literals );
+	 decoder->number_of_literals );
 
 	safe_compressed_data_offset += 4;
 
 	byte_stream_copy_to_uint32_little_endian(
 	 &( compressed_data[ safe_compressed_data_offset ] ),
-	 state->number_of_lmd_values );
+	 decoder->number_of_lmd_values );
 
 	safe_compressed_data_offset += 4;
 
 	byte_stream_copy_to_uint32_little_endian(
 	 &( compressed_data[ safe_compressed_data_offset ] ),
-	 state->literals_data_size );
+	 decoder->literals_data_size );
 
 	safe_compressed_data_offset += 4;
 
 	byte_stream_copy_to_uint32_little_endian(
 	 &( compressed_data[ safe_compressed_data_offset ] ),
-	 state->lmd_values_data_size );
+	 decoder->lmd_values_data_size );
 
 	safe_compressed_data_offset += 4;
 
@@ -844,13 +844,13 @@ int assorted_lzfse_read_block_v1_header(
 
 	safe_compressed_data_offset += 4;
 
-	for( literal_state_index = 0;
-	     literal_state_index < 4;
-	     literal_state_index++ )
+	for( literal_decoder_index = 0;
+	     literal_decoder_index < 4;
+	     literal_decoder_index++ )
 	{
 		byte_stream_copy_to_uint16_little_endian(
 		 &( compressed_data[ safe_compressed_data_offset ] ),
-		 state->literal_states[ literal_state_index ] );
+		 decoder->literal_states[ literal_decoder_index ] );
 
 		safe_compressed_data_offset += 2;
 	}
@@ -862,19 +862,19 @@ int assorted_lzfse_read_block_v1_header(
 
 	byte_stream_copy_to_uint16_little_endian(
 	 &( compressed_data[ safe_compressed_data_offset ] ),
-	 state->l_value_state );
+	 decoder->l_value_state );
 
 	safe_compressed_data_offset += 2;
 
 	byte_stream_copy_to_uint16_little_endian(
 	 &( compressed_data[ safe_compressed_data_offset ] ),
-	 state->m_value_state );
+	 decoder->m_value_state );
 
 	safe_compressed_data_offset += 2;
 
 	byte_stream_copy_to_uint16_little_endian(
 	 &( compressed_data[ safe_compressed_data_offset ] ),
-	 state->d_value_state );
+	 decoder->d_value_state );
 
 	safe_compressed_data_offset += 2;
 
@@ -899,37 +899,37 @@ int assorted_lzfse_read_block_v1_header(
 		libcnotify_printf(
 		 "%s: number of literals\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->number_of_literals );
+		 decoder->number_of_literals );
 
 		libcnotify_printf(
 		 "%s: number of L, M, D values\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->number_of_lmd_values );
+		 decoder->number_of_lmd_values );
 
 		libcnotify_printf(
 		 "%s: literals data size\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->literals_data_size );
+		 decoder->literals_data_size );
 
 		libcnotify_printf(
 		 "%s: L, M, D values data size\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->lmd_values_data_size );
+		 decoder->lmd_values_data_size );
 
 		libcnotify_printf(
 		 "%s: literal_bits\t\t\t\t: %" PRIi32 "\n",
 		 function,
 		 (int32_t) literal_bits );
 
-		for( literal_state_index = 0;
-		     literal_state_index < 4;
-		     literal_state_index++ )
+		for( literal_decoder_index = 0;
+		     literal_decoder_index < 4;
+		     literal_decoder_index++ )
 		{
 			libcnotify_printf(
 			 "%s: literal_state[ %" PRIu8 " ]\t\t\t\t: %" PRIu16 "\n",
 			 function,
-			 literal_state_index,
-			 state->literal_states[ literal_state_index ] );
+			 literal_decoder_index,
+			 decoder->literal_states[ literal_decoder_index ] );
 		}
 		libcnotify_printf(
 		 "%s: lmd_values_bits\t\t\t\t: %" PRIi32 "\n",
@@ -939,17 +939,17 @@ int assorted_lzfse_read_block_v1_header(
 		libcnotify_printf(
 		 "%s: L value state\t\t\t\t: %" PRIu16 "\n",
 		 function,
-		 state->l_value_state );
+		 decoder->l_value_state );
 
 		libcnotify_printf(
 		 "%s: M value state\t\t\t\t: %" PRIu16 "\n",
 		 function,
-		 state->m_value_state );
+		 decoder->m_value_state );
 
 		libcnotify_printf(
 		 "%s: D value state\t\t\t\t: %" PRIu16 "\n",
 		 function,
-		 state->d_value_state );
+		 decoder->d_value_state );
 
 		for( table_index = 0;
 		     table_index < 360;
@@ -967,8 +967,8 @@ int assorted_lzfse_read_block_v1_header(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-	state->literal_bits    = (int32_t) literal_bits;
-	state->lmd_values_bits = (int32_t) lmd_values_bits;
+	decoder->literal_bits    = (int32_t) literal_bits;
+	decoder->lmd_values_bits = (int32_t) lmd_values_bits;
 
 	*compressed_data_offset = safe_compressed_data_offset;
 
@@ -979,7 +979,7 @@ int assorted_lzfse_read_block_v1_header(
  * Returns 1 on success or -1 on error
  */
 int assorted_lzfse_read_block_v2_header(
-     assorted_lzfse_state_t *state,
+     assorted_lzfse_decoder_t *decoder,
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
@@ -995,16 +995,16 @@ int assorted_lzfse_read_block_v2_header(
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint16_t table_index               = 0;
-	uint8_t literal_state_index        = 0;
+	uint8_t literal_decoder_index        = 0;
 #endif
 
-	if( state == NULL )
+	if( decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid state.",
+		 "%s: invalid decoder.",
 		 function );
 
 		return( -1 );
@@ -1117,22 +1117,22 @@ int assorted_lzfse_read_block_v2_header(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-	state->number_of_literals   = (uint32_t) ( packed_fields1 & 0x000fffffUL );
-	state->literals_data_size   = (uint32_t) ( ( packed_fields1 >> 20 ) & 0x000fffffUL );
-	state->number_of_lmd_values = (uint32_t) ( ( packed_fields1 >> 40 ) & 0x000fffffUL );
-	state->literal_bits         = (int32_t) ( ( packed_fields1 >> 60 ) & 0x00000007UL ) - 7;
+	decoder->number_of_literals   = (uint32_t) ( packed_fields1 & 0x000fffffUL );
+	decoder->literals_data_size   = (uint32_t) ( ( packed_fields1 >> 20 ) & 0x000fffffUL );
+	decoder->number_of_lmd_values = (uint32_t) ( ( packed_fields1 >> 40 ) & 0x000fffffUL );
+	decoder->literal_bits         = (int32_t) ( ( packed_fields1 >> 60 ) & 0x00000007UL ) - 7;
 
-	state->literal_states[ 0 ]  = (uint16_t) ( packed_fields2 & 0x000003ffUL );
-	state->literal_states[ 1 ]  = (uint16_t) ( ( packed_fields2 >> 10 ) & 0x000003ffUL );
-	state->literal_states[ 2 ]  = (uint16_t) ( ( packed_fields2 >> 20 ) & 0x000003ffUL );
-	state->literal_states[ 3 ]  = (uint16_t) ( ( packed_fields2 >> 30 ) & 0x000003ffUL );
-	state->lmd_values_data_size = (uint32_t) ( ( packed_fields2 >> 40 ) & 0x000fffffUL );
-	state->lmd_values_bits      = (int32_t) ( ( packed_fields2 >> 60 ) & 0x00000007UL ) - 7;
+	decoder->literal_states[ 0 ]  = (uint16_t) ( packed_fields2 & 0x000003ffUL );
+	decoder->literal_states[ 1 ]  = (uint16_t) ( ( packed_fields2 >> 10 ) & 0x000003ffUL );
+	decoder->literal_states[ 2 ]  = (uint16_t) ( ( packed_fields2 >> 20 ) & 0x000003ffUL );
+	decoder->literal_states[ 3 ]  = (uint16_t) ( ( packed_fields2 >> 30 ) & 0x000003ffUL );
+	decoder->lmd_values_data_size = (uint32_t) ( ( packed_fields2 >> 40 ) & 0x000fffffUL );
+	decoder->lmd_values_bits      = (int32_t) ( ( packed_fields2 >> 60 ) & 0x00000007UL ) - 7;
 
-	header_size                 = (uint32_t) ( packed_fields3 & 0xffffffffUL );
-	state->l_value_state        = (uint16_t) ( ( packed_fields3 >> 32 ) & 0x000003ffUL );
-	state->m_value_state        = (uint16_t) ( ( packed_fields3 >> 42 ) & 0x000003ffUL );
-	state->d_value_state        = (uint16_t) ( ( packed_fields3 >> 52 ) & 0x000003ffUL );
+	header_size                   = (uint32_t) ( packed_fields3 & 0xffffffffUL );
+	decoder->l_value_state        = (uint16_t) ( ( packed_fields3 >> 32 ) & 0x000003ffUL );
+	decoder->m_value_state        = (uint16_t) ( ( packed_fields3 >> 42 ) & 0x000003ffUL );
+	decoder->d_value_state        = (uint16_t) ( ( packed_fields3 >> 52 ) & 0x000003ffUL );
 
 	if( ( header_size < 32 )
 	 || ( header_size > 720 ) )
@@ -1195,42 +1195,42 @@ int assorted_lzfse_read_block_v2_header(
 		libcnotify_printf(
 		 "%s: number of literals\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->number_of_literals );
+		 decoder->number_of_literals );
 
 		libcnotify_printf(
 		 "%s: number of L, M, D values\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->number_of_lmd_values );
+		 decoder->number_of_lmd_values );
 
 		libcnotify_printf(
 		 "%s: literals data size\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->literals_data_size );
+		 decoder->literals_data_size );
 
 		libcnotify_printf(
 		 "%s: L, M, D values data size\t\t\t: %" PRIu32 "\n",
 		 function,
-		 state->lmd_values_data_size );
+		 decoder->lmd_values_data_size );
 
 		libcnotify_printf(
 		 "%s: literal_bits\t\t\t\t: %" PRIi32 "\n",
 		 function,
-		 state->literal_bits );
+		 decoder->literal_bits );
 
-		for( literal_state_index = 0;
-		     literal_state_index < 4;
-		     literal_state_index++ )
+		for( literal_decoder_index = 0;
+		     literal_decoder_index < 4;
+		     literal_decoder_index++ )
 		{
 			libcnotify_printf(
 			 "%s: literal_states[ %" PRIu8 " ]\t\t\t\t: %" PRIu16 "\n",
 			 function,
-			 literal_state_index,
-			 state->literal_states[ literal_state_index ] );
+			 literal_decoder_index,
+			 decoder->literal_states[ literal_decoder_index ] );
 		}
 		libcnotify_printf(
 		 "%s: lmd_bits\t\t\t\t\t: %" PRIi32 "\n",
 		 function,
-		 state->lmd_values_bits );
+		 decoder->lmd_values_bits );
 
 		libcnotify_printf(
 		 "%s: header size\t\t\t\t\t: %" PRIu32 "\n",
@@ -1240,17 +1240,17 @@ int assorted_lzfse_read_block_v2_header(
 		libcnotify_printf(
 		 "%s: L value state\t\t\t\t: %" PRIu16 "\n",
 		 function,
-		 state->l_value_state );
+		 decoder->l_value_state );
 
 		libcnotify_printf(
 		 "%s: M value state\t\t\t\t: %" PRIu16 "\n",
 		 function,
-		 state->m_value_state );
+		 decoder->m_value_state );
 
 		libcnotify_printf(
 		 "%s: D value state\t\t\t\t: %" PRIu16 "\n",
 		 function,
-		 state->d_value_state );
+		 decoder->d_value_state );
 
 		for( table_index = 0;
 		     table_index < 360;
@@ -1362,7 +1362,7 @@ int assorted_lzfse_read_compressed_frequency_table(
  * Returns 1 on success or -1 on error
  */
 int assorted_lzfse_read_block(
-     assorted_lzfse_state_t *state,
+     assorted_lzfse_decoder_t *decoder,
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
@@ -1377,13 +1377,13 @@ int assorted_lzfse_read_block(
 	static char *function                   = "assorted_lzfse_read_block";
 	size_t safe_compressed_data_offset      = 0;
 
-	if( state == NULL )
+	if( decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid state.",
+		 "%s: invalid decoder.",
 		 function );
 
 		return( -1 );
@@ -1423,8 +1423,8 @@ int assorted_lzfse_read_block(
 	}
 	safe_compressed_data_offset = *compressed_data_offset;
 
-	if( ( state->literals_data_size > compressed_data_size )
-	 || ( safe_compressed_data_offset > ( compressed_data_size - state->literals_data_size ) ) )
+	if( ( decoder->literals_data_size > compressed_data_size )
+	 || ( safe_compressed_data_offset > ( compressed_data_size - decoder->literals_data_size ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1438,7 +1438,7 @@ int assorted_lzfse_read_block(
 	if( assorted_lzfse_bit_stream_initialize(
 	     &bit_stream,
 	     &( compressed_data[ safe_compressed_data_offset ] ),
-	     state->literals_data_size,
+	     decoder->literals_data_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1451,7 +1451,7 @@ int assorted_lzfse_read_block(
 		goto on_error;
 	}
 	if( assorted_lzfse_read_literal_values(
-	     state,
+	     decoder,
 	     bit_stream,
 	     literal_values,
 	     error ) != 1 )
@@ -1478,10 +1478,10 @@ int assorted_lzfse_read_block(
 
 		goto on_error;
 	}
-	safe_compressed_data_offset += state->literals_data_size;
+	safe_compressed_data_offset += decoder->literals_data_size;
 
-	if( ( state->lmd_values_data_size > compressed_data_size )
-	 || ( safe_compressed_data_offset > ( compressed_data_size - state->lmd_values_data_size ) ) )
+	if( ( decoder->lmd_values_data_size > compressed_data_size )
+	 || ( safe_compressed_data_offset > ( compressed_data_size - decoder->lmd_values_data_size ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1495,7 +1495,7 @@ int assorted_lzfse_read_block(
 	if( assorted_lzfse_bit_stream_initialize(
 	     &bit_stream,
 	     &( compressed_data[ safe_compressed_data_offset ] ),
-	     state->lmd_values_data_size,
+	     decoder->lmd_values_data_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1508,7 +1508,7 @@ int assorted_lzfse_read_block(
 		goto on_error;
 	}
 	if( assorted_lzfse_read_lmd_values(
-	     state,
+	     decoder,
 	     bit_stream,
 	     literal_values,
 	     uncompressed_data,
@@ -1538,7 +1538,7 @@ int assorted_lzfse_read_block(
 
 		goto on_error;
 	}
-	safe_compressed_data_offset += state->lmd_values_data_size;
+	safe_compressed_data_offset += decoder->lmd_values_data_size;
 
 	*compressed_data_offset = safe_compressed_data_offset;
 
@@ -1558,7 +1558,7 @@ on_error:
  * Returns 1 on success or -1 on error
  */
 int assorted_lzfse_read_literal_values(
-     assorted_lzfse_state_t *state,
+     assorted_lzfse_decoder_t *decoder,
      assorted_lzfse_bit_stream_t *bit_stream,
      uint8_t *literal_values,
      libcerror_error_t **error )
@@ -1570,15 +1570,15 @@ int assorted_lzfse_read_literal_values(
 	uint32_t value_32bit                          = 0;
 	int32_t literal_value_index                   = 0;
 	int32_t literal_state                         = 0;
-	uint8_t literal_state_index                   = 0;
+	uint8_t literal_decoder_index                 = 0;
 
-	if( state == NULL )
+	if( decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid state.",
+		 "%s: invalid decoder.",
 		 function );
 
 		return( -1 );
@@ -1594,14 +1594,14 @@ int assorted_lzfse_read_literal_values(
 
 		return( -1 );
 	}
-	literal_states[ 0 ] = state->literal_states[ 0 ];
-	literal_states[ 1 ] = state->literal_states[ 1 ];
-	literal_states[ 2 ] = state->literal_states[ 2 ];
-	literal_states[ 3 ] = state->literal_states[ 3 ];
+	literal_states[ 0 ] = decoder->literal_states[ 0 ];
+	literal_states[ 1 ] = decoder->literal_states[ 1 ];
+	literal_states[ 2 ] = decoder->literal_states[ 2 ];
+	literal_states[ 3 ] = decoder->literal_states[ 3 ];
 
 	if( assorted_lzfse_bit_stream_get_value(
 	     bit_stream,
-	     -1 * state->literal_bits,
+	     -1 * decoder->literal_bits,
 	     &value_32bit,
 	     error ) != 1 )
 	{
@@ -1615,15 +1615,15 @@ int assorted_lzfse_read_literal_values(
 		return( -1 );
 	}
 	for( literal_value_index = 0;
-	     literal_value_index < state->number_of_literals;
+	     literal_value_index < decoder->number_of_literals;
 	     literal_value_index += 4 )
 	{
-		for( literal_state_index = 0;
-		     literal_state_index < 4;
-		     literal_state_index++ )
+		for( literal_decoder_index = 0;
+		     literal_decoder_index < 4;
+		     literal_decoder_index++ )
 		{
-			literal_state = literal_states[ literal_state_index ];
-			decoder_entry = &( state->literal_decoder_table[ literal_state ] );
+			literal_state = literal_states[ literal_decoder_index ];
+			decoder_entry = &( decoder->literal_decoder_table[ literal_state ] );
 
 			if( assorted_lzfse_bit_stream_get_value(
 			     bit_stream,
@@ -1642,9 +1642,9 @@ int assorted_lzfse_read_literal_values(
 			}
 			literal_state = (int32_t) decoder_entry->delta + (int32_t) value_32bit;
 
-			literal_values[ literal_value_index + literal_state_index ] = decoder_entry->symbol;
+			literal_values[ literal_value_index + literal_decoder_index ] = decoder_entry->symbol;
 
-			literal_states[ literal_state_index ] = (uint16_t) literal_state;
+			literal_states[ literal_decoder_index ] = (uint16_t) literal_state;
 		}
 	}
 	return( 1 );
@@ -1654,7 +1654,7 @@ int assorted_lzfse_read_literal_values(
  * Returns 1 on success or -1 on error
  */
 int assorted_lzfse_read_lmd_values(
-     assorted_lzfse_state_t *state,
+     assorted_lzfse_decoder_t *decoder,
      assorted_lzfse_bit_stream_t *bit_stream,
      uint8_t *literal_values,
      uint8_t *uncompressed_data,
@@ -1679,13 +1679,13 @@ int assorted_lzfse_read_lmd_values(
 	int32_t m_value_state                                     = 0;
 	int32_t safe_d_value                                      = 0;
 
-	if( state == NULL )
+	if( decoder == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid state.",
+		 "%s: invalid decoder.",
 		 function );
 
 		return( -1 );
@@ -1749,9 +1749,9 @@ int assorted_lzfse_read_lmd_values(
 	}
 	remaining_uncompressed_data_size = uncompressed_data_size - safe_uncompressed_data_offset;
 
-	l_value_state = state->l_value_state;
-	m_value_state = state->m_value_state;
-	d_value_state = state->d_value_state;
+	l_value_state = decoder->l_value_state;
+	m_value_state = decoder->m_value_state;
+	d_value_state = decoder->d_value_state;
 
 	if( l_value_state > ASSORTED_LZFSE_NUMBER_OF_L_VALUE_STATES )
 	{
@@ -1788,7 +1788,7 @@ int assorted_lzfse_read_lmd_values(
 	}
 	if( assorted_lzfse_bit_stream_get_value(
 	     bit_stream,
-	     -1 * state->lmd_values_bits,
+	     -1 * decoder->lmd_values_bits,
 	     &value_32bit,
 	     error ) != 1 )
 	{
@@ -1802,10 +1802,10 @@ int assorted_lzfse_read_lmd_values(
 		return( -1 );
 	}
 	for( lmd_value_index = 0; 
-	     lmd_value_index < state->number_of_lmd_values;
+	     lmd_value_index < decoder->number_of_lmd_values;
 	     lmd_value_index++ )
 	{
-		value_decoder_entry = &( state->l_value_decoder_table[ l_value_state ] );
+		value_decoder_entry = &( decoder->l_value_decoder_table[ l_value_state ] );
 
 		if( assorted_lzfse_bit_stream_get_value(
 		     bit_stream,
@@ -1825,7 +1825,7 @@ int assorted_lzfse_read_lmd_values(
 		l_value_state = (int32_t) value_decoder_entry->delta + (int32_t) ( value_32bit >> value_decoder_entry->value_bits );
 		l_value       = value_decoder_entry->value_base + (int32_t) ( value_32bit & value_decoder_entry->value_bitmask );
 
-		value_decoder_entry = &( state->m_value_decoder_table[ m_value_state ] );
+		value_decoder_entry = &( decoder->m_value_decoder_table[ m_value_state ] );
 
 		if( assorted_lzfse_bit_stream_get_value(
 		     bit_stream,
@@ -1845,7 +1845,7 @@ int assorted_lzfse_read_lmd_values(
 		m_value_state = (int32_t) value_decoder_entry->delta + (int32_t) ( value_32bit >> value_decoder_entry->value_bits );
 		m_value       = value_decoder_entry->value_base + (int32_t) ( value_32bit & value_decoder_entry->value_bitmask );
 
-		value_decoder_entry = &( state->d_value_decoder_table[ d_value_state ] );
+		value_decoder_entry = &( decoder->d_value_decoder_table[ d_value_state ] );
 
 		if( assorted_lzfse_bit_stream_get_value(
 		     bit_stream,
@@ -1961,7 +1961,7 @@ int assorted_lzfse_decompress(
 {
 	uint16_t frequency_table[ 360 ];
 
-	assorted_lzfse_state_t *state       = NULL;
+	assorted_lzfse_decoder_t *decoder   = NULL;
 	static char *function               = "assorted_lzfse_decompress";
 	size_t compressed_data_offset       = 0;
 	size_t safe_uncompressed_block_size = 0;
@@ -2164,21 +2164,21 @@ int assorted_lzfse_decompress(
 		switch( block_marker )
 		{
 			case ASSORTED_LZFSE_COMPRESSED_BLOCK_V1_MARKER:
-				if( assorted_lzfse_state_initialize(
-				     &state,
+				if( assorted_lzfse_decoder_initialize(
+				     &decoder,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create state.",
+					 "%s: unable to create decoder.",
 					 function );
 
 					goto on_error;
 				}
 				if( assorted_lzfse_read_block_v1_header(
-				     state,
+				     decoder,
 				     compressed_data,
 				     compressed_data_size,
 				     &compressed_data_offset,
@@ -2197,21 +2197,21 @@ int assorted_lzfse_decompress(
 				break;
 
 			case ASSORTED_LZFSE_COMPRESSED_BLOCK_V2_MARKER:
-				if( assorted_lzfse_state_initialize(
-				     &state,
+				if( assorted_lzfse_decoder_initialize(
+				     &decoder,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create state.",
+					 "%s: unable to create decoder.",
 					 function );
 
 					goto on_error;
 				}
 				if( assorted_lzfse_read_block_v2_header(
-				     state,
+				     decoder,
 				     compressed_data,
 				     compressed_data_size,
 				     &compressed_data_offset,
@@ -2325,7 +2325,7 @@ int assorted_lzfse_decompress(
 				     ASSORTED_LZFSE_NUMBER_OF_LITERAL_STATES,
 				     ASSORTED_LZFSE_NUMBER_OF_LITERAL_SYMBOLS,
 				     &( frequency_table[ 104 ] ),
-				     state->literal_decoder_table,
+				     decoder->literal_decoder_table,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
@@ -2343,7 +2343,7 @@ int assorted_lzfse_decompress(
 				     &( frequency_table[ 0 ] ),
 				     assorted_lzfse_l_value_bits_table,
 				     assorted_lzfse_l_value_base_table,
-				     state->l_value_decoder_table,
+				     decoder->l_value_decoder_table,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
@@ -2361,7 +2361,7 @@ int assorted_lzfse_decompress(
 				     &( frequency_table[ 20 ] ),
 				     assorted_lzfse_m_value_bits_table,
 				     assorted_lzfse_m_value_base_table,
-				     state->m_value_decoder_table,
+				     decoder->m_value_decoder_table,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
@@ -2379,7 +2379,7 @@ int assorted_lzfse_decompress(
 				     &( frequency_table[ 40 ] ),
 				     assorted_lzfse_d_value_bits_table,
 				     assorted_lzfse_d_value_base_table,
-				     state->d_value_decoder_table,
+				     decoder->d_value_decoder_table,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
@@ -2392,7 +2392,7 @@ int assorted_lzfse_decompress(
 					goto on_error;
 				}
 				if( assorted_lzfse_read_block(
-				     state,
+				     decoder,
 				     compressed_data,
 				     compressed_data_size,
 				     &compressed_data_offset,
@@ -2410,15 +2410,15 @@ int assorted_lzfse_decompress(
 
 					goto on_error;
 				}
-				if( assorted_lzfse_state_free(
-				     &state,
+				if( assorted_lzfse_decoder_free(
+				     &decoder,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-					 "%s: unable to free state.",
+					 "%s: unable to free decoder.",
 					 function );
 
 					goto on_error;
@@ -2455,10 +2455,10 @@ int assorted_lzfse_decompress(
 	return( 1 );
 
 on_error:
-	if( state != NULL )
+	if( decoder != NULL )
 	{
-		assorted_lzfse_state_free(
-		 &state,
+		assorted_lzfse_decoder_free(
+		 &decoder,
 		 NULL );
 	}
 	return( -1 );

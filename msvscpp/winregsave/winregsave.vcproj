@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="winregsave"
-	ProjectGUID="{70CEADA2-AC5A-403A-B819-D432A499CFAA}"
+	ProjectGUID="{C2045628-9FAE-4E2F-9DB3-C0D46B1636EA}"
 	RootNamespace="winregsave"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

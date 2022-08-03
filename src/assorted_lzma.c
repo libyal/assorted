@@ -24,9 +24,21 @@
 #include <memory.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
 #include "assorted_lzma.h"
+
+enum ASSORTED_LZMA_CONTROL_CODES
+{
+	ASSORTED_LZMA_CONTROL_CODE_LITERAL	= 0x00,
+	ASSORTED_LZMA_CONTROL_CODE_MATCH	= 0x02,
+	ASSORTED_LZMA_CONTROL_CODE_SHORTREP	= 0x0c,
+	ASSORTED_LZMA_CONTROL_CODE_REP0		= 0x0d,
+	ASSORTED_LZMA_CONTROL_CODE_REP1		= 0x0e,
+	ASSORTED_LZMA_CONTROL_CODE_REP2		= 0x1e,
+	ASSORTED_LZMA_CONTROL_CODE_REP3		= 0x1f,
+};
 
 /* Reads the stream header
  * Returns 1 on success or -1 on error
@@ -299,17 +311,407 @@ int assorted_lzma_read_block_header(
 	return( 1 );
 }
 
-/* Reads the block
+/* Reads a LZMA encoded block
  * Returns 1 on success or -1 on error
  */
-int assorted_lzma_read_block(
+int assorted_lzma_read_lzma(
+     assorted_bit_stream_t *bit_stream,
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
+     libcerror_error_t **error )
+{
+	static char *function                = "assorted_lzma_read_lzma";
+	size_t safe_uncompressed_data_offset = 0;
+	size_t current_distance              = 0;
+	size_t last_distance0                = 0;
+	size_t last_distance1                = 0;
+	size_t last_distance2                = 0;
+	size_t last_distance3                = 0;
+	uint32_t value_32bit                 = 0;
+	uint16_t length                      = 0;
+	uint8_t bit_index                    = 0;
+	uint8_t code_sequence                = 0;
+	uint8_t length_number_of_bits        = 0;
+	uint8_t length_sequence              = 0;
+
+	if( bit_stream == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid bit stream.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data_offset == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data offset.",
+		 function );
+
+		return( -1 );
+	}
+	safe_uncompressed_data_offset = *uncompressed_data_offset;
+
+	if( safe_uncompressed_data_offset > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data offset value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( assorted_bit_stream_get_value(
+	     bit_stream,
+	     8,
+	     &value_32bit,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve value from bit stream.",
+		 function );
+
+		return( -1 );
+	}
+	/* The first byte in the encoded bit-stream should be 0
+	 */
+	if( value_32bit != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: unsupported first encoded byte value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
+	{
+		code_sequence = 0;
+
+		for( bit_index = 0;
+		     bit_index < 5;
+		     bit_index++ )
+		{
+			if( assorted_bit_stream_get_value(
+			     bit_stream,
+			     1,
+			     &value_32bit,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve value from bit stream.",
+				 function );
+
+				return( -1 );
+			}
+			code_sequence <<= 1;
+			code_sequence  |= (uint8_t) value_32bit;
+
+			if( value_32bit == 0 )
+			{
+				break;
+			}
+		}
+		if( code_sequence == 0x06 )
+		{
+			if( assorted_bit_stream_get_value(
+			     bit_stream,
+			     1,
+			     &value_32bit,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve value from bit stream.",
+				 function );
+
+				return( -1 );
+			}
+			code_sequence <<= 1;
+			code_sequence  |= (uint8_t) value_32bit;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: code sequence\t\t\t\t\t: 0x%02" PRIx8 "\n",
+			 function,
+			 code_sequence );
+		}
+#endif
+		if( code_sequence == ASSORTED_LZMA_CONTROL_CODE_LITERAL )
+		{
+			if( assorted_bit_stream_get_value(
+			     bit_stream,
+			     8,
+			     &value_32bit,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve value from bit stream.",
+				 function );
+
+				return( -1 );
+			}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: literal\t\t\t\t\t: 0x%02" PRIx32 "\n",
+				 function,
+				 value_32bit );
+			}
+#endif
+			if( safe_uncompressed_data_offset >= uncompressed_data_size )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+				 "%s: invalid uncompressed data value too small.",
+				 function );
+
+				return( -1 );
+			}
+			current_distance = safe_uncompressed_data_offset;
+
+			uncompressed_data[ safe_uncompressed_data_offset++ ] = (uint8_t) value_32bit;
+		}
+		else if( code_sequence == ASSORTED_LZMA_CONTROL_CODE_MATCH )
+		{
+/* TODO implement */
+			break;
+		}
+		else if( code_sequence == ASSORTED_LZMA_CONTROL_CODE_SHORTREP )
+		{
+			if( safe_uncompressed_data_offset >= uncompressed_data_size )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+				 "%s: invalid uncompressed data value too small.",
+				 function );
+
+				return( -1 );
+			}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: shortrep\t\t\t\t\t: 0x%02" PRIx8 "\n",
+				 function,
+				 uncompressed_data[ current_distance ] );
+			}
+#endif
+			uncompressed_data[ safe_uncompressed_data_offset++ ] = uncompressed_data[ current_distance ];
+/* TODO determine what current_distance is */
+		}
+		else if( ( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP0 )
+		      || ( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP1 )
+		      || ( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP2 )
+		      || ( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP3 ) )
+		{
+			length_sequence = 0;
+
+			for( bit_index = 0;
+			     bit_index < 2;
+			     bit_index++ )
+			{
+				if( assorted_bit_stream_get_value(
+				     bit_stream,
+				     1,
+				     &value_32bit,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve value from bit stream.",
+					 function );
+
+					return( -1 );
+				}
+				length_sequence <<= 1;
+				length_sequence  |= (uint8_t) value_32bit;
+
+				if( value_32bit == 0 )
+				{
+					break;
+				}
+			}
+			if( length_sequence == 0x00 )
+			{
+				length_number_of_bits = 3;
+				length                = 2;
+			}
+			else if( length_sequence == 0x02 )
+			{
+				length_number_of_bits = 3;
+				length                = 10;
+			}
+			else if( length_sequence == 0x03 )
+			{
+				length_number_of_bits = 8;
+				length                = 18;
+			}
+			if( assorted_bit_stream_get_value(
+			     bit_stream,
+			     length_number_of_bits,
+			     &value_32bit,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve value from bit stream.",
+				 function );
+
+				return( -1 );
+			}
+			length += (uint16_t) value_32bit;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: length sequence\t\t\t\t: 0x%02" PRIx8 "\n",
+				 function,
+				 length_sequence );
+
+				libcnotify_printf(
+				 "%s: length\t\t\t\t\t\t: %" PRIu16 "\n",
+				 function,
+				 length );
+			}
+#endif
+			if( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP0 )
+			{
+				current_distance = last_distance0;
+			}
+			else if( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP1 )
+			{
+				current_distance = last_distance1;
+			}
+			else if( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP2 )
+			{
+				current_distance = last_distance2;
+			}
+			else if( code_sequence == ASSORTED_LZMA_CONTROL_CODE_REP3 )
+			{
+				current_distance = last_distance3;
+			}
+			if( ( length > uncompressed_data_size )
+			 || ( safe_uncompressed_data_offset >= ( uncompressed_data_size - length ) ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+				 "%s: invalid uncompressed data value too small.",
+				 function );
+
+				return( -1 );
+			}
+			while( length > 0 )
+			{
+				uncompressed_data[ safe_uncompressed_data_offset++ ] = uncompressed_data[ current_distance++ ];
+
+				length--;
+			}
+		}
+		else
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported code sequence: 0x%02" PRIx8 ".",
+			 function,
+			 code_sequence );
+
+			return( -1 );
+		}
+/* TODO determine what when last_distance[0-3] should be updated is */
+		last_distance3 = last_distance2;
+		last_distance2 = last_distance1;
+		last_distance1 = last_distance0;
+		last_distance0 = current_distance;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	*uncompressed_data_offset = safe_uncompressed_data_offset;
+
+	return( 1 );
+}
+
+/* Reads a LZMA2 encoded block
+ * Returns 1 on success or -1 on error
+ */
+int assorted_lzma_read_lzma2_block(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
      libcerror_error_t **error )
 {
-	static char *function                = "assorted_lzma_read_block";
+	assorted_bit_stream_t *bit_stream    = NULL;
+	static char *function                = "assorted_lzma_read_lzma2_block";
 	size_t safe_compressed_data_offset   = 0;
+	size_t safe_uncompressed_data_offset = 0;
 	uint32_t chunk_data_size             = 0;
 	uint32_t uncompressed_chunk_size     = 0;
 	uint8_t control_code                 = 0;
@@ -322,6 +724,10 @@ int assorted_lzma_read_block(
 	uint8_t pb_value                     = 0;
 	uint8_t lp_value                     = 0;
 	uint8_t lc_value                     = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	size_t block_data_offset             = 0;
+#endif
 
 	if( compressed_data == NULL )
 	{
@@ -359,6 +765,52 @@ int assorted_lzma_read_block(
 	}
 	safe_compressed_data_offset = *compressed_data_offset;
 
+	if( uncompressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( uncompressed_data_offset == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid uncompressed data offset.",
+		 function );
+
+		return( -1 );
+	}
+	safe_uncompressed_data_offset = *uncompressed_data_offset;
+
+	if( safe_uncompressed_data_offset > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data offset value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
 	while( safe_compressed_data_offset < compressed_data_size )
 	{
 		if( safe_compressed_data_offset > ( compressed_data_size - 1 ) )
@@ -370,7 +822,7 @@ int assorted_lzma_read_block(
 			 "%s: invalid compressed data value too small.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		control_code = compressed_data[ safe_compressed_data_offset++ ];
 
@@ -378,7 +830,7 @@ int assorted_lzma_read_block(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: control code\t\t\t\t\t: 0x%02" PRIx8 "\n",
+			 "%s: control code\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 control_code );
 		}
@@ -397,7 +849,7 @@ int assorted_lzma_read_block(
 			 "%s: unsupported control code value out of bounds.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( control_code == 0x01 )
 		{
@@ -432,7 +884,7 @@ int assorted_lzma_read_block(
 				 "%s: invalid compressed data value too small.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			uncompressed_chunk_size  = (uint32_t) ( control_code & 0x1f ) << 8;
 			uncompressed_chunk_size += (uint32_t) compressed_data[ safe_compressed_data_offset++ ] << 8;
@@ -459,7 +911,7 @@ int assorted_lzma_read_block(
 			 "%s: invalid compressed data value too small.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		chunk_data_size  = (uint32_t) compressed_data[ safe_compressed_data_offset++ ] << 8;
 		chunk_data_size |= compressed_data[ safe_compressed_data_offset++ ];
@@ -485,7 +937,7 @@ int assorted_lzma_read_block(
 				 "%s: invalid compressed data value too small.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			properties_value = compressed_data[ safe_compressed_data_offset++ ];
 
@@ -500,7 +952,7 @@ int assorted_lzma_read_block(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: properties value\t\t\t\t: 0x%02" PRIx8 " (pb: %" PRId8 ", lp: %" PRId8 ", lc: %" PRId8 ")\n",
+				 "%s: properties value\t\t\t: 0x%02" PRIx8 " (pb: %" PRId8 ", lp: %" PRId8 ", lc: %" PRId8 ")\n",
 				 function,
 				 properties_value,
 				 pb_value,
@@ -520,7 +972,7 @@ int assorted_lzma_read_block(
 			 "%s: invalid compressed data value too small.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -534,14 +986,74 @@ int assorted_lzma_read_block(
 			 0 );
 		}
 #endif
+#if defined( HAVE_DEBUG_OUTPUT )
+		block_data_offset = safe_uncompressed_data_offset;
+#endif
 		if( read_encoded_data != 0 )
 		{
-/* TODO implement read LZMA encoded data*/
+			if( assorted_bit_stream_initialize(
+			     &bit_stream,
+			     compressed_data,
+			     compressed_data_size,
+			     safe_compressed_data_offset,
+			     ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create bit stream.",
+				 function );
+
+				goto on_error;
+			}
+			if( assorted_lzma_read_lzma(
+			     bit_stream,
+			     uncompressed_data,
+			     uncompressed_data_size,
+			     &safe_uncompressed_data_offset,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read LZMA encoded data.",
+				 function );
+
+				goto on_error;
+			}
+			if( assorted_bit_stream_free(
+			     &bit_stream,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free bit stream.",
+				 function );
+
+				goto on_error;
+			}
 		}
 		else
 		{
 /* TODO implement read uncompressed data */
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: chunk data:\n",
+			 function );
+			libcnotify_print_data(
+			 &( uncompressed_data[ block_data_offset ] ),
+			 safe_uncompressed_data_offset - block_data_offset,
+			 0 );
+		}
+#endif
 		safe_compressed_data_offset += chunk_data_size;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -554,6 +1066,15 @@ int assorted_lzma_read_block(
 	*compressed_data_offset = safe_compressed_data_offset;
 
 	return( 1 );
+
+on_error:
+	if( bit_stream != NULL )
+	{
+		assorted_bit_stream_free(
+		 &bit_stream,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Reads the stream footer
@@ -780,17 +1301,21 @@ int assorted_lzma_decompress(
 
 			return( -1 );
 		}
-		if( assorted_lzma_read_block(
+/* TODO make sure LZMA2 filter is present */
+		if( assorted_lzma_read_lzma2_block(
 		     compressed_data,
 		     compressed_data_size,
 		     &compressed_data_offset,
+		     uncompressed_data,
+		     safe_uncompressed_data_size,
+		     &uncompressed_data_offset,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read block.",
+			 "%s: unable to read LZMA2 block.",
 			 function );
 
 			return( -1 );

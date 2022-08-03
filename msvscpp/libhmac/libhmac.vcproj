@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="libhmac"
-	ProjectGUID="{368CDEFD-F5AA-40A3-A37A-41785D2AB549}"
+	ProjectGUID="{53EB474B-680A-4565-9DC6-38921FBF6BCD}"
 	RootNamespace="libhmac"
 	TargetFrameworkVersion="131072"
 	>

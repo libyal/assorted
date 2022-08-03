@@ -25,11 +25,15 @@
 #include <common.h>
 #include <types.h>
 
+#include "assorted_bit_stream.h"
 #include "assorted_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
+
+#define ASSORTED_LZMA_NUMBER_OF_STATES		12
+#define ASSORTED_LZMA_NUMBER_OF_POSITION_STATES	16
 
 int assorted_lzma_read_stream_header(
      const uint8_t *compressed_data,
@@ -43,10 +47,20 @@ int assorted_lzma_read_block_header(
      size_t *compressed_data_offset,
      libcerror_error_t **error );
 
-int assorted_lzma_read_block(
+int assorted_lzma_read_lzma(
+     assorted_bit_stream_t *bit_stream,
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
+     libcerror_error_t **error );
+
+int assorted_lzma_read_lzma2_block(
      const uint8_t *compressed_data,
      size_t compressed_data_size,
      size_t *compressed_data_offset,
+     uint8_t *uncompressed_data,
+     size_t uncompressed_data_size,
+     size_t *uncompressed_data_offset,
      libcerror_error_t **error );
 
 int assorted_lzma_read_stream_footer(

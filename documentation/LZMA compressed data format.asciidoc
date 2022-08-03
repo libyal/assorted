@@ -169,13 +169,22 @@ Contains the number of 4 byte increments - 1
 | 0x21 | LZMA2
 |===
 
-==== Encoded bit-stream
+==== LZMA encoded bit-stream
 
-The LZMA compressed data consists of different types of code sequences:
+The encoded bit-stream is stored in 8-bit integers, where bit values are
+stored front-to-back. So that 3 most-significant bits (MSB) would represent
+a 3-bit value at the start of the stream. Note that the MSB of the 3-bit value
+is the MSB of the byte value.
+
+[NOTE]
+The first 8 bits of the encoded bit-stream is 0 and is not considered part of
+the uncompressed data.
+
+The encoded bit-stream consists of different types of code sequences:
 
 [cols="1,1,5",options="header"]
 |===
-| Bit sequence | Name | Description
+| Bit sequence | Symbol | Description
 | 0, byte | literal | literal byte
 | 1, 0, length + distance | match | distance-length pair
 | 1, 1, 0, 0	| shortrep | 1 byte match at latest used distance
@@ -195,7 +204,7 @@ Length values are encoded as:
 | 1 + 1 + 8 bits | lengths from 18 to 273
 |===
 
-==== LZMA2
+==== LZMA2 encoded data
 
 [cols="1,1,1,5",options="header"]
 |===
