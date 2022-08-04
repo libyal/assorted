@@ -13,6 +13,7 @@ SUBDIRS = \
 	libfdatetime \
 	libfguid \
 	libfvalue \
+	libfmos \
 	libfplist \
 	libfwevt \
 	libfwnt \
@@ -56,6 +57,7 @@ splint:
 	(cd $(srcdir)/libfdatetime && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfguid && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfvalue && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libfmos && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfplist && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfwevt && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfwnt && $(MAKE) splint $(AM_MAKEFLAGS))

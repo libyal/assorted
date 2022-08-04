@@ -92,6 +92,9 @@ AX_LIBFGUID_CHECK_ENABLE
 dnl Check if libfvalue or required headers and functions are available
 AX_LIBFVALUE_CHECK_ENABLE
 
+dnl Check for enabling libfmos for file Mac OS type support
+AX_LIBFMOS_CHECK_ENABLE
+
 dnl Check if libfplist or required headers and functions are available
 AX_LIBFPLIST_CHECK_ENABLE
 
@@ -151,6 +154,7 @@ AC_CONFIG_FILES([libfcrypto/Makefile])
 AC_CONFIG_FILES([libfdatetime/Makefile])
 AC_CONFIG_FILES([libfguid/Makefile])
 AC_CONFIG_FILES([libfvalue/Makefile])
+AC_CONFIG_FILES([libfmos/Makefile])
 AC_CONFIG_FILES([libfplist/Makefile])
 AC_CONFIG_FILES([libfwevt/Makefile])
 AC_CONFIG_FILES([libfwnt/Makefile])
@@ -179,20 +183,21 @@ Building:
    libfdatetime support:                           $ac_cv_libfdatetime
    libfguid support:                               $ac_cv_libfguid
    libfvalue support:                              $ac_cv_libfvalue
+   libfmos support:                                $ac_cv_libfmos
    libfplist support:                              $ac_cv_libfplist
    libfwevt support:                               $ac_cv_libfwevt
    libfwnt support:                                $ac_cv_libfwnt
-   ADC compression support:                        local
+   ADC compression support:                        $ac_cv_libfmos
    ADLER32 checksum support:                       $ac_cv_adler32
    DEFLATE compression support:                    $ac_cv_uncompress
    BZIP2 compression support:                      $ac_cv_bzip2_decompress
-   LZFSE compression support:                      local
+   LZFSE compression support:                      $ac_cv_libfmos
    LZFU compression support:                       local
    LZMA compression support:                       $ac_cv_lzma
    LZNT1 compression support:                      $ac_cv_libfwnt
    LZX compression support:                        $ac_cv_libfwnt
    LZXPRESS compression support:                   $ac_cv_libfwnt
-   LZVN compression support:                       local
+   LZVN compression support:                       $ac_cv_libfmos
    libhmac support:                                $ac_cv_libhmac
    MD5 support:                                    $ac_cv_libhmac_md5
    SHA1 support:                                   $ac_cv_libhmac_sha1

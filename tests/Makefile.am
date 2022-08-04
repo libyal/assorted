@@ -11,6 +11,7 @@ AM_CPPFLAGS = \
 	@LIBUNA_CPPFLAGS@ \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBFCRYPTO_CPPFLAGS@ \
+	@LIBFMOS_CPPFLAGS@ \
 	@LIBFWNT_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
@@ -27,7 +28,6 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
-	assorted_test_adc \
 	assorted_test_adler32 \
 	assorted_test_ascii7 \
 	assorted_test_bit_stream \
@@ -38,24 +38,10 @@ check_PROGRAMS = \
 	assorted_test_fletcher32 \
 	assorted_test_fletcher64 \
 	assorted_test_huffman_tree \
-	assorted_test_lzfse \
 	assorted_test_lzfu \
 	assorted_test_lzma \
-	assorted_test_lzvn \
 	assorted_test_xor32 \
 	assorted_test_xor64
-
-assorted_test_adc_SOURCES = \
-	../src/assorted_adc.c ../src/assorted_adc.h \
-	assorted_test_adc.c \
-	assorted_test_libcerror.h \
-	assorted_test_libcnotify.h \
-	assorted_test_macros.h \
-	assorted_test_unused.h
-
-assorted_test_adc_LDADD = \
-	@LIBCNOTIFY_LIBADD@ \
-	@LIBCERROR_LIBADD@
 
 assorted_test_adler32_SOURCES = \
 	../src/assorted_adler32.c ../src/assorted_adler32.h \
@@ -184,19 +170,6 @@ assorted_test_huffman_tree_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 
-assorted_test_lzfse_SOURCES = \
-	../src/assorted_lzfse.c ../src/assorted_lzfse.h \
-	../src/assorted_lzvn.c ../src/assorted_lzvn.h \
-	assorted_test_libcerror.h \
-	assorted_test_libcnotify.h \
-	assorted_test_lzfse.c \
-	assorted_test_macros.h \
-	assorted_test_unused.h
-
-assorted_test_lzfse_LDADD = \
-	@LIBCNOTIFY_LIBADD@ \
-	@LIBCERROR_LIBADD@
-
 assorted_test_lzfu_SOURCES = \
 	../src/assorted_crc32.c ../src/assorted_crc32.h \
 	../src/assorted_lzfu.c ../src/assorted_lzfu.h \
@@ -220,18 +193,6 @@ assorted_test_lzma_SOURCES = \
 	assorted_test_unused.h
 
 assorted_test_lzma_LDADD = \
-	@LIBCNOTIFY_LIBADD@ \
-	@LIBCERROR_LIBADD@
-
-assorted_test_lzvn_SOURCES = \
-	../src/assorted_lzvn.c ../src/assorted_lzvn.h \
-	assorted_test_libcerror.h \
-	assorted_test_libcnotify.h \
-	assorted_test_lzvn.c \
-	assorted_test_macros.h \
-	assorted_test_unused.h
-
-assorted_test_lzvn_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCERROR_LIBADD@
 

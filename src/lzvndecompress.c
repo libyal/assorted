@@ -34,7 +34,7 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
 #include "assorted_libcnotify.h"
-#include "assorted_lzvn.h"
+#include "assorted_libfmos.h"
 #include "assorted_output.h"
 #include "assorted_system_string.h"
 
@@ -300,7 +300,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( assorted_lzvn_decompress(
+	if( libfmos_lzvn_decompress(
 	     buffer,
 	     source_size,
 	     uncompressed_data,

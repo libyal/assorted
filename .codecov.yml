@@ -17,6 +17,7 @@ coverage:
     - "libcthreads/*"
     - "libfcrypto/*"
     - "libfguid/*"
+    - "libfmos/*"
     - "libfplist/*"
     - "libfvalue/*"
     - "libfwnt/*"

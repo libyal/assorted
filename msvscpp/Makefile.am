@@ -2,7 +2,6 @@ MSVSCPP_FILES = \
 	adcdecompress/adcdecompress.vcproj \
 	adler32sum/adler32sum.vcproj \
 	ascii7decompress/ascii7decompress.vcproj \
-	assorted_test_adc/assorted_test_adc.vcproj \
 	assorted_test_adler32/assorted_test_adler32.vcproj \
 	assorted_test_ascii7/assorted_test_ascii7.vcproj \
 	assorted_test_bit_stream/assorted_test_bit_stream.vcproj \
@@ -13,10 +12,8 @@ MSVSCPP_FILES = \
 	assorted_test_fletcher32/assorted_test_fletcher32.vcproj \
 	assorted_test_fletcher64/assorted_test_fletcher64.vcproj \
 	assorted_test_huffman_tree/assorted_test_huffman_tree.vcproj \
-	assorted_test_lzfse/assorted_test_lzfse.vcproj \
 	assorted_test_lzfu/assorted_test_lzfu.vcproj \
 	assorted_test_lzma/assorted_test_lzma.vcproj \
-	assorted_test_lzvn/assorted_test_lzvn.vcproj \
 	assorted_test_xor32/assorted_test_xor32.vcproj \
 	assorted_test_xor64/assorted_test_xor64.vcproj \
 	banalyze/banalyze.vcproj \
@@ -35,6 +32,7 @@ MSVSCPP_FILES = \
 	libfcrypto/libfcrypto.vcproj \
 	libfdatetime/libfdatetime.vcproj \
 	libfguid/libfguid.vcproj \
+	libfmos/libfmos.vcproj \
 	libfplist/libfplist.vcproj \
 	libfvalue/libfvalue.vcproj \
 	libfwevt/libfwevt.vcproj \

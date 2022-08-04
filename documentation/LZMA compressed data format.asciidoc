@@ -204,6 +204,27 @@ Length values are encoded as:
 | 1 + 1 + 8 bits | lengths from 18 to 273
 |===
 
+[yellow-background]*TODO: describe encoding of distance value*
+
+[yellow-background]*TODO: describe states and bit-models*
+
+[cols="1,5",options="header"]
+|===
+| State | Types of previous sequences
+| 0 | literal, literal, literal
+| 1 | match, literal, literal
+| 2 | rep[0-3] or (not literal, shortrep), literal, literal
+| 3 | literal, shortrep, literal, literal
+| 4 | match, literal
+| 5 | rep[0-3] or (not literal, shortrep), literal
+| 6 | literal, shortrep, literal
+| 7 | literal, match
+| 8 | literal, rep[0-3]
+| 9 | literal, shortrep
+| 10 | not literal, match
+| 11 | not literal, (rep[0-3] or shortrep)
+|===
+
 ==== LZMA2 encoded data
 
 [cols="1,1,1,5",options="header"]

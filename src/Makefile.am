@@ -12,6 +12,7 @@ AM_CPPFLAGS = \
 	@LIBFGUID_CPPFLAGS@ \
 	@LIBFVALUE_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
+	@LIBFMOS_CPPFLAGS@ \
 	@LIBFPLIST_CPPFLAGS@ \
 	@LIBFWEVT_CPPFLAGS@ \
 	@LIBFWNT_CPPFLAGS@ \
@@ -56,16 +57,17 @@ bin_PROGRAMS = \
 
 adcdecompress_SOURCES = \
 	adcdecompress.c \
-	assorted_adc.c assorted_adc.h \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
+	assorted_libfmos.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h
 
 adcdecompress_LDADD = \
+	@LIBFMOS_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -225,13 +227,13 @@ lzfsedecompress_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_lzfse.c assorted_lzfse.h \
-	assorted_lzvn.c assorted_lzvn.h \
+	assorted_libfmos.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h \
 	lzfsedecompress.c
 
 lzfsedecompress_LDADD = \
+	@LIBFMOS_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -302,12 +304,13 @@ lzvndecompress_SOURCES = \
 	assorted_libcerror.h \
 	assorted_libcfile.h \
 	assorted_libcnotify.h \
-	assorted_lzvn.c assorted_lzvn.h \
+	assorted_libfmos.h \
 	assorted_output.c assorted_output.h \
 	assorted_system_string.h \
 	lzvndecompress.c
 
 lzvndecompress_LDADD = \
+	@LIBFMOS_LIBADD@ \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
