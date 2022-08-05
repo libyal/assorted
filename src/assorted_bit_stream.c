@@ -292,9 +292,8 @@ int assorted_bit_stream_get_value(
      uint32_t *value_32bit,
      libcerror_error_t **error )
 {
-	static char *function             = "assorted_bit_stream_get_value";
-	uint32_t safe_value_32bit         = 0;
-	uint8_t remaining_bit_buffer_size = 0;
+	static char *function     = "assorted_bit_stream_get_value";
+	uint32_t safe_value_32bit = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -307,7 +306,7 @@ int assorted_bit_stream_get_value(
 
 		return( -1 );
 	}
-	if( number_of_bits > (uint8_t) 32 )
+	if( number_of_bits > (uint8_t) 24 )
 	{
 		libcerror_error_set(
 		 error,
@@ -354,9 +353,9 @@ int assorted_bit_stream_get_value(
 	}
 	safe_value_32bit = bit_stream->bit_buffer;
 
-	if( number_of_bits < 32 )
+	if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
 	{
-		if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
+		if( number_of_bits < 32 )
 		{
 			/* On VS 2008 32-bit "~( 0xfffffffUL << 32 )" does not behave as expected
 			 */
@@ -365,18 +364,26 @@ int assorted_bit_stream_get_value(
 			bit_stream->bit_buffer     >>= number_of_bits;
 			bit_stream->bit_buffer_size -= number_of_bits;
 		}
-		else if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
+		else
 		{
-			bit_stream->bit_buffer_size -= number_of_bits;
-			safe_value_32bit           >>= bit_stream->bit_buffer_size;
-			remaining_bit_buffer_size    = 32 - bit_stream->bit_buffer_size;
-			bit_stream->bit_buffer      &= 0xffffffffUL >> remaining_bit_buffer_size;
+			bit_stream->bit_buffer      = 0;
+			bit_stream->bit_buffer_size = 0;
 		}
 	}
-	else
+	else if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
 	{
-		bit_stream->bit_buffer      = 0;
-		bit_stream->bit_buffer_size = 0;
+		bit_stream->bit_buffer_size -= number_of_bits;
+		safe_value_32bit           >>= bit_stream->bit_buffer_size;
+
+		if( bit_stream->bit_buffer_size > 0 )
+		{
+			bit_stream->bit_buffer &= 0xffffffffUL >> ( 32 - bit_stream->bit_buffer_size );
+		}
+		else
+		{
+			bit_stream->bit_buffer      = 0;
+			bit_stream->bit_buffer_size = 0;
+		}
 	}
 	*value_32bit = safe_value_32bit;
 

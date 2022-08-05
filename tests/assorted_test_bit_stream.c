@@ -623,7 +623,7 @@ int assorted_test_bit_stream_get_value(
 
 	result = assorted_bit_stream_get_value(
 	          bit_stream,
-	          32,
+	          24,
 	          &value_32bit,
 	          &error );
 
@@ -635,7 +635,7 @@ int assorted_test_bit_stream_get_value(
 	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
 	 "value_32bit",
 	 value_32bit,
-	 (uint32_t) 0x8f6d59bdUL );
+	 (uint32_t) 0x006d59bdUL );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -644,7 +644,7 @@ int assorted_test_bit_stream_get_value(
 	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
 	 "bit_stream->byte_stream_offset",
 	 bit_stream->byte_stream_offset,
-	 (size_t) 6 );
+	 (size_t) 5 );
 
 	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
 	 "bit_stream->bit_buffer",
@@ -660,7 +660,7 @@ int assorted_test_bit_stream_get_value(
 	 */
 	result = assorted_bit_stream_get_value(
 	          NULL,
-	          32,
+	          24,
 	          &value_32bit,
 	          &error );
 
@@ -696,7 +696,7 @@ int assorted_test_bit_stream_get_value(
 
 	result = assorted_bit_stream_get_value(
 	          bit_stream,
-	          32,
+	          24,
 	          NULL,
 	          &error );
 
@@ -717,7 +717,7 @@ int assorted_test_bit_stream_get_value(
 
 	result = assorted_bit_stream_get_value(
 	          bit_stream,
-	          32,
+	          24,
 	          &value_32bit,
 	          &error );
 
