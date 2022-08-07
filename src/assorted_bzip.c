@@ -1216,6 +1216,14 @@ on_error:
 		 &huffman_tree,
 		 NULL );
 	}
+	for( tree_index = 0;
+	     tree_index < number_of_trees;
+	     tree_index++ )
+	{
+		assorted_huffman_tree_free(
+		 &( huffman_trees[ tree_index ] ),
+		 NULL );
+	}
 	return( -1 );
 }
 
@@ -2066,6 +2074,14 @@ int assorted_bzip_decompress(
 	return( 1 );
 
 on_error:
+	for( tree_index = 0;
+	     tree_index < number_of_trees;
+	     tree_index++ )
+	{
+		assorted_huffman_tree_free(
+		 &( huffman_trees[ tree_index ] ),
+		 NULL );
+	}
 	if( bit_stream != NULL )
 	{
 		assorted_bit_stream_free(

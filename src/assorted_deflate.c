@@ -30,6 +30,27 @@
 #include "assorted_libcerror.h"
 #include "assorted_libcnotify.h"
 
+const uint8_t assorted_deflate_code_sizes_sequence[ 19 ] = {
+	16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2,
+        14, 1, 15 };
+
+const uint16_t assorted_deflate_literal_codes_base[ 29 ] = {
+	3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+	35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258 };
+
+const uint16_t assorted_deflate_literal_codes_number_of_extra_bits[ 29 ] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+	3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0 };
+
+const uint16_t assorted_deflate_distance_codes_base[ 30 ] = {
+	1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+	257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193,
+	12289, 16385, 24577};
+
+const uint16_t assorted_deflate_distance_codes_number_of_extra_bits[ 30 ] = {
+	0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+	7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
+
 /* Reads and builds the dynamic Huffman trees
  * Returns 1 on success or -1 on error
  */
@@ -40,10 +61,6 @@ int assorted_deflate_build_dynamic_huffman_trees(
      libcerror_error_t **error )
 {
 	uint8_t code_size_array[ 316 ];
-
-	uint8_t code_sizes_sequence[ 19 ]               = {
-		16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2,
-	        14, 1, 15 };
 
 	assorted_huffman_tree_t *pre_codes_huffman_tree = NULL;
 	static char *function                           = "assorted_deflate_build_dynamic_huffman_trees";
@@ -146,7 +163,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 
 			goto on_error;
 		}
-		code_size_sequence = code_sizes_sequence[ code_size_index ];
+		code_size_sequence = assorted_deflate_code_sizes_sequence[ code_size_index ];
 
 		code_size_array[ code_size_sequence ] = (uint8_t) code_size;
 
@@ -163,7 +180,7 @@ int assorted_deflate_build_dynamic_huffman_trees(
 	}
 	while( code_size_index < 19 )
 	{
-		code_size_sequence = code_sizes_sequence[ code_size_index++ ];
+		code_size_sequence = assorted_deflate_code_sizes_sequence[ code_size_index++ ];
 
 		code_size_array[ code_size_sequence ] = 0;
 
@@ -530,23 +547,6 @@ int assorted_deflate_decode_huffman(
      size_t *uncompressed_data_offset,
      libcerror_error_t **error )
 {
-	uint16_t literal_codes_base[ 29 ] = {
-		3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
-		35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258 };
-
-	uint16_t literal_codes_number_of_extra_bits[ 29 ] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
-		3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0 };
-
-	uint16_t distance_codes_base[ 30 ] = {
-		1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
-		257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193,
-		12289, 16385, 24577};
-
-	uint16_t distance_codes_number_of_extra_bits[ 30 ] = {
-		0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
-		7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
-
 	static char *function         = "assorted_deflate_decode_huffman";
 	size_t data_offset            = 0;
 	uint32_t extra_bits           = 0;
@@ -636,7 +636,7 @@ int assorted_deflate_decode_huffman(
 		{
 			symbol -= 257;
 
-			number_of_extra_bits = literal_codes_number_of_extra_bits[ symbol ];
+			number_of_extra_bits = assorted_deflate_literal_codes_number_of_extra_bits[ symbol ];
 
 			if( assorted_bit_stream_get_value(
 			     bit_stream,
@@ -659,7 +659,7 @@ int assorted_deflate_decode_huffman(
 				libcnotify_printf(
 				 "%s: literal code\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 literal_codes_base[ symbol ] );
+				 assorted_deflate_literal_codes_base[ symbol ] );
 
 				libcnotify_printf(
 				 "%s: extra bits\t\t\t\t\t: 0x%04" PRIx16 "\n",
@@ -667,7 +667,7 @@ int assorted_deflate_decode_huffman(
 				 extra_bits );
 			}
 #endif
-			compression_size = literal_codes_base[ symbol ] + (uint16_t) extra_bits;
+			compression_size = assorted_deflate_literal_codes_base[ symbol ] + (uint16_t) extra_bits;
 
 			if( assorted_huffman_tree_get_symbol_from_bit_stream(
 			     distances_huffman_tree,
@@ -693,7 +693,7 @@ int assorted_deflate_decode_huffman(
 				 symbol );
 			}
 #endif
-			number_of_extra_bits = distance_codes_number_of_extra_bits[ symbol ];
+			number_of_extra_bits = assorted_deflate_distance_codes_number_of_extra_bits[ symbol ];
 
 			if( assorted_bit_stream_get_value(
 			     bit_stream,
@@ -716,7 +716,7 @@ int assorted_deflate_decode_huffman(
 				libcnotify_printf(
 				 "%s: distance code\t\t\t\t\t: %" PRIu16 "\n",
 				 function,
-				 distance_codes_base[ symbol ] );
+				 assorted_deflate_distance_codes_base[ symbol ] );
 
 				libcnotify_printf(
 				 "%s: extra bits\t\t\t\t\t: 0x%04" PRIx16 "\n",
@@ -724,7 +724,7 @@ int assorted_deflate_decode_huffman(
 				 extra_bits );
 			}
 #endif
-			compression_offset = distance_codes_base[ symbol ] + (uint16_t) extra_bits;
+			compression_offset = assorted_deflate_distance_codes_base[ symbol ] + (uint16_t) extra_bits;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )

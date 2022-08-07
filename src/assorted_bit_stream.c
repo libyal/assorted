@@ -350,6 +350,17 @@ int assorted_bit_stream_get_value(
 
 			return( -1 );
 		}
+		if( bit_stream->bit_buffer_size < number_of_bits )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read bits.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	safe_value_32bit = bit_stream->bit_buffer;
 
