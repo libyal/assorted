@@ -594,8 +594,8 @@ int assorted_bzip_read_block_header(
 	}
 	if( assorted_bit_stream_get_value(
 	     bit_stream,
-	     16,
-	     &value_32bit,
+	     32,
+	     &checksum,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -607,26 +607,6 @@ int assorted_bzip_read_block_header(
 
 		return( -1 );
 	}
-	checksum = value_32bit;
-
-	if( assorted_bit_stream_get_value(
-	     bit_stream,
-	     16,
-	     &value_32bit,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve value from bit stream.",
-		 function );
-
-		return( -1 );
-	}
-	checksum <<= 16;
-	checksum  |= value_32bit;
-
 	if( assorted_bit_stream_get_value(
 	     bit_stream,
 	     1,
@@ -1521,7 +1501,6 @@ int assorted_bzip_read_stream_footer(
 {
 	static char *function  = "assorted_bzip_read_stream_footer";
 	uint32_t safe_checksum = 0;
-	uint32_t value_32bit   = 0;
 
 	if( checksum == NULL )
 	{
@@ -1536,8 +1515,8 @@ int assorted_bzip_read_stream_footer(
 	}
 	if( assorted_bit_stream_get_value(
 	     bit_stream,
-	     16,
-	     &value_32bit,
+	     32,
+	     &safe_checksum,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1549,26 +1528,6 @@ int assorted_bzip_read_stream_footer(
 
 		return( -1 );
 	}
-	safe_checksum = value_32bit;
-
-	if( assorted_bit_stream_get_value(
-	     bit_stream,
-	     16,
-	     &value_32bit,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve value from bit stream.",
-		 function );
-
-		return( -1 );
-	}
-	safe_checksum <<= 16;
-	safe_checksum  |= value_32bit;
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1829,7 +1788,24 @@ int assorted_bzip_decompress(
 		}
 		if( assorted_bit_stream_get_value(
 		     bit_stream,
-		     18,
+		     3,
+		     &value_32bit,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve value from bit stream.",
+			 function );
+
+			goto on_error;
+		}
+		number_of_trees = (uint8_t) ( value_32bit & 0x00000007UL );
+
+		if( assorted_bit_stream_get_value(
+		     bit_stream,
+		     15,
 		     &value_32bit,
 		     error ) != 1 )
 		{
@@ -1843,8 +1819,6 @@ int assorted_bzip_decompress(
 			goto on_error;
 		}
 		number_of_selectors = (uint16_t) ( value_32bit & 0x00007fffUL );
-		value_32bit       >>= 15;
-		number_of_trees     = (uint8_t) ( value_32bit & 0x00000007UL );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )

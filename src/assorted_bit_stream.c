@@ -185,66 +185,6 @@ int assorted_bit_stream_free(
 	return( 1 );
 }
 
-/* Reads bits from the underlying byte stream
- * Returns 1 on success, 0 if no more bits are available or -1 on error
- */
-int assorted_bit_stream_read(
-     assorted_bit_stream_t *bit_stream,
-     uint8_t number_of_bits,
-     libcerror_error_t **error )
-{
-	static char *function = "assorted_bit_stream_read";
-	int result            = 0;
-
-	if( bit_stream == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid bit stream.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( number_of_bits == 0 )
-	 || ( number_of_bits > 32 ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: number of bits value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	while( bit_stream->bit_buffer_size < number_of_bits )
-	{
-		if( bit_stream->byte_stream_offset >= bit_stream->byte_stream_size )
-		{
-			break;
-		}
-		if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
-		{
-			bit_stream->bit_buffer      |= (uint32_t) bit_stream->byte_stream[ bit_stream->byte_stream_offset ] << bit_stream->bit_buffer_size;
-			bit_stream->bit_buffer_size += 8;
-
-			bit_stream->byte_stream_offset += 1;
-		}
-		else if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
-		{
-			bit_stream->bit_buffer     <<= 8;
-			bit_stream->bit_buffer      |= bit_stream->byte_stream[ bit_stream->byte_stream_offset ];
-			bit_stream->bit_buffer_size += 8;
-
-			bit_stream->byte_stream_offset += 1;
-		}
-		result = 1;
-	}
-	return( result );
-}
-
 /* Sets the byte stream offset
  * Returns 1 on success or -1 on error
  */
@@ -278,6 +218,7 @@ int assorted_bit_stream_set_byte_stream_offset(
 		return( -1 );
 	}
 	bit_stream->byte_stream_offset = byte_stream_offset;
+	bit_stream->bit_buffer         = 0;
 	bit_stream->bit_buffer_size    = 0;
 
 	return( 1 );
@@ -292,8 +233,11 @@ int assorted_bit_stream_get_value(
      uint32_t *value_32bit,
      libcerror_error_t **error )
 {
-	static char *function     = "assorted_bit_stream_get_value";
-	uint32_t safe_value_32bit = 0;
+	static char *function            = "assorted_bit_stream_get_value";
+	uint32_t read_value_32bit        = 0;
+	uint32_t safe_value_32bit        = 0;
+	uint8_t read_number_of_bits      = 0;
+	uint8_t remaining_number_of_bits = 0;
 
 	if( bit_stream == NULL )
 	{
@@ -306,7 +250,7 @@ int assorted_bit_stream_get_value(
 
 		return( -1 );
 	}
-	if( number_of_bits > (uint8_t) 24 )
+	if( number_of_bits > (uint8_t) 32 )
 	{
 		libcerror_error_set(
 		 error,
@@ -328,73 +272,75 @@ int assorted_bit_stream_get_value(
 
 		return( -1 );
 	}
-	if( number_of_bits == 0 )
-	{
-		*value_32bit = 0;
+	remaining_number_of_bits = number_of_bits;
 
-		return( 1 );
-	}
-	if( bit_stream->bit_buffer_size < number_of_bits )
+	while( remaining_number_of_bits > 0 )
 	{
-		if( assorted_bit_stream_read(
-		     bit_stream,
-		     number_of_bits,
-		     error ) != 1 )
+		while( ( remaining_number_of_bits > bit_stream->bit_buffer_size )
+		    && ( bit_stream->bit_buffer_size <= 24 ) )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read bits.",
-			 function );
+			if( bit_stream->byte_stream_offset >= bit_stream->byte_stream_size )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid byte stream offset value out of bounds.",
+				 function );
 
-			return( -1 );
+				return( -1 );
+			}
+			if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
+			{
+				bit_stream->bit_buffer |= (uint32_t) bit_stream->byte_stream[ bit_stream->byte_stream_offset ] << bit_stream->bit_buffer_size;
+			}
+			else if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
+			{
+				bit_stream->bit_buffer <<= 8;
+				bit_stream->bit_buffer  |= bit_stream->byte_stream[ bit_stream->byte_stream_offset ];
+			}
+			bit_stream->bit_buffer_size    += 8;
+			bit_stream->byte_stream_offset += 1;
 		}
-		if( bit_stream->bit_buffer_size < number_of_bits )
+		if( remaining_number_of_bits < bit_stream->bit_buffer_size )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read bits.",
-			 function );
-
-			return( -1 );
-		}
-	}
-	safe_value_32bit = bit_stream->bit_buffer;
-
-	if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
-	{
-		if( number_of_bits < 32 )
-		{
-			/* On VS 2008 32-bit "~( 0xfffffffUL << 32 )" does not behave as expected
-			 */
-			safe_value_32bit &= ~( 0xffffffffUL << number_of_bits );
-
-			bit_stream->bit_buffer     >>= number_of_bits;
-			bit_stream->bit_buffer_size -= number_of_bits;
+			read_number_of_bits = remaining_number_of_bits;
 		}
 		else
 		{
-			bit_stream->bit_buffer      = 0;
-			bit_stream->bit_buffer_size = 0;
+			read_number_of_bits = bit_stream->bit_buffer_size;
 		}
-	}
-	else if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
-	{
-		bit_stream->bit_buffer_size -= number_of_bits;
-		safe_value_32bit           >>= bit_stream->bit_buffer_size;
+		read_value_32bit   = bit_stream->bit_buffer;
+		safe_value_32bit <<= remaining_number_of_bits;
 
-		if( bit_stream->bit_buffer_size > 0 )
+		if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
 		{
-			bit_stream->bit_buffer &= 0xffffffffUL >> ( 32 - bit_stream->bit_buffer_size );
+			if( read_number_of_bits < 32 )
+			{
+				/* On VS 2008 32-bit "~( 0xfffffffUL << 32 )" does not behave as expected
+				 */
+				read_value_32bit &= ~( 0xffffffffUL << read_number_of_bits );
+
+				bit_stream->bit_buffer >>= read_number_of_bits;
+			}
+			bit_stream->bit_buffer_size -= read_number_of_bits;
 		}
-		else
+		else if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_FRONT_TO_BACK )
 		{
-			bit_stream->bit_buffer      = 0;
-			bit_stream->bit_buffer_size = 0;
+			bit_stream->bit_buffer_size -= read_number_of_bits;
+			read_value_32bit           >>= bit_stream->bit_buffer_size;
+
+			if( bit_stream->bit_buffer_size > 0 )
+			{
+				bit_stream->bit_buffer &= 0xffffffffUL >> ( 32 - bit_stream->bit_buffer_size );
+			}
 		}
+		if( bit_stream->bit_buffer_size == 0 )
+		{
+			bit_stream->bit_buffer = 0;
+		}
+		safe_value_32bit         |= read_value_32bit;
+		remaining_number_of_bits -= read_number_of_bits;
 	}
 	*value_32bit = safe_value_32bit;
 

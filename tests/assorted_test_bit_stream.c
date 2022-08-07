@@ -378,112 +378,6 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the assorted_bit_stream_read function
- * Returns 1 if successful or 0 if not
- */
-int assorted_test_bit_stream_read(
-     void )
-{
-	assorted_bit_stream_t *bit_stream = NULL;
-	libcerror_error_t *error          = NULL;
-	int result                        = 0;
-
-	/* Initialize test
-	 */
-	result = assorted_bit_stream_initialize(
-	          &bit_stream,
-	          assorted_test_bit_stream_data,
-	          16,
-	          0,
-	          ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	ASSORTED_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test regular cases
-	 */
-	result = assorted_bit_stream_read(
-	          bit_stream,
-	          8,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	ASSORTED_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
-	 "bit_stream->byte_stream_offset",
-	 bit_stream->byte_stream_offset,
-	 (size_t) 1 );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
-	 "bit_stream->bit_buffer",
-	 bit_stream->bit_buffer,
-	 (uint32_t) 0x00000078UL );
-
-	ASSORTED_TEST_ASSERT_EQUAL_UINT8(
-	 "bit_stream->bit_buffer_size",
-	 bit_stream->bit_buffer_size,
-	 (uint8_t) 8 );
-
-	/* Test error cases
-	 */
-	result = assorted_bit_stream_read(
-	          NULL,
-	          8,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	ASSORTED_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	/* Clean up
-	 */
-	result = assorted_bit_stream_free(
-	          &bit_stream,
-	          &error );
-
-	ASSORTED_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	ASSORTED_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( bit_stream != NULL )
-	{
-		assorted_bit_stream_free(
-		 &bit_stream,
-		 NULL );
-	}
-	return( 0 );
-}
-
 /* Tests the assorted_bit_stream_get_value function
  * Returns 1 if successful or 0 if not
  */
@@ -623,7 +517,7 @@ int assorted_test_bit_stream_get_value(
 
 	result = assorted_bit_stream_get_value(
 	          bit_stream,
-	          24,
+	          32,
 	          &value_32bit,
 	          &error );
 
@@ -635,7 +529,7 @@ int assorted_test_bit_stream_get_value(
 	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
 	 "value_32bit",
 	 value_32bit,
-	 (uint32_t) 0x006d59bdUL );
+	 (uint32_t) 0x8f6d59bdUL );
 
 	ASSORTED_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -644,7 +538,7 @@ int assorted_test_bit_stream_get_value(
 	ASSORTED_TEST_ASSERT_EQUAL_SIZE(
 	 "bit_stream->byte_stream_offset",
 	 bit_stream->byte_stream_offset,
-	 (size_t) 5 );
+	 (size_t) 6 );
 
 	ASSORTED_TEST_ASSERT_EQUAL_UINT32(
 	 "bit_stream->bit_buffer",
@@ -660,7 +554,7 @@ int assorted_test_bit_stream_get_value(
 	 */
 	result = assorted_bit_stream_get_value(
 	          NULL,
-	          24,
+	          32,
 	          &value_32bit,
 	          &error );
 
@@ -696,7 +590,7 @@ int assorted_test_bit_stream_get_value(
 
 	result = assorted_bit_stream_get_value(
 	          bit_stream,
-	          24,
+	          32,
 	          NULL,
 	          &error );
 
@@ -717,7 +611,7 @@ int assorted_test_bit_stream_get_value(
 
 	result = assorted_bit_stream_get_value(
 	          bit_stream,
-	          24,
+	          32,
 	          &value_32bit,
 	          &error );
 
@@ -796,10 +690,6 @@ int main(
 	ASSORTED_TEST_RUN(
 	 "assorted_bit_stream_free",
 	 assorted_test_bit_stream_free );
-
-	ASSORTED_TEST_RUN(
-	 "assorted_bit_stream_read",
-	 assorted_test_bit_stream_read );
 
 	ASSORTED_TEST_RUN(
 	 "assorted_bit_stream_get_value",

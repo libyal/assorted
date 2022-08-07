@@ -81,11 +81,6 @@ int assorted_bit_stream_free(
      assorted_bit_stream_t **bit_stream,
      libcerror_error_t **error );
 
-int assorted_bit_stream_read(
-     assorted_bit_stream_t *bit_stream,
-     uint8_t number_of_bits,
-     libcerror_error_t **error );
-
 int assorted_bit_stream_set_byte_stream_offset(
      assorted_bit_stream_t *bit_stream,
      size_t byte_stream_offset,
