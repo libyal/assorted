@@ -163,6 +163,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfmos\libfmos_lzfse_bit_stream.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfmos\libfmos_lzfse_decoder.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfmos\libfmos_lzvn.c"
 				>
 			</File>
@@ -206,6 +214,14 @@
 			</File>
 			<File
 				RelativePath="..\..\libfmos\libfmos_lzfse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfmos\libfmos_lzfse_bit_stream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfmos\libfmos_lzfse_decoder.h"
 				>
 			</File>
 			<File

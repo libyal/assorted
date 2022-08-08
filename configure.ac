@@ -24,6 +24,7 @@ LT_INIT([win32-dll])
 dnl Checks for programs
 AC_PROG_CC
 AC_PROG_GCC_TRADITIONAL
+AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
@@ -136,6 +137,7 @@ AX_ASSORTED_TOOLS_CHECK_LOCAL
 
 dnl Check if tests required headers and functions are available
 AX_TESTS_CHECK_LOCAL
+AX_TESTS_CHECK_OSSFUZZ
 
 dnl Set additional compiler flags
 CFLAGS="$CFLAGS -Wall";
@@ -160,9 +162,10 @@ AC_CONFIG_FILES([libfwevt/Makefile])
 AC_CONFIG_FILES([libfwnt/Makefile])
 AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
+AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([ossfuzz/Makefile])
 dnl Have configure make distribution specific files
 AC_CONFIG_FILES([common/types.h])
 dnl Have configure write its configuration

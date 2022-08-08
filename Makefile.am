@@ -20,7 +20,8 @@ SUBDIRS = \
 	libhmac \
 	src \
 	po \
-	tests
+	tests \
+	ossfuzz
 
 GETTEXT_FILES = \
 	config.rpath \
@@ -65,4 +66,5 @@ splint:
 	(cd $(srcdir)/src && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/tests && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/ossfuzz && $(MAKE) splint $(AM_MAKEFLAGS))
 
