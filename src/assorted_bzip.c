@@ -1757,6 +1757,17 @@ int assorted_bzip_decompress(
 
 			goto on_error;
 		}
+		if( origin_pointer > block_data_size )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid origin pointer value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
 		if( memory_set(
 		     symbol_stack,
 		     0,
