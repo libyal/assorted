@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script that runs the tests
 #
-# Version: 20220807
+# Version: 20230507
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -83,12 +83,8 @@ run_configure_make_check_with_asan()
 	then
 		return ${EXIT_SUCCESS};
 	fi
-	# Using libasan is platform dependent.
-	if test ${LIBASAN} != "/lib64/libasan.so.4" && test ${LIBASAN} != "/lib64/libasan.so.5";
-	then
-		return ${EXIT_SUCCESS};
-	fi
 
+	# Using libasan is platform dependent.
 	export CPPFLAGS="-DHAVE_ASAN";
 	export CFLAGS="-fno-omit-frame-pointer -fsanitize=address -g";
 	export LDFLAGS="-fsanitize=address -g";
@@ -362,11 +358,6 @@ then
 		then
 			exit ${EXIT_FAILURE};
 		fi
-
-		if test -f "setup.py" && ! run_setup_py_tests ${PYTHON2};
-		then
-			exit ${EXIT_FAILURE};
-		fi
 	fi
 
 	# Test with Python 3.
@@ -394,11 +385,6 @@ then
 		export PYTHON_VERSION=;
 
 		if test ${RESULT} -ne ${EXIT_SUCCESS};
-		then
-			exit ${EXIT_FAILURE};
-		fi
-
-		if test -f "setup.py" && ! run_setup_py_tests ${PYTHON3};
 		then
 			exit ${EXIT_FAILURE};
 		fi
