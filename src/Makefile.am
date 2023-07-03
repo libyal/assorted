@@ -46,6 +46,7 @@ bin_PROGRAMS = \
 	plistinfo \
 	rc4crypt \
 	serpentcrypt \
+	unicodetouch \
 	wevtinfo \
 	winregsave \
 	winshellfolder \
@@ -429,6 +430,24 @@ serpentcrypt_SOURCES = \
 
 serpentcrypt_LDADD = \
 	@LIBFCRYPTO_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@
+
+unicodetouch_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libcnotify.h \
+	assorted_libuna.h \
+	assorted_output.c assorted_output.h \
+	assorted_system_string.h \
+	unicodetouch.c
+
+unicodetouch_LDADD = \
 	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \

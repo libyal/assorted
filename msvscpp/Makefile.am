@@ -50,6 +50,7 @@ MSVSCPP_FILES = \
 	plistinfo/plistinfo.vcproj \
 	rc4crypt/rc4crypt.vcproj \
 	serpentcrypt/serpentcrypt.vcproj \
+	unicodetouch/unicodetouch.vcproj \
 	wevtinfo/wevtinfo.vcproj \
 	winregsave/winregsave.vcproj \
 	winshellfolder/winshellfolder.vcproj \

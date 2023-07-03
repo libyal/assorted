@@ -138,6 +138,7 @@ stamp-h[1-9]
 /src/plistinfo
 /src/rc4crypt
 /src/serpentcrypt
+/src/unicodetouch
 /src/wevtinfo
 /src/winregsave
 /src/winshellfolder
