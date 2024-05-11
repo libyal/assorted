@@ -30,19 +30,14 @@ GETTEXT_FILES = \
 EXTRA_DIST = \
 	$(GETTEXT_FILES)
 
-MAINTAINERCLEANFILES = \
-	Makefile.in
+DISTCLEANFILES = \
+	config.cache \
+	config.log \
+	config.status \
+	Makefile \
+	Makefile.in \
+	po/Makevars
 
 libtool: @LIBTOOL_DEPS@
 	cd $(srcdir) && $(SHELL) ./config.status --recheck
-
-distclean: clean
-	-rm -f Makefile
-	-rm -f config.status
-	-rm -f config.cache
-	-rm -f config.log
-	@for dir in ${subdirs}; do \
-		(cd $$dir && $(MAKE) distclean) \
-		|| case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
-	done && test -z "$$fail"
 

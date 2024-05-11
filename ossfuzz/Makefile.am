@@ -2,8 +2,8 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 if HAVE_LIB_FUZZING_ENGINE
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/common \
+	-I../include -I$(top_srcdir)/include \
+	-I../common -I$(top_srcdir)/common \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCNOTIFY_CPPFLAGS@
 
@@ -38,11 +38,9 @@ deflate_fuzzer_LDADD = \
 	@LIBCNOTIFY_LIBADD@
 endif
 
-MAINTAINERCLEANFILES = \
+DISTCLEANFILES = \
+	Makefile \
 	Makefile.in
-
-distclean: clean
-	-rm -f Makefile
 
 splint:
 	@echo "Running splint on bzip_fuzzer ..."

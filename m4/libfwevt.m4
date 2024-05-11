@@ -1,6 +1,6 @@
 dnl Checks for libfwevt required headers and functions
 dnl
-dnl Version: 20220119
+dnl Version: 20240501
 
 dnl Function to detect if libfwevt is available
 dnl ac_libfwevt_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -10,8 +10,10 @@ AC_DEFUN([AX_LIBFWEVT_CHECK_LIB],
     [ac_cv_libfwevt=no],
     [ac_cv_libfwevt=check
     dnl Check if the directory provided as parameter exists
+    dnl For both --with-libfwevt which returns "yes" and --with-libfwevt= which returns ""
+    dnl treat them as auto-detection.
     AS_IF(
-      [test "x$ac_cv_with_libfwevt" != x && test "x$ac_cv_with_libfwevt" != xauto-detect],
+      [test "x$ac_cv_with_libfwevt" != x && test "x$ac_cv_with_libfwevt" != xauto-detect && test "x$ac_cv_with_libfwevt" != xyes],
       [AS_IF(
         [test -d "$ac_cv_with_libfwevt"],
         [CFLAGS="$CFLAGS -I${ac_cv_with_libfwevt}/include"
@@ -26,7 +28,7 @@ AC_DEFUN([AX_LIBFWEVT_CHECK_LIB],
         [test "x$cross_compiling" != "xyes" && test "x$PKGCONFIG" != "x"],
         [PKG_CHECK_MODULES(
           [libfwevt],
-          [libfwevt >= 20211121],
+          [libfwevt >= 20240501],
           [ac_cv_libfwevt=yes],
           [ac_cv_libfwevt=check])
         ])
@@ -473,6 +475,11 @@ AC_DEFUN([AX_LIBFWEVT_CHECK_LIB],
         dnl XML tag functions
         AC_CHECK_LIB(
           fwevt,
+          libfwevt_xml_tag_free,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
           libfwevt_xml_tag_get_utf8_name_size,
           [ac_cv_libfwevt_dummy=yes],
           [ac_cv_libfwevt=no])
@@ -493,22 +500,7 @@ AC_DEFUN([AX_LIBFWEVT_CHECK_LIB],
           [ac_cv_libfwevt=no])
         AC_CHECK_LIB(
           fwevt,
-          libfwevt_xml_tag_get_utf8_value_size,
-          [ac_cv_libfwevt_dummy=yes],
-          [ac_cv_libfwevt=no])
-        AC_CHECK_LIB(
-          fwevt,
-          libfwevt_xml_tag_get_utf8_value,
-          [ac_cv_libfwevt_dummy=yes],
-          [ac_cv_libfwevt=no])
-        AC_CHECK_LIB(
-          fwevt,
-          libfwevt_xml_tag_get_utf16_value_size,
-          [ac_cv_libfwevt_dummy=yes],
-          [ac_cv_libfwevt=no])
-        AC_CHECK_LIB(
-          fwevt,
-          libfwevt_xml_tag_get_utf16_value,
+          libfwevt_xml_tag_get_value,
           [ac_cv_libfwevt_dummy=yes],
           [ac_cv_libfwevt=no])
         AC_CHECK_LIB(
@@ -557,10 +549,68 @@ AC_DEFUN([AX_LIBFWEVT_CHECK_LIB],
           [ac_cv_libfwevt_dummy=yes],
           [ac_cv_libfwevt=no])
 
+        dnl XML value functions
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_xml_value_free,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_xml_value_get_data_size,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_xml_value_copy_data,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_value_get_data_as_8bit_integer,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_value_get_data_as_32bit_integer,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_value_get_data_as_64bit_integer,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_value_get_data_as_filetime,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_xml_value_get_utf8_string_size,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_xml_value_copy_to_utf8_string,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_xml_value_get_utf16_string_size,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+        AC_CHECK_LIB(
+          fwevt,
+          libfwevt_xml_value_copy_to_utf16_string,
+          [ac_cv_libfwevt_dummy=yes],
+          [ac_cv_libfwevt=no])
+
         ac_cv_libfwevt_LIBADD="-lfwevt"])
       ])
+
     AS_IF(
-      [test "x$ac_cv_with_libfwevt" != x && test "x$ac_cv_with_libfwevt" != xauto-detect && test "x$ac_cv_libfwevt" != xyes],
+      [test "x$ac_cv_libfwevt" != xyes && test "x$ac_cv_with_libfwevt" != x && test "x$ac_cv_with_libfwevt" != xauto-detect && test "x$ac_cv_with_libfwevt" != xyes],
       [AC_MSG_FAILURE(
         [unable to find supported libfwevt in directory: $ac_cv_with_libfwevt],
         [1])
@@ -590,7 +640,7 @@ dnl Function to detect if libfwevt dependencies are available
 AC_DEFUN([AX_LIBFWEVT_CHECK_LOCAL],
   [dnl No additional checks.
 
-  ac_cv_libfwevt_CPPFLAGS="-I../libfwevt";
+  ac_cv_libfwevt_CPPFLAGS="-I../libfwevt -I\$(top_srcdir)/libfwevt";
   ac_cv_libfwevt_LIBADD="../libfwevt/libfwevt.la";
 
   ac_cv_libfwevt=local
