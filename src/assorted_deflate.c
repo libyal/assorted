@@ -1,7 +1,7 @@
 /*
  * Deflate (zlib) (un)compression functions
  *
- * Copyright (C) 2008-2024, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -264,16 +264,6 @@ int assorted_deflate_build_dynamic_huffman_trees(
 #endif
 		if( symbol < 16 )
 		{
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: code size: % 3" PRIu32 " value\t\t: %" PRIu16 "\n",
-				 function,
-				 code_size_index,
-				 symbol );
-			}
-#endif
 			code_size_array[ code_size_index++ ] = (uint8_t) symbol;
 
 			continue;
@@ -1400,7 +1390,7 @@ int assorted_deflate_read_block_header(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: block header last block flag\t\t\t: %" PRIu8 "\n",
+		 "%s: block header last block flag\t\t: %" PRIu8 "\n",
 		 function,
 		 *last_block_flag );
 
@@ -2316,12 +2306,12 @@ int assorted_deflate_decompress_zlib(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: stored checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: stored checksum\t\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 stored_checksum );
 
 			libcnotify_printf(
-			 "%s: calculated checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: calculated checksum\t\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 calculated_checksum );
 		}

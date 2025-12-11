@@ -1,12 +1,12 @@
 AC_PREREQ([2.71])
 
 AC_INIT(
- [assorted],
- [20240313],
- [joachim.metz@gmail.com])
+  [assorted],
+  [20151211],
+  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
- [common/types.h.in])
+  [common/types.h.in])
 
 AM_INIT_AUTOMAKE([gnu 1.6 tar-ustar])
 AM_EXTRA_RECURSIVE_TARGETS([sources splint])
@@ -127,11 +127,11 @@ dnl Headers included in various places
 AC_CHECK_HEADERS([stdarg.h varargs.h])
 
 AS_IF(
- [test "x$ac_cv_header_stdarg_h" != xyes && test "x$ac_cv_header_varargs_h" != xyes],
- [AC_MSG_FAILURE(
-  [Missing headers: stdarg.h and varargs.h],
-  [1])
- ])
+  [test "x$ac_cv_header_stdarg_h" != xyes && test "x$ac_cv_header_varargs_h" != xyes],
+  [AC_MSG_FAILURE(
+    [Missing headers: stdarg.h and varargs.h],
+    [1])
+  ])
 
 dnl Check if assorted tools required headers and functions are available
 AX_ASSORTED_TOOLS_CHECK_LOCAL

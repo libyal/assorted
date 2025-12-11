@@ -1,7 +1,7 @@
 /*
  * BZip (un)compression functions
  *
- * Copyright (C) 2008-2024, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -911,20 +911,20 @@ int assorted_bzip_read_selectors(
 
 			return( -1 );
 		}
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: tree index: %" PRIu16 "\t\t\t\t: %" PRIu8 "\n",
-			 function,
-			 selector_index,
-			 tree_index );
-		}
-#endif
 		/* Inverse move-to-front transform
 		 */
 		selector_value = stack[ tree_index ];
 
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: selector value: %" PRIu16 "\t\t\t\t: %" PRIu8 "\n",
+			 function,
+			 selector_index,
+			 selector_value );
+		}
+#endif
 		selectors[ selector_index ] = selector_value;
 
 		for( stack_index = tree_index;
