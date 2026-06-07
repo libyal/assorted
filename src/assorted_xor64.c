@@ -1,7 +1,7 @@
 /*
  * XOR-64 functions
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -297,6 +297,17 @@ int assorted_xor64_calculate_checksum_little_endian_cpu_aligned(
 		{
 			byte_count = ( ( byte_size / 4 ) - 1 ) * 64;
 
+			if( byte_count >= 64 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid byte count value out of bounds.",
+				 function );
+
+				return( -1 );
+			}
 			if( byte_order == _BYTE_STREAM_ENDIAN_BIG )
 			{
 				value_64bit = (uint64_t) ( value_aligned >> byte_count );

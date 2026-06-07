@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Function to provide hexadecimal represenation of data."""
 
 from __future__ import unicode_literals

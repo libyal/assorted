@@ -1,7 +1,7 @@
 /*
  * Decompresses 7-bit ASCII compressed data
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -256,7 +256,7 @@ int main( int argc, char * const argv[] )
 		 stderr,
 		 "Unable to create uncompressed data buffer.\n" );
 
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
 	/* Position the source file at the right offset
 	 */
@@ -345,9 +345,6 @@ int main( int argc, char * const argv[] )
 	 uncompressed_data,
 	 uncompressed_data_size,
 	 0 );
-
-	source_offset += source_size;
-	source_size   -= source_size;
 
 #ifdef NOWRITE
 	libcfile_file_t *destination_file = NULL;

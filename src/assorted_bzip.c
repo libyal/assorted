@@ -1,7 +1,7 @@
 /*
  * BZip (un)compression functions
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -1825,6 +1825,20 @@ int assorted_bzip_decompress(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve value from bit stream.",
+			 function );
+
+			goto on_error;
+		}
+		if( memory_set(
+		     selectors,
+		     0,
+		     ( 1 << 15 ) + 1 ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear selectors.",
 			 function );
 
 			goto on_error;

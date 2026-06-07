@@ -1,7 +1,7 @@
 /*
  * Determines a Windows Shell Link from a path
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -140,8 +140,9 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
+#if defined( WINAPI )
 	path = argv[ optind++ ];
-
+#endif
 	libcnotify_stream_set(
 	 stderr,
 	 NULL );
@@ -149,7 +150,6 @@ int main( int argc, char * const argv[] )
 	 verbose );
 
 #if defined( WINAPI )
-
 	result = CoInitialize(
 	          NULL );
 

@@ -1,7 +1,7 @@
 /*
  * Saves a Windows Registry key to a Registry hive file using RegSaveKeyEx
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -158,8 +158,9 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
+#if defined( WINAPI )
 	key_path = argv[ optind++ ];
-
+#endif
 	if( optind == argc )
 	{
 		fprintf(
@@ -171,8 +172,9 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
+#if defined( WINAPI )
 	target_path = argv[ optind ];
-
+#endif
 	libcnotify_stream_set(
 	 stderr,
 	 NULL );
@@ -267,7 +269,7 @@ int main( int argc, char * const argv[] )
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = RegCreateKeyExW(
 	          HKEY_CURRENT_USER,
-	          L"TestKey",
+	          key_path,
 	          0,
 	          NULL,
 	          REG_OPTION_BACKUP_RESTORE,
@@ -278,7 +280,7 @@ int main( int argc, char * const argv[] )
 #else
 	result = RegCreateKeyExA(
 	          HKEY_CURRENT_USER,
-	          "TestKey",
+	          key_path,
 	          0,
 	          NULL,
 	          REG_OPTION_BACKUP_RESTORE,

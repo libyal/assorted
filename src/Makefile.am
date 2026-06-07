@@ -73,7 +73,8 @@ adcdecompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 adler32sum_SOURCES = \
 	adler32sum.c \
@@ -90,6 +91,7 @@ adler32sum_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
+	@LIBINTL@ \
 	@ZLIB_LIBADD@
 
 ascii7decompress_SOURCES = \
@@ -107,7 +109,8 @@ ascii7decompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 banalyze_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -128,6 +131,7 @@ banalyze_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCRYPTO_LIBADD@ \
 	@LIBDL_LIBADD@ \
+	@LIBINTL@ \
 	@PTHREAD_LIBADD@
 
 bz2decompress_SOURCES = \
@@ -149,6 +153,7 @@ bz2decompress_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
+	@LIBINTL@ \
 	@BZIP2_LIBADD@
 
 crc32sum_SOURCES = \
@@ -167,7 +172,8 @@ crc32sum_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 crc64sum_SOURCES = \
 	assorted_crc64.c assorted_crc64.h \
@@ -184,7 +190,8 @@ crc64sum_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 fletcher32sum_SOURCES = \
 	assorted_fletcher32.c assorted_fletcher32.h \
@@ -202,7 +209,8 @@ fletcher32sum_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 fletcher64sum_SOURCES = \
 	assorted_fletcher64.c assorted_fletcher64.h \
@@ -220,7 +228,8 @@ fletcher64sum_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 lzfsedecompress_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -239,7 +248,8 @@ lzfsedecompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 lzfudecompress_SOURCES = \
 	assorted_crc32.c assorted_crc32.h \
@@ -258,7 +268,8 @@ lzfudecompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 lzmadecompress_SOURCES = \
 	assorted_bit_stream.c assorted_bit_stream.h \
@@ -278,6 +289,7 @@ lzmadecompress_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
+	@LIBINTL@ \
 	@LZMA_LIBADD@
 
 lznt1decompress_SOURCES = \
@@ -297,7 +309,8 @@ lznt1decompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 lzvndecompress_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -316,7 +329,8 @@ lzvndecompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 lzxdecompress_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -338,7 +352,8 @@ lzxdecompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 lzxpressdecompress_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -356,7 +371,8 @@ lzxpressdecompress_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 mssearchdecode_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -374,7 +390,8 @@ mssearchdecode_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 plistinfo_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -396,7 +413,8 @@ plistinfo_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 rc4crypt_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -415,7 +433,8 @@ rc4crypt_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 serpentcrypt_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -434,7 +453,8 @@ serpentcrypt_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 unicodetouch_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -452,7 +472,8 @@ unicodetouch_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 wevtinfo_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -476,7 +497,8 @@ wevtinfo_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 winregsave_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -492,7 +514,8 @@ winregsave_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 winshellfolder_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -508,7 +531,8 @@ winshellfolder_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 winshelllink_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -524,7 +548,8 @@ winshelllink_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 xor32sum_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -542,7 +567,8 @@ xor32sum_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 xor64sum_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
@@ -560,7 +586,8 @@ xor64sum_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 zcompress_SOURCES = \
 	assorted_bit_stream.c assorted_bit_stream.h \
@@ -580,6 +607,7 @@ zcompress_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
+	@LIBINTL@ \
 	@ZLIB_LIBADD@
 
 zdecompress_SOURCES = \
@@ -601,6 +629,7 @@ zdecompress_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
+	@LIBINTL@ \
 	@ZLIB_LIBADD@
 
 DISTCLEANFILES = \

@@ -1,15 +1,15 @@
-#!/bin/bash
-# Tests tools functions.
+#!/usr/bin/env bash
+# Tests tools functions and types.
 #
-# Version: 20240413
+# Version: 20260606
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="adler32 ascii7 bit_stream bzip crc32 crc64 deflate fletcher32 fletcher64 huffman_tree lzfu lzma xor32 xor64";
-LIBRARY_TESTS_WITH_INPUT="";
-OPTION_SETS="";
+TOOLS_TESTS="adler32 ascii7 bit_stream bzip crc32 crc64 deflate fletcher32 fletcher64 huffman_tree lzfu lzma xor32 xor64";
+TOOLS_TESTS_WITH_INPUT="";
+OPTION_SETS=();
 
 INPUT_GLOB="*";
 
@@ -78,47 +78,63 @@ run_test_with_input()
 
 		local TEST_SET_DIRECTORY=$(get_test_set_directory "${TEST_PROFILE_DIRECTORY}" "${TEST_SET_INPUT_DIRECTORY}");
 
-		local OLDIFS=${IFS};
-
-		# IFS="\n" is not supported by all platforms.
-		IFS="
-";
+		local INPUT_FILES=()
 
 		if test -f "${TEST_SET_DIRECTORY}/files";
 		then
-			for INPUT_FILE in `cat ${TEST_SET_DIRECTORY}/files | sed "s?^?${TEST_SET_INPUT_DIRECTORY}/?"`;
+			while IFS= read -r FILENAME;
 			do
-				if test "${OSTYPE}" = "msys";
+				if test -n "${FILENAME}}";
 				then
-					# A test executable built with MinGW expects a Windows path.
-					INPUT_FILE=`echo ${INPUT_FILE} | sed 's?/?\\\\?g'`;
+					INPUT_FILES+=("${TEST_SET_INPUT_DIRECTORY}/${FILENAME}")
 				fi
-				run_test_on_input_file_with_options "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "${OPTION_SETS}" "${TEST_EXECUTABLE}" "${INPUT_FILE}";
-				RESULT=$?;
-
-				if test ${RESULT} -ne ${EXIT_SUCCESS};
-				then
-					break;
-				fi
-			done
+			done < "${TEST_SET_DIRECTORY}/files"
 		else
-			for INPUT_FILE in `ls -1d ${TEST_SET_INPUT_DIRECTORY}/${INPUT_GLOB}`;
+			for FILENAME in ${TEST_SET_INPUT_DIRECTORY}/${INPUT_GLOB};
 			do
-				if test "${OSTYPE}" = "msys";
+				if test -e "${FILENAME}";
 				then
-					# A test executable built with MinGW expects a Windows path.
-					INPUT_FILE=`echo ${INPUT_FILE} | sed 's?/?\\\\?g'`;
-				fi
-				run_test_on_input_file_with_options "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "${OPTION_SETS}" "${TEST_EXECUTABLE}" "${INPUT_FILE}";
-				RESULT=$?;
-
-				if test ${RESULT} -ne ${EXIT_SUCCESS};
-				then
-					break;
+					INPUT_FILES+=("${FILENAME}")
 				fi
 			done
 		fi
-		IFS=${OLDIFS};
+		for INPUT_FILE in "${INPUT_FILES[@]}";
+		do
+			OPTION_INPUT_FILE="${INPUT_FILE}";
+
+			local TESTED_WITH_OPTIONS=0;
+
+			for OPTION_SET in ${OPTION_SETS[@]};
+			do
+				local TEST_DATA_OPTION_FILE=$(get_test_data_option_file "${TEST_SET_DIRECTORY}" "${OPTION_INPUT_FILE}" "${OPTION_SET}");
+
+				if test -f ${TEST_DATA_OPTION_FILE};
+				then
+					TESTED_WITH_OPTIONS=1;
+
+					IFS=" " read -a OPTIONS <<< $(read_test_data_option_file "${TEST_SET_DIRECTORY}" "${INPUT_FILE}" "${OPTION_SET}");
+
+					run_test_on_input_file "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "${OPTION_SET}" "${TEST_EXECUTABLE}" "${INPUT_FILE}" "${OPTIONS[@]}";
+					RESULT=$?;
+
+					if test ${RESULT} -ne ${EXIT_SUCCESS};
+					then
+						break;
+					fi
+				fi
+			done
+
+			if test ${TESTED_WITH_OPTIONS} -eq 0;
+			then
+				run_test_on_input_file "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "" "${TEST_EXECUTABLE}" "${INPUT_FILE}";
+				RESULT=$?;
+			fi
+
+			if test ${RESULT} -ne ${EXIT_SUCCESS};
+			then
+				break;
+			fi
+		done
 
 		if test ${RESULT} -ne ${EXIT_SUCCESS};
 		then
@@ -129,7 +145,7 @@ run_test_with_input()
 	return ${RESULT};
 }
 
-if ! test -z ${SKIP_LIBRARY_TESTS};
+if test -n "${SKIP_TOOLS_TESTS}";
 then
 	exit ${EXIT_IGNORE};
 fi
@@ -149,7 +165,7 @@ source ${TEST_RUNNER};
 
 RESULT=${EXIT_IGNORE};
 
-for TEST_NAME in ${LIBRARY_TESTS};
+for TEST_NAME in ${TOOLS_TESTS};
 do
 	run_test "${TEST_NAME}";
 	RESULT=$?;
@@ -165,7 +181,7 @@ then
 	exit ${RESULT};
 fi
 
-for TEST_NAME in ${LIBRARY_TESTS_WITH_INPUT};
+for TEST_NAME in ${TOOLS_TESTS_WITH_INPUT};
 do
 	if test -d "input";
 	then

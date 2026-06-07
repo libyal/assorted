@@ -1,7 +1,7 @@
 /*
  * Deflate (zlib) (un)compression functions
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -1194,8 +1194,7 @@ int assorted_deflate_read_data_header(
 	compression_method        = compression_information & 0x0f;
 	compression_information >>= 4;
 
-	flags             = compressed_data[ safe_compressed_data_offset++ ];
-	compression_level = flags >> 6;
+	flags = compressed_data[ safe_compressed_data_offset++ ];
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1219,6 +1218,8 @@ int assorted_deflate_read_data_header(
 		 "%s: preset dictionary flag\t\t\t: %" PRIu8 "\n",
 		 function,
 		 ( flags >> 5 ) & 0x01 );
+
+		compression_level = flags >> 6;
 
 		libcnotify_printf(
 		 "%s: compression level\t\t\t\t: %" PRIu8 " (",
@@ -1573,8 +1574,6 @@ int assorted_deflate_read_block(
 				 block_size_copy );
 			}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
-
-			block_size_copy = ( block_size >> 16 ) ^ 0x0000ffffUL;
 
 			if( block_size != block_size_copy )
 			{

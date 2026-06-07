@@ -1,7 +1,7 @@
 /*
  * mssearchdecode decodes MS Search encoded data
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -356,9 +356,6 @@ int main( int argc, char * const argv[] )
 	 decoded_data_size,
 	 0 );
 
-	source_offset += source_size;
-	source_size   -= source_size;
-
 	fprintf(
 	 stderr,
 	 "Compression type:\t0x%02" PRIx8 "\n",
@@ -446,11 +443,13 @@ int main( int argc, char * const argv[] )
 	 */
 	if( compression_type == 0 )
 	{
-		if( assorted_mssearch_get_run_length_uncompressed_utf16_string_size(
-		     &( decoded_data[ 1 ] ),
-		     decoded_data_size - 1,
-		     &value_utf16_stream_size,
-		     &error ) != 1 )
+		result = assorted_mssearch_get_run_length_uncompressed_utf16_string_size(
+		          &( decoded_data[ 1 ] ),
+		          decoded_data_size - 1,
+		          &value_utf16_stream_size,
+		          &error );
+	       
+		if( result != 1 )
 		{
 			libcerror_error_set(
 			 &error,
@@ -469,8 +468,10 @@ int main( int argc, char * const argv[] )
 
 			memory_free(
 			 decoded_data );
+
+			decoded_data = NULL;
 		}
-		if( value_utf16_stream_size > 0 )
+		else if( value_utf16_stream_size > 0 )
 		{
 			value_utf16_stream = (uint8_t *) memory_allocate(
 							  sizeof( uint8_t ) * value_utf16_stream_size );

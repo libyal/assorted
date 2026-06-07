@@ -1,7 +1,7 @@
 /*
  * Decompresses LZNT1 compressed data
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -29,6 +29,10 @@
 #include <stdlib.h>
 #endif
 
+#if defined( WINAPI )
+#include <windows.h>
+#endif
+
 #include "assorted_getopt.h"
 #include "assorted_libcerror.h"
 #include "assorted_libcfile.h"
@@ -39,20 +43,28 @@
 
 #if defined( WINAPI )
 
-/* Cross Windows safe version of RtlDecompressBuffer
+typedef NTSTATUS( *RtlDecompressBuffer )(
+                    USHORT CompressionFormat,
+                    UCHAR *UncompressedBuffer,
+                    ULONG  UncompressedBufferSize,
+                    UCHAR *CompressedBuffer,
+                    ULONG  CompressedBufferSize,
+                    ULONG *FinalUncompressedSize );
+
+/* Fallback version of RtlDecompressBuffer
  * Returns 0 if successful or an error code on error
  */
 NTSTATUS lznt1compress_RtlDecompressBuffer(
-          unsigned short CompressionFormat,
-          unsigned char *UncompressedBuffer,
-          unsigned long UncompressedBufferSize,
-          unsigned char *CompressedBuffer,
-          unsigned long CompressedBufferSize,
-          unsigned long *FinalUncompressedSize )
+          USHORT CompressionFormat,
+          UCHAR *UncompressedBuffer,
+          ULONG UncompressedBufferSize,
+          UCHAR *CompressedBuffer,
+          ULONG CompressedBufferSize,
+          ULONG *FinalUncompressedSize )
 {
-	FARPROC function       = NULL;
-	HMODULE library_handle = NULL;
-	NTSTATUS result        = 0;
+	RtlDecompressBuffer function = NULL;
+	HMODULE library_handle       = NULL;
+	NTSTATUS result              = 0;
 
 	library_handle = LoadLibrary(
 	                  _SYSTEM_STRING( "ntdll.dll" ) );
@@ -414,12 +426,12 @@ int main( int argc, char * const argv[] )
 	if( decompression_method == 1 )
 	{
 		result = lznt1compress_RtlDecompressBuffer(
-		          COMPRESSION_FORMAT_LZNT1,
-		          (unsigned char *) uncompressed_data,
-		          (unsigned long) uncompressed_data_size,
-		          (unsigned char *) buffer,
-		          (unsigned long) source_size,
-		          (unsigned long *) &uncompressed_data_size );
+		          (USHORT) COMPRESSION_FORMAT_LZNT1,
+		          (UCHAR *) uncompressed_data,
+		          (ULONG) uncompressed_data_size,
+		          (UCHAR *) buffer,
+		          (ULONG) source_size,
+		          (ULONG *) &uncompressed_data_size );
 
 		if( result != 0 )
 		{

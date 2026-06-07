@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """Script to extract Windows Shell items."""
 
 from __future__ import print_function
@@ -148,7 +147,7 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       debug (Optional[bool]): True if debug information should be printed.
       mediator (Optional[dfvfs.VolumeScannerMediator]): volume scanner mediator.
     """
-    super(WindowsShellItemsExtractor, self).__init__(mediator=mediator)
+    super().__init__(mediator=mediator)
     self._debug = debug
     self._file_scanner = self._GetSignatureScanner()
 
@@ -401,7 +400,7 @@ class WindowsShellItemsExtractor(dfvfs_volume_scanner.VolumeScanner):
       self._ExtractFromFileEntry(file_system, file_entry, '', output_writer)
 
 
-class FileOutputWriter(object):
+class FileOutputWriter:
   """Class that defines a file output writer."""
 
   def __init__(self, output_directory):
@@ -410,7 +409,7 @@ class FileOutputWriter(object):
     Args:
       output_directory (str): path of the output directory.
     """
-    super(FileOutputWriter, self).__init__()
+    super().__init__()
     self._output_directory = output_directory
 
   def Close(self):
@@ -439,7 +438,7 @@ class FileOutputWriter(object):
       output_file.write(shell_item_data)
 
 
-class StdoutOutputWriter(object):
+class StdoutOutputWriter:
   """Class that defines a stdout output writer."""
 
   def Close(self):

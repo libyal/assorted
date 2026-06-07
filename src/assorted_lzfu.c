@@ -1,7 +1,7 @@
 /*
  * LZFu (un)compression functions
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -49,20 +49,19 @@ int assorted_lzfu_get_uncompressed_data_size(
 {
 	assorted_lzfu_header_t lzfu_header;
 
-	uint8_t *lzfu_data                = 0;
-	static char *function             = "lzfu_get_uncompressed_data_size";
-
 	uint8_t lz_buffer[ 4096 ];
 
-	uint8_t *lzfu_reference_data      = 0;
-	size_t compressed_data_iterator   = 0;
-	size_t uncompressed_data_iterator = 0;
-	uint16_t lz_buffer_iterator       = 0;
-	uint16_t reference_offset         = 0;
-	uint16_t reference_size           = 0;
-	uint16_t reference_iterator       = 0;
-	uint8_t flag_byte_bit_mask        = 0;
-	uint8_t flag_byte                 = 0;
+	const uint8_t *lzfu_data           = NULL;
+	const uint8_t *lzfu_reference_data = NULL;
+	static char *function              = "lzfu_get_uncompressed_data_size";
+	size_t compressed_data_iterator    = 0;
+	size_t uncompressed_data_offset    = 0;
+	uint16_t lz_buffer_iterator        = 0;
+	uint16_t reference_offset          = 0;
+	uint16_t reference_size            = 0;
+	uint16_t reference_iterator        = 0;
+	uint8_t flag_byte_bit_mask         = 0;
+	uint8_t flag_byte                  = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -130,13 +129,13 @@ int assorted_lzfu_get_uncompressed_data_size(
 
 		return( -1 );
 	}
-	compressed_data_size -= sizeof( assorted_lzfu_header_t );
-
 	/* The compressed data size includes 12 bytes of the header
 	 */
 	lzfu_header.compressed_data_size -= 12;
 
 #ifdef X
+	compressed_data_size -= sizeof( assorted_lzfu_header_t );
+
 	if( (size_t) lzfu_header.compressed_data_size != compressed_data_size )
 	{
 		libcerror_error_set(
@@ -201,7 +200,7 @@ int assorted_lzfu_get_uncompressed_data_size(
 			{
 				lz_buffer[ lz_buffer_iterator++ ] = lzfu_data[ compressed_data_iterator ];
 
-				uncompressed_data_iterator++;
+				uncompressed_data_offset++;
 				compressed_data_iterator++;
 
 				/* Make sure the lz buffer iterator wraps around
@@ -227,7 +226,7 @@ int assorted_lzfu_get_uncompressed_data_size(
 				{
 					lz_buffer[ lz_buffer_iterator++ ] = lz_buffer[ reference_offset ];
 
-					uncompressed_data_iterator++;
+					uncompressed_data_offset++;
 					reference_offset++;
 
 					/* Make sure the lz buffer iterator and reference offset wrap around
@@ -240,7 +239,7 @@ int assorted_lzfu_get_uncompressed_data_size(
 			}
 		}
 	}
-	if( (size_t) ( lzfu_header.uncompressed_data_size + 2 ) != uncompressed_data_iterator )
+	if( (size_t) ( lzfu_header.uncompressed_data_size + 2 ) != uncompressed_data_offset )
 	{
 		if( libcnotify_verbose != 0 )
 		{
@@ -248,7 +247,7 @@ int assorted_lzfu_get_uncompressed_data_size(
 			 "%s: mismatch in uncompressed data size (in header: %" PRIu32 " != required: %" PRIzd ").\n",
 			 function,
 			 lzfu_header.uncompressed_data_size + 2,
-			 uncompressed_data_iterator );
+			 uncompressed_data_offset );
 		}
 	}
 	/* Compensate for the 2 trailing zero bytes
@@ -343,7 +342,8 @@ int assorted_lzfu_decompress(
 	const uint8_t *lzfu_reference_data = NULL;
 	static char *function              = "lzfu_decompress";
 	size_t compressed_data_iterator    = 0;
-	size_t uncompressed_data_iterator  = 0;
+	size_t safe_uncompressed_data_size = 0;
+	size_t uncompressed_data_offset    = 0;
 	uint32_t calculated_crc            = 0;
 	uint16_t lz_buffer_iterator        = 0;
 	uint16_t reference_iterator        = 0;
@@ -396,6 +396,8 @@ int assorted_lzfu_decompress(
 
 		return( -1 );
 	}
+	safe_uncompressed_data_size = *uncompressed_data_size;
+
 	if( memory_copy(
 	     lz_buffer,
 	     assorted_lzfu_rtf_dictionary,
@@ -487,13 +489,13 @@ int assorted_lzfu_decompress(
 
 		return( -1 );
 	}
-	compressed_data_size -= sizeof( assorted_lzfu_header_t );
-
 	/* The compressed data size includes 12 bytes of the header
 	 */
 	lzfu_header.compressed_data_size -= 12;
 
 #ifdef X
+	compressed_data_size -= sizeof( assorted_lzfu_header_t );
+
 	if( lzfu_header.compressed_data_size != compressed_data_size )
 	{
 		libcerror_error_set(
@@ -510,7 +512,7 @@ int assorted_lzfu_decompress(
 #endif
 	/* Make sure the uncompressed buffer is large enough
 	 */
-	if( *uncompressed_data_size < lzfu_header.uncompressed_data_size )
+	if( lzfu_header.uncompressed_data_size > safe_uncompressed_data_size )
 	{
 		libcerror_error_set(
 		 error,
@@ -582,7 +584,7 @@ int assorted_lzfu_decompress(
 
 					return( -1 );
 				}
-				if( uncompressed_data_iterator >= *uncompressed_data_size )
+				if( uncompressed_data_offset >= safe_uncompressed_data_size )
 				{
 					libcerror_error_set(
 					 error,
@@ -591,12 +593,12 @@ int assorted_lzfu_decompress(
 					 "%s: uncompressed data too small.",
 					 function );
 
-					*uncompressed_data_size = uncompressed_data_iterator;
+					*uncompressed_data_size = uncompressed_data_offset;
 
 					return( -1 );
 				}
-				lz_buffer[ lz_buffer_iterator++ ]                 = lzfu_data[ compressed_data_iterator ];
-				uncompressed_data[ uncompressed_data_iterator++ ] = lzfu_data[ compressed_data_iterator ];
+				lz_buffer[ lz_buffer_iterator++ ]               = lzfu_data[ compressed_data_iterator ];
+				uncompressed_data[ uncompressed_data_offset++ ] = lzfu_data[ compressed_data_iterator ];
 
 				compressed_data_iterator++;
 
@@ -632,7 +634,7 @@ int assorted_lzfu_decompress(
 				reference_size     = ( reference_offset & 0x000f ) + 2;
 				reference_offset >>= 4;
 
-				if( ( uncompressed_data_iterator + reference_size - 1 ) >= *uncompressed_data_size )
+				if( ( uncompressed_data_offset + reference_size - 1 ) >= safe_uncompressed_data_size )
 				{
 					libcerror_error_set(
 					 error,
@@ -641,14 +643,14 @@ int assorted_lzfu_decompress(
 					 "%s: uncompressed data too small.",
 					 function );
 
-					*uncompressed_data_size = uncompressed_data_iterator + reference_size;
+					*uncompressed_data_size = uncompressed_data_offset + reference_size;
 
 					return( -1 );
 				}
 				for( reference_iterator = 0; reference_iterator < reference_size; reference_iterator++ )
 				{
-					lz_buffer[ lz_buffer_iterator++ ]                 = lz_buffer[ reference_offset ];
-					uncompressed_data[ uncompressed_data_iterator++ ] = lz_buffer[ reference_offset ];
+					lz_buffer[ lz_buffer_iterator++ ]               = lz_buffer[ reference_offset ];
+					uncompressed_data[ uncompressed_data_offset++ ] = lz_buffer[ reference_offset ];
 
 					reference_offset++;
 
@@ -662,7 +664,7 @@ int assorted_lzfu_decompress(
 			}
 		}
 	}
-	*uncompressed_data_size = uncompressed_data_iterator;
+	*uncompressed_data_size = uncompressed_data_offset;
 
 	return( 1 );
 }

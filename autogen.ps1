@@ -1,27 +1,32 @@
 # Script to generate the necessary files for a msvscpp build
 #
-# Version: 20241014
+# Version: 20260607
 
 $WinFlex = "..\win_flex_bison\win_flex.exe"
 $WinBison = "..\win_flex_bison\win_bison.exe"
 
-$Library = Get-Content -Path configure.ac | select -skip 3 -first 1 | % { $_ -Replace "  \[","" } | % { $_ -Replace "\],","" }
+$Project = Get-Content -Path configure.ac | select -skip 3 -first 1 | % { $_ -Replace "  \[","" } | % { $_ -Replace "\],","" }
 $Version = Get-Content -Path configure.ac | select -skip 4 -first 1 | % { $_ -Replace "  \[","" } | % { $_ -Replace "\],","" }
-$Prefix = ${Library}.Substring(3)
+$Prefix = ${Project}.Substring(3)
 
-Get-Content -Path "include\${Library}.h.in" | Out-File -Encoding ascii "include\${Library}.h"
-Get-Content -Path "include\${Library}\definitions.h.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "include\${Library}\definitions.h"
-Get-Content -Path "include\${Library}\features.h.in" | % { $_ -Replace "@[A-Z0-9_]*@","0" } | Out-File -Encoding ascii "include\${Library}\features.h"
-Get-Content -Path "include\${Library}\types.h.in" | % { $_ -Replace "@[A-Z0-9_]*@","0" } | Out-File -Encoding ascii "include\${Library}\types.h"
-Get-Content -Path "common\types.h.in" | % { $_ -Replace "@PACKAGE@","${Library}" } | Out-File -Encoding ascii "common\types.h"
-Get-Content -Path "${Library}\${Library}_definitions.h.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "${Library}\${Library}_definitions.h"
-Get-Content -Path "${Library}\${Library}.rc.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "${Library}\${Library}.rc"
+Get-Content -Path "common\types.h.in" | % { $_ -Replace "@PACKAGE@","${Project}" } | Out-File -Encoding ascii "common\types.h"
 
-If (Test-Path "setup.cfg.in")
+If (Test-Path "include\${Project}.h.in")
 {
-	Get-Content -Path "setup.cfg.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "setup.cfg"
+	Get-Content -Path "include\${Project}.h.in" | Out-File -Encoding ascii "include\${Project}.h"
+	Get-Content -Path "include\${Project}\definitions.h.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "include\${Project}\definitions.h"
+	Get-Content -Path "include\${Project}\features.h.in" | % { $_ -Replace "@[A-Z0-9_]*@","0" } | Out-File -Encoding ascii "include\${Project}\features.h"
+	Get-Content -Path "include\${Project}\types.h.in" | % { $_ -Replace "@[A-Z0-9_]*@","0" } | Out-File -Encoding ascii "include\${Project}\types.h"
 }
-
+If (Test-Path "${Project}\${Project}.c")
+{
+	Get-Content -Path "${Project}\${Project}_definitions.h.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "${Project}\${Project}_definitions.h"
+	Get-Content -Path "${Project}\${Project}.rc.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "${Project}\${Project}.rc"
+}
+If (Test-Path "pyproject.toml.in")
+{
+	Get-Content -Path "pyproject.toml.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "pyproject.toml"
+}
 If (Test-Path "${Prefix}.net")
 {
 	Get-Content -Path "${Prefix}.net\${Prefix}.net.rc.in" | % { $_ -Replace "@VERSION@","${Version}" } | Out-File -Encoding ascii "${Prefix}.net\${Prefix}.net.rc"
@@ -29,9 +34,9 @@ If (Test-Path "${Prefix}.net")
 
 $NamePrefix = ""
 
-ForEach (${Library} in Get-ChildItem -Directory -Path "lib*")
+ForEach (${Project} in Get-ChildItem -Directory -Path "lib*")
 {
-	ForEach (${DirectoryElement} in Get-ChildItem -Path "${Library}\*.l")
+	ForEach (${DirectoryElement} in Get-ChildItem -Path "${Project}\*.l")
 	{
 		$OutputFile = ${DirectoryElement} -Replace ".l$",".c"
 
@@ -49,7 +54,7 @@ ForEach (${Library} in Get-ChildItem -Directory -Path "lib*")
 		Move-Item "lex.yy.c" ${OutputFile} -force
 	}
 
-	ForEach (${DirectoryElement} in Get-ChildItem -Path "${Library}\*.y")
+	ForEach (${DirectoryElement} in Get-ChildItem -Path "${Project}\*.y")
 	{
 		$OutputFile = ${DirectoryElement} -Replace ".y$",".c"
 

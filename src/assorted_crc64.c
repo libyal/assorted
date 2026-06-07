@@ -1,7 +1,7 @@
 /*
  * CRC-64 functions
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -365,17 +365,19 @@ int assorted_crc64_calculate_2(
 	}
         if( assorted_crc64_table_computed == 0 )
 	{
-		/* CRC-64-ECMA-182 */
+		/* CRC-64-ECMA-182
 		polynomial = 0x42f0e1eba9ea3693ULL;
 		polynomial = 0xc96c5795d7870f42ULL;
 		polynomial = 0xa17870f5d4f51b49ULL;
+		*/
 
-		/* CRC-64-ISO */
+		/* CRC-64-ISO
 		polynomial = 0x000000000000001bULL;
 		polynomial = 0xd800000000000000ULL;
 		polynomial = 0x800000000000000dULL;
+		*/
 
-		/* TEST */
+		/* TEST
 		polynomial = 0x000000000000001bULL;
 		polynomial = 0x42f0e1eba9ea3693ULL;
 		polynomial = 0x95ac9329ac4bc9b5ULL;
@@ -384,7 +386,7 @@ int assorted_crc64_calculate_2(
 
 		polynomial = 0x92c64265d32139a4ULL;
 		polynomial = 0xc96c5795d7870f42ULL;
-
+		*/
 		polynomial = 0x9a6c9329ac4bc9b5ULL;
 
 		assorted_initialize_crc64_table(

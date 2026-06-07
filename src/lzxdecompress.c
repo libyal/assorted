@@ -1,7 +1,7 @@
 /*
  * Decompresses LZX compressed data
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -232,6 +232,9 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+#if defined( __clang_analyzer__ )
+	__builtin_assume( lzxdecompress_decompression_handle != NULL );
+#endif
 	if( option_source_offset != NULL )
 	{
 		if( decompression_handle_set_input_offset(

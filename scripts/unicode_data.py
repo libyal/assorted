@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """Script to parse UnicodeData.txt."""
 
 from __future__ import unicode_literals

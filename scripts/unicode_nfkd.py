@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """Script to export Unicode NFD decomposition mappings."""
 
 from __future__ import unicode_literals

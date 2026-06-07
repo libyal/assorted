@@ -1,7 +1,7 @@
 /*
  * CRC-32 functions
  *
- * Copyright (C) 2008-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2008-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -434,8 +434,9 @@ int assorted_crc32_locate_error_offset(
 		}
 		calculated_crc32 = calculated_crc32 >> 1;
 	}
+/*
 	calculated_crc32 = mirror_value ^ (uint32_t) 0xffffffffUL;
-
+*/
 	return( 0 );
 }
 

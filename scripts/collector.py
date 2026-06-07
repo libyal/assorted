@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Classes to implement a Windows volume collector."""
 
 from __future__ import unicode_literals
@@ -30,7 +29,7 @@ class WindowsVolumeCollector(dfvfs_volume_scanner.WindowsVolumeScanner):
     Args:
       mediator (VolumeScannerMediator): volume scanner mediator.
     """
-    super(WindowsVolumeCollector, self).__init__(mediator=mediator)
+    super().__init__(mediator=mediator)
     self._single_file = False
 
   def OpenFile(self, windows_path):
@@ -43,7 +42,7 @@ class WindowsVolumeCollector(dfvfs_volume_scanner.WindowsVolumeScanner):
       dfvfs.FileIO: file-like object or None if the file does not exist.
     """
     if not self._single_file:
-      return super(WindowsVolumeCollector, self).OpenFile(windows_path)
+      return super().OpenFile(windows_path)
 
     # TODO: check name of single file.
     path_spec = dfvfs_path_spec_factory.Factory.NewPathSpec(
@@ -67,7 +66,7 @@ class WindowsVolumeCollector(dfvfs_volume_scanner.WindowsVolumeScanner):
                     is not a file or directory, or if the format of or within
                     the source file is not supported.
     """
-    result = super(WindowsVolumeCollector, self).ScanForWindowsVolume(
+    result = super().ScanForWindowsVolume(
         source_path)
     if not result:
       return False
@@ -87,7 +86,7 @@ class CollectorRegistryFileReader(dfwinreg_interface.WinRegistryFileReader):
     Args:
       volume_scanner (WindowsVolumeCollector): Windows volume scanner.
     """
-    super(CollectorRegistryFileReader, self).__init__()
+    super().__init__()
     self._volume_scanner = volume_scanner
 
   def Open(self, path, ascii_codepage='cp1252'):

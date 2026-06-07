@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script that synchronizes the shared library dependencies
 #
-# Version: 20180728
+# Version: 20201121
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;

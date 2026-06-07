@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [assorted],
-  [20151211],
+  [20260607],
   [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -15,9 +15,6 @@ AC_CONFIG_MACRO_DIR([m4])
 
 dnl Check for host type
 AC_CANONICAL_HOST
-
-dnl Check for large file support
-AC_SYS_LARGEFILE
 
 dnl Check for libtool DLL support
 LT_INIT([win32-dll])
@@ -43,6 +40,21 @@ dnl Check for compiler language support
 AC_C_CONST
 AC_C_VOLATILE
 
+dnl Check for large file support
+AC_SYS_LARGEFILE
+
+dnl Check if shared library support should be disabled
+AX_COMMON_CHECK_DISABLE_SHARED_LIBS
+
+dnl Check if asan support should be enabled
+AX_TESTS_CHECK_ENABLE_ASAN
+
+dnl Check if ubsan support should be enabled
+AX_TESTS_CHECK_ENABLE_UBSAN
+
+dnl Check if code coverage support should be enabled
+AX_TESTS_CHECK_ENABLE_CODE_COVERAGE
+
 dnl Check if WINAPI support should be enabled
 AX_COMMON_CHECK_ENABLE_WINAPI
 
@@ -58,31 +70,31 @@ AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
 dnl Check for type definitions
 AX_TYPES_CHECK_LOCAL
 
-dnl Checks for libraries and library functions
+dnl Check if common required headers and functions are available
 AX_COMMON_CHECK_LOCAL
 
-dnl Check for enabling libcerror for cross-platform C error functions
+dnl Check if libcerror or required headers and functions are available
 AX_LIBCERROR_CHECK_ENABLE
 
-dnl Check for enabling libcthreads for cross-platform C threads functions
+dnl Check if libcthreads or required headers and functions are available
 AX_LIBCTHREADS_CHECK_ENABLE
 
-dnl Check for enabling libcdata for cross-platform C generic data functions
+dnl Check if libcdata or required headers and functions are available
 AX_LIBCDATA_CHECK_ENABLE
 
-dnl Check for enabling libclocale for cross-platform C locale functions
+dnl Check if libclocale or required headers and functions are available
 AX_LIBCLOCALE_CHECK_ENABLE
 
-dnl Check for enabling libcnotify for cross-platform C notification functions
+dnl Check if libcnotify or required headers and functions are available
 AX_LIBCNOTIFY_CHECK_ENABLE
 
-dnl Check for enabling libuna for Unicode string support
+dnl Check if libuna or required headers and functions are available
 AX_LIBUNA_CHECK_ENABLE
 
-dnl Check for enabling libcfile for cross-platform C file functions
+dnl Check if libcfile or required headers and functions are available
 AX_LIBCFILE_CHECK_ENABLE
 
-dnl Check for enabling libfcrypto for encryption types support
+dnl Check if libfcrypto or required headers and functions are available
 AX_LIBFCRYPTO_CHECK_ENABLE
 
 dnl Check if libfdatetime or required headers and functions are available
@@ -94,7 +106,7 @@ AX_LIBFGUID_CHECK_ENABLE
 dnl Check if libfvalue or required headers and functions are available
 AX_LIBFVALUE_CHECK_ENABLE
 
-dnl Check for enabling libfmos for file Mac OS type support
+dnl Check if libfmos or required headers and functions are available
 AX_LIBFMOS_CHECK_ENABLE
 
 dnl Check if libfplist or required headers and functions are available
@@ -103,7 +115,7 @@ AX_LIBFPLIST_CHECK_ENABLE
 dnl Check if libfwevt or required headers and functions are available
 AX_LIBFWEVT_CHECK_ENABLE
 
-dnl Check for enabling libfwnt for file Windows NT type support
+dnl Check if libfwnt or required headers and functions are available
 AX_LIBFWNT_CHECK_ENABLE
 
 dnl Check for zlib compression support
