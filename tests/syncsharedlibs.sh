@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 
 GIT_URL_PREFIX="https://github.com/libyal";
-SHARED_LIBS="libcerror libcthreads libcdata libclocale libcnotify libuna libcfile libfcrypto libfguid libfvalue libfplist libfwnt libhmac";
+SHARED_LIBS="libcerror libcthreads libcdata libcdatetime libclocale libcnotify libuna libcfile libfcrypto libfguid libfvalue libfplist libfwnt libhmac";
 
 USE_HEAD="";
 

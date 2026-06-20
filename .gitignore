@@ -140,6 +140,8 @@ stamp-h[1-9]
 /src/plistinfo
 /src/rc4crypt
 /src/serpentcrypt
+/src/unabase
+/src/unaexport
 /src/unicodetouch
 /src/wevtinfo
 /src/winregsave
@@ -169,6 +171,7 @@ stamp-h[1-9]
 
 # Local library dependencies specific files
 /libcdata
+/libcdatetime
 /libcerror
 /libcfile
 /libclocale

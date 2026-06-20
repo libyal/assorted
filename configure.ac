@@ -21,7 +21,6 @@ LT_INIT([win32-dll])
 
 dnl Checks for programs
 AC_PROG_CC
-AC_PROG_GCC_TRADITIONAL
 AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
@@ -81,6 +80,9 @@ AX_LIBCTHREADS_CHECK_ENABLE
 
 dnl Check if libcdata or required headers and functions are available
 AX_LIBCDATA_CHECK_ENABLE
+
+dnl Check if libcdatetime or required headers and functions are available
+AX_LIBCDATETIME_CHECK_ENABLE
 
 dnl Check if libclocale or required headers and functions are available
 AX_LIBCLOCALE_CHECK_ENABLE
@@ -161,6 +163,7 @@ AC_CONFIG_FILES([common/Makefile])
 AC_CONFIG_FILES([libcerror/Makefile])
 AC_CONFIG_FILES([libcthreads/Makefile])
 AC_CONFIG_FILES([libcdata/Makefile])
+AC_CONFIG_FILES([libcdatetime/Makefile])
 AC_CONFIG_FILES([libclocale/Makefile])
 AC_CONFIG_FILES([libcnotify/Makefile])
 AC_CONFIG_FILES([libuna/Makefile])
@@ -177,6 +180,7 @@ AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
+AC_CONFIG_FILES([manuals/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([ossfuzz/Makefile])
 dnl Have configure make distribution specific files
@@ -192,6 +196,7 @@ Building:
    libcerror support:                              $ac_cv_libcerror
    libcthreads support:                            $ac_cv_libcthreads
    libcdata support:                               $ac_cv_libcdata
+   libcdatetime support:                           $ac_cv_libcdatetime
    libclocale support:                             $ac_cv_libclocale
    libuna support:                                 $ac_cv_libuna
    libcfile support:                               $ac_cv_libcfile

@@ -8,6 +8,7 @@ coverage:
     changes: false
   ignore:
     - "libcdata/*"
+    - "libcdatetime/*"
     - "libcerror/*"
     - "libcfile/*"
     - "libclocale/*"

@@ -24,6 +24,7 @@ MSVSCPP_FILES = \
 	fletcher32sum/fletcher32sum.vcproj \
 	fletcher64sum/fletcher64sum.vcproj \
 	libcdata/libcdata.vcproj \
+	libcdatetime/libcdatetime.vcproj \
 	libcerror/libcerror.vcproj \
 	libcfile/libcfile.vcproj \
 	libclocale/libclocale.vcproj \
@@ -50,6 +51,8 @@ MSVSCPP_FILES = \
 	plistinfo/plistinfo.vcproj \
 	rc4crypt/rc4crypt.vcproj \
 	serpentcrypt/serpentcrypt.vcproj \
+	unabase/unabase.vcproj \
+	unaexport/unaexport.vcproj \
 	unicodetouch/unicodetouch.vcproj \
 	wevtinfo/wevtinfo.vcproj \
 	winregsave/winregsave.vcproj \

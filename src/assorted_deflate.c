@@ -1124,12 +1124,15 @@ int assorted_deflate_read_data_header(
 	static char *function                 = "assorted_deflate_read_data_header";
 	size_t safe_compressed_data_offset    = 0;
 	uint32_t compression_window_size      = 0;
-	uint32_t preset_dictionary_identifier = 0;
 	uint8_t compression_information       = 0;
 	uint8_t compression_level             = 0;
 	uint8_t compression_method            = 0;
 	uint8_t compression_window_bits       = 0;
 	uint8_t flags                         = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint32_t preset_dictionary_identifier = 0;
+#endif
 
 	if( compressed_data == NULL )
 	{
@@ -1269,10 +1272,11 @@ int assorted_deflate_read_data_header(
 
 			return( -1 );
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		byte_stream_copy_to_uint32_big_endian(
 		 &( compressed_data[ safe_compressed_data_offset ] ),
 		 preset_dictionary_identifier );
-
+#endif
 		safe_compressed_data_offset += 4;
 
 #if defined( HAVE_DEBUG_OUTPUT )

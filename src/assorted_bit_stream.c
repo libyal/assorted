@@ -310,9 +310,16 @@ int assorted_bit_stream_get_value(
 		{
 			read_number_of_bits = bit_stream->bit_buffer_size;
 		}
-		read_value_32bit   = bit_stream->bit_buffer;
-		safe_value_32bit <<= remaining_number_of_bits;
+		read_value_32bit = bit_stream->bit_buffer;
 
+		if( remaining_number_of_bits < 32 )
+		{
+			safe_value_32bit <<= remaining_number_of_bits;
+		}
+		else
+		{
+			safe_value_32bit = 0;
+		}
 		if( bit_stream->storage_type == ASSORTED_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT )
 		{
 			if( read_number_of_bits < 32 )

@@ -5,6 +5,7 @@ SUBDIRS = \
 	libcerror \
 	libcthreads \
 	libcdata \
+	libcdatetime \
 	libclocale \
 	libcnotify \
 	libuna \
@@ -20,6 +21,7 @@ SUBDIRS = \
 	libhmac \
 	src \
 	po \
+	manuals \
 	tests \
 	ossfuzz
 

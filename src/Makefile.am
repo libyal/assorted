@@ -4,6 +4,7 @@ AM_CPPFLAGS = \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCTHREADS_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
+	@LIBCDATETIME_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
 	@LIBCNOTIFY_CPPFLAGS@ \
 	@LIBUNA_CPPFLAGS@ \
@@ -46,6 +47,8 @@ bin_PROGRAMS = \
 	plistinfo \
 	rc4crypt \
 	serpentcrypt \
+	unabase \
+	unaexport \
 	unicodetouch \
 	wevtinfo \
 	winregsave \
@@ -456,6 +459,62 @@ serpentcrypt_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBINTL@
 
+unabase_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_ibcdatetime.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libclocale.h \
+	assorted_libcnotify.h \
+	assorted_libuna.h \
+	assorted_output.c assorted_output.h \
+	assorted_signal.c assorted_signal.h \
+	assorted_unused.h \
+	byte_size_string.c byte_size_string.h \
+	process_status.c process_status.h \
+	unabase.c \
+	unacommon.h \
+	unaexport_handle.c unaexport_handle.h \
+	unainput.c unainput.h
+
+unabase_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATETIME_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
+
+unaexport_SOURCES = \
+	assorted_getopt.c assorted_getopt.h \
+	assorted_i18n.h \
+	assorted_ibcdatetime.h \
+	assorted_libcerror.h \
+	assorted_libcfile.h \
+	assorted_libclocale.h \
+	assorted_libcnotify.h \
+	assorted_libuna.h \
+	assorted_output.c assorted_output.h \
+	assorted_signal.c assorted_signal.h \
+	assorted_unused.h \
+	byte_size_string.c byte_size_string.h \
+	process_status.c process_status.h \
+	unacommon.h \
+	unaexport.c \
+	unaexport_handle.c unaexport_handle.h \
+	unainput.c unainput.h
+
+unaexport_LDADD = \
+	@LIBCFILE_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATETIME_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
+
 unicodetouch_SOURCES = \
 	assorted_getopt.c assorted_getopt.h \
 	assorted_i18n.h \
@@ -632,6 +691,9 @@ zdecompress_LDADD = \
 	@LIBINTL@ \
 	@ZLIB_LIBADD@
 
+CLEANFILES = \
+	*.exe
+
 DISTCLEANFILES = \
 	Makefile \
 	Makefile.in
@@ -679,6 +741,12 @@ splint-local:
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(rc4crypt_SOURCES)
 	@echo "Running splint on serpentcrypt ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(serpentcrypt_SOURCES)
+	@echo "Running splint on unabase ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(unabase_SOURCES)
+	@echo "Running splint on unaexport ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(unaexport_SOURCES)
+	@echo "Running splint on unicodetouch ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(unicodetouch_SOURCES)
 	@echo "Running splint on wevtinfo ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(wevtinfo_SOURCES)
 	@echo "Running splint on winregsave ..."

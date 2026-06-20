@@ -30,6 +30,10 @@
 extern "C" {
 #endif
 
+int assorted_output_initialize(
+     int stdio_mode,
+     libcerror_error_t **error );
+
 void assorted_output_copyright_fprint(
       FILE *stream );
 
