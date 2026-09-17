@@ -1368,8 +1368,11 @@ int assorted_adler32_calculate_checksum_simd(
      libcerror_error_t **error )
 {
 	assorted_adler32_8byte_vector_t value_8byte;
-	assorted_adler32_8byte_vector_t upper_word_8byte_multiplier;
 	assorted_adler32_8byte_vector_t upper_word_8byte_value;
+
+/* TODO
+	assorted_adler32_8byte_vector_t upper_word_8byte_multiplier;
+*/
 
 	static char *function = "assorted_adler32_calculate_checksum_simd";
 	size_t buffer_offset  = 0;
@@ -1414,6 +1417,7 @@ int assorted_adler32_calculate_checksum_simd(
 	lower_word = initial_value & 0xffff;
 	upper_word = ( initial_value >> 16 ) & 0xffff;
 
+/* TODO
 	upper_word_8byte_multiplier.integer[ 0 ] = 8;
 	upper_word_8byte_multiplier.integer[ 1 ] = 7;
 	upper_word_8byte_multiplier.integer[ 2 ] = 6;
@@ -1422,6 +1426,7 @@ int assorted_adler32_calculate_checksum_simd(
 	upper_word_8byte_multiplier.integer[ 5 ] = 3;
 	upper_word_8byte_multiplier.integer[ 6 ] = 2;
 	upper_word_8byte_multiplier.integer[ 7 ] = 1;
+*/
 
 	upper_word_8byte_value.integer[ 0 ] = 0;
 	upper_word_8byte_value.integer[ 1 ] = 0;

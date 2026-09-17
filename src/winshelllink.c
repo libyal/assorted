@@ -153,8 +153,8 @@ int main( int argc, char * const argv[] )
 	result = CoInitialize(
 	          NULL );
 
-	if( FAILED( result ) ) 
-	{ 
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -171,10 +171,10 @@ int main( int argc, char * const argv[] )
 	          NULL,
 	          CLSCTX_INPROC_SERVER,
 	          &IID_IShellLink,
-	          (void *) &shell_link ); 
+	          (void *) &shell_link );
 
-	if( FAILED( result ) ) 
-	{ 
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -188,19 +188,19 @@ int main( int argc, char * const argv[] )
 	}
 	shell_link->lpVtbl->SetPath(
 	 shell_link,
-	 path ); 
+	 path );
 
 	shell_link->lpVtbl->SetDescription(
 	 shell_link,
-	 L"description" ); 
- 
+	 L"description" );
+
 	result = shell_link->lpVtbl->QueryInterface(
 	          shell_link,
 	          &IID_IPersistFile,
-	          (void *) &persist_file ); 
- 
-	if( FAILED( result ) ) 
-	{ 
+	          (void *) &persist_file );
+
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -215,10 +215,10 @@ int main( int argc, char * const argv[] )
 	result = persist_file->lpVtbl->Save(
 	          persist_file,
 	          L"test.lnk",
-	          TRUE ); 
+	          TRUE );
 
-	if( FAILED( result ) ) 
-	{ 
+	if( FAILED( result ) )
+	{
 		result = GetLastError();
 
 		libcerror_system_set_error(
@@ -231,12 +231,12 @@ int main( int argc, char * const argv[] )
 		goto on_error;
 	}
 	persist_file->lpVtbl->Release(
-	 persist_file ); 
+	 persist_file );
 
 	persist_file = NULL;
 
 	shell_link->lpVtbl->Release(
-	 shell_link ); 
+	 shell_link );
 
 	shell_link = NULL;
 
@@ -264,12 +264,12 @@ on_error:
 	if( persist_file != NULL )
 	{
 		persist_file->lpVtbl->Release(
-		 persist_file ); 
+		 persist_file );
 	}
 	if( shell_link != NULL )
 	{
 		shell_link->lpVtbl->Release(
-		 shell_link ); 
+		 shell_link );
 	}
 	CoUninitialize();
 

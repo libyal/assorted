@@ -2,8 +2,8 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [assorted],
-  [20260607],
-  [joachim.metz@gmail.com])
+  [20260917],
+  [https://github.com/libyal/assorted/issues])
 
 AC_CONFIG_SRCDIR(
   [common/types.h.in])

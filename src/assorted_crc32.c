@@ -301,7 +301,7 @@ int assorted_crc32_validate(
 	static char *function      = "assorted_crc32_validate";
 	uint32_t crc32_xor_pattern = 0;
 	uint8_t safe_bit_index     = 0;
-	
+
 	if( bit_index == NULL )
 	{
 		libcerror_error_set(

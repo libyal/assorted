@@ -295,7 +295,7 @@ int main( int argc, char * const argv[] )
 	if( ( print_count < 0 )
 	 || ( print_count > 128 ) )
 	{
-		
+
 		fprintf(
 		 stderr,
 		 "Unable to set destination filename.\n" );
@@ -448,7 +448,7 @@ int main( int argc, char * const argv[] )
 		          decoded_data_size - 1,
 		          &value_utf16_stream_size,
 		          &error );
-	       
+
 		if( result != 1 )
 		{
 			libcerror_error_set(
