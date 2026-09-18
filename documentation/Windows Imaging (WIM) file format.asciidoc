@@ -87,7 +87,7 @@ information within this document:
 
 == File header
 
-The file header (WIMHEADER_V1_PACKED) is 204 bytes of size and consists of:
+The file header (WIMHEADER_V1_PACKED) is 208 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
